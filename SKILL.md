@@ -12,32 +12,142 @@ description: Generate a personal elevator pitch or a repository/project pitch. U
 - User is preparing for networking event, job interview, investor meeting, or conference
 - User wants a "tell me about yourself" or "what does this do?" answer
 
-## Mode Detection
+## Pattern
 
-Determine mode from user request:
+### 1. Detect mode
+
+Infer from user request:
 
 | Signal | Mode |
 |---|---|
 | "pitch myself", "introduce myself", "tell me about yourself" | Personal |
 | "pitch this project/repo/library", "elevator pitch for X" | Repo |
-| Ambiguous + active repo in context | Ask: "Personal pitch or pitch for this project?" |
+| Ambiguous + active repo in context | Ask via `AskUserQuestion` |
+
+If ambiguous, use `AskUserQuestion`:
+```
+question: "What would you like to pitch?"
+header: "Pitch type"
+options:
+  - label: "This repo"
+    description: "Generate a pitch for the current project or library"
+  - label: "Myself"
+    description: "Generate a personal elevator pitch"
+```
+
+---
+
+## Repo Pitch
+
+### 1. Read context silently
+
+Before asking anything, read:
+- `package.json` — name, description, keywords
+- `README.md` — what it does, why it exists
+- `git log --oneline -10` — recent trajectory
+
+Identify: what problem it solves, who it's for, one design decision that signals taste.
+
+### 2. Ask what can't be inferred
+
+Use a single `AskUserQuestion` call with up to 3 questions:
+
+```
+Question 1:
+  question: "Who is the primary audience for this pitch?"
+  header: "Audience"
+  options:
+    - label: "Developers"
+      description: "Engineers evaluating the library or tool"
+    - label: "Investors"
+      description: "People evaluating the business opportunity"
+    - label: "General tech"
+      description: "Mixed audience — conference, meetup, demo day"
+
+Question 2:
+  question: "What format do you need?"
+  header: "Format"
+  options:
+    - label: "One-liner (Recommended)"
+      description: "Fits in package.json or GitHub repo description"
+      preview: |
+        Persistent, associative memory for AI agents —
+        short-term, long-term, and consolidation in
+        composable TypeScript packages.
+    - label: "30-second spoken"
+      description: "For demos, meetups, or conference intros"
+      preview: |
+        Every AI agent you build starts with amnesia.
+        Neurome fixes that — five composable packages
+        modeled on how the brain actually works.
+        Are you building agents that need to remember?
+    - label: "Full pitch deck intro"
+      description: "60-second investor or demo day version"
+
+Question 3 (only if no proof point found in README/package.json):
+  question: "Do you have any traction or proof points to include?"
+  header: "Proof point"
+  options:
+    - label: "Skip for now"
+      description: "I'll flag where a proof point should go"
+    - label: "I'll provide one"
+      description: "I'll add it in the next message"
+```
+
+### 3. Framework by context
+
+| Context | Framework | Length |
+|---|---|---|
+| Developer / one-liner | Problem + differentiator, no fluff | 1 sentence |
+| Developer networking | Problem image → What it does → Design decision → Hook question | 30–45s |
+| Conference / demo day | Counterintuitive claim → Solution → Architecture hook | 20–30s |
+| Investor meeting | Problem at scale → Solution → Traction → Explicit ask | 60s |
+
+### 4. Output
+
+- **One-liner** — ready to paste into `package.json` or GitHub description
+- **30-second spoken** — Problem → Solution → Hook question
+- **Context-specific** — adapted to chosen format
 
 ---
 
 ## Personal Pitch
 
-### 1. Gather context
+### 1. Read what's available
 
-Ask only what's missing — one question at a time:
+Check for any context already provided. If in a repo, skip repo-specific fields.
 
-- Current role and domain (specific: what problems, for whom)
-- One concrete proof point — a number, result, or scale signal
-- Context: networking / job interview / investor meeting / conference intro
-- What they want next — a role, conversation, intro, or follow-up meeting
+### 2. Ask what's missing
 
-Skip questions if user has already provided context.
+Use a single `AskUserQuestion` call:
 
-### 2. Framework by context
+```
+Question 1:
+  question: "What's the context for this pitch?"
+  header: "Context"
+  options:
+    - label: "Networking event"
+      description: "Casual 'what do you do?' — short form, memorable"
+    - label: "Job interview"
+      description: "Tell me about yourself — structured 60–90s arc"
+    - label: "Investor meeting"
+      description: "Problem at scale, traction, explicit ask"
+    - label: "Conference intro"
+      description: "15-second counterintuitive hook"
+
+Question 2 (if role/domain not clear from context):
+  question: "What kind of work do you do?"
+  header: "Your work"
+  options:
+    - label: "Engineering / technical"
+      description: "Software, systems, infrastructure, ML"
+    - label: "Founding / building"
+      description: "Startup founder or early-stage builder"
+    - label: "Product / design"
+      description: "Product management, design, strategy"
+```
+
+### 3. Framework by context
 
 | Context | Framework | Length |
 |---|---|---|
@@ -48,48 +158,11 @@ Skip questions if user has already provided context.
 
 IMPORTANT: "What do you do?" and "Tell me about yourself" are different. For casual networking, generate the short-form version first.
 
-### 3. Output
-
-Produce three versions:
+### 4. Output
 
 - **30-second** — Problem → Solution → Ask
 - **60-second** — Problem → Solution → Proof → Ask
-- **Context-specific** — adapted to context from the table above
-
----
-
-## Repo Pitch
-
-### 1. Gather context
-
-Read from the repo first — don't ask what can be inferred:
-
-- Read `package.json` (name, description, keywords)
-- Read `README.md` (what it does, why it exists)
-- Run `git log --oneline -10` to understand recent trajectory
-- Identify: what problem it solves, who it's for, one architectural decision that signals taste
-
-Ask only what can't be inferred:
-- Target audience (if unclear): developers / teams / enterprises / AI builders
-- Context: developer networking / conference demo / investor meeting / npm/GitHub description
-- Any traction or proof point: installs, teams using it, benchmark results
-
-### 2. Framework by context
-
-| Context | Framework | Length |
-|---|---|---|
-| Developer networking | Problem image → What it does → One design decision → Hook question | 30–45s |
-| Conference / demo day | Counterintuitive claim → Solution → Architecture hook | 20–30s |
-| Investor meeting | Problem at scale → Solution → Traction → Explicit ask | 60s |
-| npm / GitHub description | Ultra-concise one-liner — problem + differentiator, no fluff | 1 sentence |
-
-### 3. Output
-
-Produce three versions:
-
-- **One-liner** — fits in package.json `description` or GitHub repo description
-- **30-second spoken** — Problem → Solution → Hook question
-- **Context-specific** — adapted to the chosen context
+- **Context-specific** — adapted to chosen context
 
 ---
 
