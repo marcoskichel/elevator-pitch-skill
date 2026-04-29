@@ -1,0 +1,17 @@
+{
+  "name": "marcoskichel-skills",
+  "owner": {
+    "name": "Marcos Kichel"
+  },
+  "description": "A growing collection of Claude Code skills.",
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "elevator-pitch",
+      "source": "./elevator-pitch",
+      "description": "Generate elevator pitches for repos or people."
+    }
+  ]
+}
