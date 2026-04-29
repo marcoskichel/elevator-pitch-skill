@@ -120,6 +120,5 @@ description: >
 - MUST wait for user reply before implementing anything
 - Implement only chosen fixes
 - One atomic commit per logical fix (follow repo git rules)
-- Run `check:fix` before each commit
 
 </section>
