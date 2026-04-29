@@ -12,6 +12,11 @@
       "name": "elevator-pitch",
       "source": "./elevator-pitch",
       "description": "Generate elevator pitches for repos or people."
+    },
+    {
+      "name": "team-review",
+      "source": "./team-review",
+      "description": "Spawn parallel specialist subagents to review diffs."
     }
   ]
 }

@@ -1,0 +1,122 @@
+---
+name: team-review
+description: >
+  Trigger when user says: "team review", "have specialists review", "review my
+  changes", "re-review", "review again", "another pass", "ask the team",
+  "specialist review", "/team-review", "/team-rereview", "have the team look at
+  this", "get specialists to review", "run a team review", "do a specialist
+  review". Spawns parallel specialist subagents to review diffs and consolidates
+  findings. Never posts to GitHub.
+---
+
+<section id="target-detection">
+
+- Infer target from conversation context first
+- Signals to read:
+  - Files just edited this session
+  - Recent tool calls touching specific paths
+  - Explicit user mention ("the auth changes", "this PR", "uncommitted work")
+  - Last commit topic if user references it
+  - Current task scope from todos or plan
+- No default fallback chain
+- If conversation gives clear scope → use it (specific files, commits, branch range)
+- If signals conflict or ambiguous → ASK user; offer concrete options:
+  - Option A: files X, Y just edited
+  - Option B: open PR #N
+  - Option C: uncommitted diff
+  - Option D: branch vs base
+- MUST state inferred target + evidence before dispatch
+- MUST confirm with user when not certain
+
+</section>
+
+<section id="no-github-writes">
+
+- NEVER run `gh pr review`, `gh pr comment`, `gh pr edit`
+- NEVER post inline PR comments
+- NEVER write findings to GitHub in any form
+- All reports stay local in chat only
+
+</section>
+
+<section id="specialist-selection">
+
+- Inspect diff; pick 3–6 specialists matching change content
+- Selection mapping:
+  - TypeScript-heavy → `voltagent-lang:typescript-pro`
+  - Auth, crypto, secrets, permissions → `voltagent-qa-sec:security-auditor`
+  - New module/package boundaries, arch shifts → `voltagent-qa-sec:architect-reviewer`
+  - Test files added or changed → `voltagent-qa-sec:test-automator`
+  - Hot paths, DB queries, batching → `voltagent-qa-sec:performance-engineer`
+  - Debugging complex logic → `voltagent-qa-sec:debugger`
+  - Always include one generalist: `voltagent-qa-sec:code-reviewer` or `superpowers:code-reviewer`
+- List chosen specialists + one-line rationale per pick BEFORE dispatch
+- MUST confirm roster with user; allow swaps, additions, removals
+- Dispatch only after user confirms
+
+</section>
+
+<section id="parallel-dispatch">
+
+- Send single message with multiple `Agent` tool calls (one per specialist)
+- Each specialist receives:
+  - Full diff or PR number
+  - List of changed files
+  - User's stated intent (if provided)
+  - Output format instruction (see below)
+  - "Do NOT post to GitHub. Report findings in chat only."
+- Required specialist output format:
+  ```
+  ## Must-fix
+  <file:line> — <concrete suggestion>
+
+  ## Should-fix
+  <file:line> — <concrete suggestion>
+
+  ## Nits
+  <file:line> — <concrete suggestion>
+
+  ## Praise
+  <what was done well>
+  ```
+- Cap each specialist response under 400 words
+
+</section>
+
+<section id="rereview-mode">
+
+- Trigger: user says "re-review", "review again", "another pass", `/team-rereview`
+- MUST use same roster as prior review; scroll back in conversation to find it
+- Pass each specialist:
+  - Their prior review findings
+  - User's responses or decisions since last review
+  - New diff (what changed since last review)
+  - Instruction: surface unresolved prior issues + new issues only
+- Same output format as initial review
+
+</section>
+
+<section id="consolidated-report">
+
+- After all specialists return, produce consolidated report
+- Summary table:
+  ```
+  | Specialist | Must-fix | Should-fix | Nits |
+  |---|---|---|---|
+  ```
+- Deduplicated `## Must-fix` — merged across specialists, file:line, concrete fix
+- Deduplicated `## Should-fix`
+- `## Conflicts` — where specialists disagree; state each side
+- `## Recommended actions` — prioritized list; include rationale per item
+
+</section>
+
+<section id="confirmation-gate">
+
+- Present recommended actions; ask user which to apply
+- MUST wait for user reply before implementing anything
+- Implement only chosen fixes
+- One atomic commit per logical fix (follow repo git rules)
+- Run `check:fix` before each commit
+
+</section>
