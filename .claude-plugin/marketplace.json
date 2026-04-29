@@ -4,23 +4,20 @@
     "name": "Marcos Kichel"
   },
   "description": "A growing collection of Claude Code skills.",
-  "metadata": {
-    "pluginRoot": "./plugins"
-  },
   "plugins": [
     {
       "name": "elevator-pitch",
-      "source": "./elevator-pitch",
+      "source": "./plugins/elevator-pitch",
       "description": "Generate elevator pitches for repos or people."
     },
     {
       "name": "team-review",
-      "source": "./team-review",
+      "source": "./plugins/team-review",
       "description": "Spawn parallel specialist subagents to review diffs."
     },
     {
       "name": "team-research",
-      "source": "./team-research",
+      "source": "./plugins/team-research",
       "description": "Spawn parallel research subagents to compare approaches to a problem."
     }
   ]
