@@ -50,16 +50,6 @@ Triggers: "team research", "research approaches", "explore options", "investigat
 
 Source: [`plugins/team-research/skills/team-research/SKILL.md`](plugins/team-research/skills/team-research/SKILL.md)
 
-## Adding a new skill
-
-Each skill is a self-contained plugin under `plugins/<name>/`:
-
-```
-plugins/<name>/
-  .claude-plugin/plugin.json
-  skills/<name>/SKILL.md
-```
-
 Append a corresponding entry to `.claude-plugin/marketplace.json`. That's it.
 
 ## License
