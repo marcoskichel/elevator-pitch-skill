@@ -1,0 +1,12 @@
+{
+  "name": "team-research",
+  "version": "0.1.0",
+  "author": {
+    "name": "Marcos Kichel",
+    "url": "https://github.com/marcoskichel"
+  },
+  "homepage": "https://github.com/marcoskichel/skills/tree/main/plugins/team-research",
+  "repository": "https://github.com/marcoskichel/skills",
+  "license": "MIT",
+  "keywords": ["claude-code", "skill", "research", "subagents", "approach-comparison"]
+}

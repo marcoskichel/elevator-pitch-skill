@@ -10,6 +10,7 @@ Add the marketplace once, then install the skills you want:
 /plugin marketplace add marcoskichel/skills
 /plugin install elevator-pitch@marcoskichel-skills
 /plugin install team-review@marcoskichel-skills
+/plugin install team-research@marcoskichel-skills
 ```
 
 Plugin skills are namespaced under their plugin name. Invoke them as `/elevator-pitch:elevator-pitch` or `/team-review:team-review`. See the per-skill SKILL.md for trigger phrases that Claude will also recognize automatically.
@@ -17,9 +18,10 @@ Plugin skills are namespaced under their plugin name. Invoke them as `/elevator-
 ## Install — `npx skills` CLI
 
 ```sh
-npx skills add marcoskichel/skills     # all skills
+npx skills add marcoskichel/skills                       # all skills
 npx skills add marcoskichel/skills --skill elevator-pitch
 npx skills add marcoskichel/skills --skill team-review
+npx skills add marcoskichel/skills --skill team-research
 ```
 
 ## Skills
@@ -39,6 +41,24 @@ Spawn parallel specialist subagents (architecture, security, performance, tests,
 Triggers: "team review", "have specialists review", "review my changes", "re-review", "another pass", "ask the team", "specialist review".
 
 Source: [`plugins/team-review/skills/team-review/SKILL.md`](plugins/team-review/skills/team-review/SKILL.md)
+
+### team-research
+
+Spawn parallel research subagents to evaluate approaches to a problem. First does a shallow scan to enumerate 3–5 candidate approaches, then dispatches one research agent per approach the user selects, then consolidates a comparison report with pros/cons and a recommended direction. Findings stay local — never posted externally.
+
+Triggers: "team research", "research approaches", "explore options", "investigate approaches", "compare approaches", "what are the options", "options analysis".
+
+Source: [`plugins/team-research/skills/team-research/SKILL.md`](plugins/team-research/skills/team-research/SKILL.md)
+
+## Adding a new skill
+
+Each skill is a self-contained plugin under `plugins/<name>/`:
+
+```
+plugins/<name>/
+  .claude-plugin/plugin.json
+  skills/<name>/SKILL.md
+```
 
 Append a corresponding entry to `.claude-plugin/marketplace.json`. That's it.
 

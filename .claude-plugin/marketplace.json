@@ -17,6 +17,11 @@
       "name": "team-review",
       "source": "./team-review",
       "description": "Spawn parallel specialist subagents to review diffs."
+    },
+    {
+      "name": "team-research",
+      "source": "./team-research",
+      "description": "Spawn parallel research subagents to compare approaches to a problem."
     }
   ]
 }
