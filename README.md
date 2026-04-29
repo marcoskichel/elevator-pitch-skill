@@ -1,60 +1,46 @@
-# elevator-pitch
+# marcoskichel/skills
 
-A Claude Code skill that generates elevator pitches for repositories and people.
+A growing collection of personal Claude Code skills, published as a plugin marketplace and via `npx skills`.
 
-## Install
+## Install — Claude Code plugin marketplace
+
+Add the marketplace once, then install the skills you want:
 
 ```sh
-npx skills add marcoskichel/elevator-pitch-skill
+/plugin marketplace add marcoskichel/skills
+/plugin install elevator-pitch@marcoskichel-skills
+/plugin install team-review@marcoskichel-skills
 ```
 
-## Usage
+Plugin skills are namespaced under their plugin name. Invoke them as `/elevator-pitch:elevator-pitch` or `/team-review:team-review`. See the per-skill SKILL.md for trigger phrases that Claude will also recognize automatically.
 
-Trigger in Claude Code:
+## Install — `npx skills` CLI
 
-```
-/elevator-pitch
-```
-
-Or just describe what you need — Claude will detect the right mode automatically.
-
-## Repo pitches
-
-Run it inside any repo and it reads the project context first — `package.json`, `README`, recent commits — then generates:
-
-- **One-liner** — ready to paste into your GitHub description or `package.json`
-- **30-second spoken** — for demos, conference intros, or dev meetups
-- **Context-specific** — investor meeting, developer networking, or npm/GitHub listing
-
-```
-"pitch this repo for a developer conference"
-"generate a one-liner for my package.json"
-"write an investor pitch for this project"
+```sh
+npx skills add marcoskichel/skills     # all skills
+npx skills add marcoskichel/skills --skill elevator-pitch
+npx skills add marcoskichel/skills --skill team-review
 ```
 
-## Personal pitches
+## Skills
 
-Also works for pitching yourself:
+### elevator-pitch
 
-- **Networking event** — "what do you do?" short form
-- **Job interview** — Present → Past → Future arc
-- **Investor meeting** — problem at scale + traction + explicit ask
-- **Conference intro** — 15-second counterintuitive hook
+Generate elevator pitches for repos or people. Reads project context (`package.json`, README, recent commits) and produces one-liners, 30-second spoken pitches, or full intros tailored to audience (developer, investor, conference).
 
-```
-"generate my elevator pitch for a job interview"
-"how do I introduce myself at a conference?"
-"give me a 30-second personal pitch"
-```
+Triggers: "elevator pitch", "pitch this project", "introduce myself", "personal pitch", "how do I pitch myself", "pitch for this repo", "tell me about yourself".
 
-## How it works
+Source: [`plugins/elevator-pitch/skills/elevator-pitch/SKILL.md`](plugins/elevator-pitch/skills/elevator-pitch/SKILL.md)
 
-Applies research-backed frameworks (PSPA, Present-Past-Future) with enforced rules:
+### team-review
 
-- Opens with the problem, not the name or title
-- One number or named result — flags `[PROOF POINT NEEDED]` if none available
-- Power verbs only — no "responsible for" or "passionate about"
-- Always closes with a door-opener, never a thud
+Spawn parallel specialist subagents (architecture, security, performance, tests, generalist) to review a diff or PR, then consolidate findings into a single deduplicated report. Findings stay local — never posted to GitHub.
+
+Triggers: "team review", "have specialists review", "review my changes", "re-review", "another pass", "ask the team", "specialist review".
+
+Source: [`plugins/team-review/skills/team-review/SKILL.md`](plugins/team-review/skills/team-review/SKILL.md)
+
+Append a corresponding entry to `.claude-plugin/marketplace.json`. That's it.
 
 ## License
 
