@@ -42,15 +42,18 @@ description: >
 <section id="specialist-selection">
 
 - Inspect diff; pick 3–6 specialists matching change content
-- Selection mapping:
-  - TypeScript-heavy → `voltagent-lang:typescript-pro`
-  - Auth, crypto, secrets, permissions → `voltagent-qa-sec:security-auditor`
-  - New module/package boundaries, arch shifts → `voltagent-qa-sec:architect-reviewer`
-  - Test files added or changed → `voltagent-qa-sec:test-automator`
-  - Hot paths, DB queries, batching → `voltagent-qa-sec:performance-engineer`
-  - Debugging complex logic → `voltagent-qa-sec:debugger`
-  - Always include one generalist: `voltagent-qa-sec:code-reviewer` or `superpowers:code-reviewer`
-- List chosen specialists + one-line rationale per pick BEFORE dispatch
+- Agent names vary by environment; do not assume a specific agent exists
+- Inspect available subagents via the `Agent` tool's `subagent_type` parameter
+- For each signal present in the diff, pick the available agent whose name/description best matches; if multiple candidates fit, prefer the most specific; if none fit, fall back to the most general code-reviewer-style agent available
+- Signals to detect in the diff:
+  - Language/framework — dominant language or framework of changed files
+  - Security surface — auth, crypto, secrets, permissions, input handling
+  - Architectural change — new module or package boundaries, dependency shifts, interface redesigns
+  - Test changes — test files added or modified
+  - Performance hotspot — hot paths, DB queries, batching, caching, resource allocation
+  - Debugging need — complex logic, non-obvious control flow, subtle state mutations
+  - Generalist coverage — always include at least one general code-reviewer agent to anchor the roster
+- MUST list chosen specialists with their actual `subagent_type` values + one-line rationale per pick BEFORE dispatch
 - MUST confirm roster with user; allow swaps, additions, removals
 - Dispatch only after user confirms
 

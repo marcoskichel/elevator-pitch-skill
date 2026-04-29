@@ -28,9 +28,9 @@ description: >
 <section id="shallow-scan">
 
 - After problem confirmed, dispatch ONE research agent for broad enumeration
-- Agent selection for shallow scan:
-  - Default → `voltagent-research:research-analyst`
-  - Fast lookup / known-solution space → `voltagent-research:search-specialist`
+- Agent names vary by environment; do not assume a specific agent exists
+- Inspect available subagents via the `Agent` tool's `subagent_type` parameter
+- Pick the available agent whose name/description best matches general research synthesis or broad information retrieval; if multiple candidates fit, prefer the most specific; if none fit, use the most general research-oriented agent available
 - Shallow agent instructions:
   - Enumerate 3–5 candidate approaches only
   - One short paragraph per approach — no deep evaluation
@@ -61,16 +61,20 @@ description: >
 <section id="agent-selection">
 
 - Pick one deep agent per selected approach
-- Selection mapping:
-  - General synthesis, multi-source → `voltagent-research:research-analyst`
-  - Fast targeted retrieval → `voltagent-research:search-specialist`
-  - Comparing products, vendors, libraries → `voltagent-research:competitive-analyst`
-  - Audience sizing, market fit → `voltagent-research:market-researcher`
-  - Quantitative datasets, benchmarks → `voltagent-research:data-researcher`
-  - Peer-reviewed / scientific evidence → `voltagent-research:scientific-literature-researcher`
-  - Emerging-tech trajectory → `voltagent-research:trend-analyst`
-  - Go/no-go pressure-testing → `voltagent-research:project-idea-validator`
-- List chosen agent per approach + one-line rationale BEFORE dispatch
+- Agent names vary by environment; do not assume a specific agent exists
+- Inspect available subagents via the `Agent` tool's `subagent_type` parameter
+- For each selected approach, identify its dominant signal from these categories:
+  - General synthesis, multi-source aggregation
+  - Fast targeted retrieval, known-solution space
+  - Comparative analysis — products, vendors, libraries, options
+  - Audience sizing, market fit, user demand
+  - Quantitative datasets, benchmarks, numerical evidence
+  - Peer-reviewed or scientific evidence
+  - Emerging-tech trajectory, trend analysis
+  - Go/no-go pressure-testing, idea validation
+- For each signal that applies, pick the available agent whose name/description best matches; if multiple candidates fit, prefer the most specific; if none fit, use the most general research-synthesis agent available
+- MUST always include at least one general research-synthesis agent to anchor the roster
+- List chosen agent per approach (using its actual `subagent_type` value) + one-line rationale BEFORE dispatch
 - Allow user to swap agents if desired
 
 </section>
