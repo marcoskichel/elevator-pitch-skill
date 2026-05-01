@@ -1,7 +1,8 @@
 {
   "name": "empire-team",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Parallel agentic collaboration skills: dispatch specialist subagents to review code or research approaches, then consolidate findings.",
+  "dependencies": ["empire-rules"],
   "author": {
     "name": "Marcos Kichel",
     "url": "https://github.com/marcoskichel"
