@@ -19,6 +19,11 @@
       "name": "team-research",
       "source": "./plugins/team-research",
       "description": "Spawn parallel research subagents to compare approaches to a problem."
+    },
+    {
+      "name": "pr-description",
+      "source": "./plugins/pr-description",
+      "description": "Canonical PR description template with idempotency markers."
     }
   ]
 }

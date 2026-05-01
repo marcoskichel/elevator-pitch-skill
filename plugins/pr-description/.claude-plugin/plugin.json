@@ -1,0 +1,12 @@
+{
+  "name": "pr-description",
+  "version": "0.1.0",
+  "author": {
+    "name": "Marcos Kichel",
+    "url": "https://github.com/marcoskichel"
+  },
+  "homepage": "https://github.com/marcoskichel/skills/tree/main/plugins/pr-description",
+  "repository": "https://github.com/marcoskichel/skills",
+  "license": "MIT",
+  "keywords": ["claude-code", "skill", "pr-description", "pull-request", "github"]
+}

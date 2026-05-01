@@ -11,6 +11,7 @@ Add the marketplace once, then install the skills you want:
 /plugin install elevator-pitch@marcoskichel-skills
 /plugin install team-review@marcoskichel-skills
 /plugin install team-research@marcoskichel-skills
+/plugin install pr-description@marcoskichel-skills
 ```
 
 Plugin skills are namespaced under their plugin name. Invoke them as `/elevator-pitch:elevator-pitch` or `/team-review:team-review`. See the per-skill SKILL.md for trigger phrases that Claude will also recognize automatically.
@@ -22,6 +23,7 @@ npx skills add marcoskichel/skills                       # all skills
 npx skills add marcoskichel/skills --skill elevator-pitch
 npx skills add marcoskichel/skills --skill team-review
 npx skills add marcoskichel/skills --skill team-research
+npx skills add marcoskichel/skills --skill pr-description
 ```
 
 ## Skills
@@ -50,7 +52,19 @@ Triggers: "team research", "research approaches", "explore options", "investigat
 
 Source: [`plugins/team-research/skills/team-research/SKILL.md`](plugins/team-research/skills/team-research/SKILL.md)
 
-Append a corresponding entry to `.claude-plugin/marketplace.json`. That's it.
+### pr-description
+
+Canonical PR description template. Senior-reviewer voice, ≤200 words, sections for Why / What changed / Risk / Test plan, idempotency markers (`<!-- pr-description:start/end -->`) to preserve user-added content (screenshots, `Fixes #N`, task lists) when updating. Pure content template — caller decides where to write (stdout, `gh pr create --body-file -`, `gh pr edit --body-file -`).
+
+Triggers: "write PR description", "draft PR body", "update PR description", "pr summary", "summarize this branch for review", "/pr-description".
+
+To make it impossible for the agent to bypass, add this one-line rule to your project or user CLAUDE.md:
+
+```
+- Before any `gh pr create --body*` or `gh pr edit --body*`, MUST invoke the `pr-description` skill and use its output verbatim.
+```
+
+Source: [`plugins/pr-description/skills/pr-description/SKILL.md`](plugins/pr-description/skills/pr-description/SKILL.md)
 
 ## License
 
