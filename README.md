@@ -53,6 +53,27 @@ To make it impossible for the agent to bypass, add this one-line rule to your pr
 
 Source: [`plugins/empire/skills/pr-description/SKILL.md`](plugins/empire/skills/pr-description/SKILL.md)
 
+### worktree-* (open / close / merge / list / cleanup / help)
+
+Run multiple branches of the same repo in parallel, each in its own isolated git worktree. Per-branch directory, dependencies, ports, and `.env` files — so you (or a Claude agent) can spin up a parallel task without disrupting your main checkout. Lifecycle skills handle creation, merging, listing, batch cleanup, and teardown.
+
+Zero per-repo setup: the bundled `worktree-setup.sh` auto-detects the package manager from lockfiles (`pnpm`, `npm`, `yarn`, `bun`, `uv`, `poetry`, `pipenv`, `bundler`, `cargo`, `go` modules) and writes `.claude/worktrees` to `.git/info/exclude` so the host repo's tracked `.gitignore` stays untouched.
+
+| Command                                                          | Purpose                                                  |
+| ---------------------------------------------------------------- | -------------------------------------------------------- |
+| `/empire:worktree-open <branch \| task> [--base <b>]`            | Create or reopen a worktree (env, deps, ports handled)   |
+| `/empire:worktree-list [--stale]`                                | List active worktrees with branch, sync state, staleness |
+| `/empire:worktree-merge <branch> --into <target> [--no-close]`   | Local `git merge` of one branch into another             |
+| `/empire:worktree-close [branch] [--push] [--force]`             | Push, remove the worktree, optionally delete the branch  |
+| `/empire:worktree-cleanup [--dry-run]`                           | Batch cleanup of stale worktrees and orphaned branches   |
+| `/empire:worktree-help [question]`                               | FAQ about worktrees, ports, env files, VSCode setup      |
+
+Triggers: "open a worktree", "work on X separately", "in parallel", "spin up a branch", "list worktrees", "what worktrees do I have", "close this worktree", "merge worktree", "clean up worktrees", "stale worktrees".
+
+Inspired by [`@thinkvelta/claude-worktree-tools`](https://github.com/ThinkVelta/claude-worktree-tools) (MIT) — repackaged as a Claude Code plugin with auto-detection so per-repo `npx` install and `/wt-adopt` are no longer required.
+
+Source: [`plugins/empire/skills/worktree-open/SKILL.md`](plugins/empire/skills/worktree-open/SKILL.md), [`plugins/empire/scripts/worktree-setup.sh`](plugins/empire/scripts/worktree-setup.sh)
+
 ## License
 
 MIT
