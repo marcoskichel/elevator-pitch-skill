@@ -11,7 +11,7 @@ Part of the [empire](../../README.md) marketplace. Auto-installed as a dependenc
 /plugin install empire-rules@empire
 ```
 
-You usually do not install this plugin directly — it is pulled in automatically when you install any `empire-git`, `empire-team`, or `empire-product`, and transitively when you install the `empire` bundle.
+You usually do not install this plugin directly — it is pulled in automatically when you install any `empire-git`, `empire-dev`, `empire-research`, or `empire-product`, and transitively when you install the `empire` bundle.
 
 ## Skills
 

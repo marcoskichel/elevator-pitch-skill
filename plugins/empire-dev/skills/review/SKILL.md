@@ -3,7 +3,7 @@ name: review
 description: >
   Trigger when user says: "team review", "have specialists review", "review my
   changes", "re-review", "review again", "another pass", "ask the team",
-  "specialist review", "/empire-team:review", "have the team look at this",
+  "specialist review", "/empire-dev:review", "have the team look at this",
   "get specialists to review", "run a team review", "do a specialist review".
   Spawns parallel specialist subagents to review diffs and consolidates findings.
   Never posts to GitHub.

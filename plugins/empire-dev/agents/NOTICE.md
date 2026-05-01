@@ -17,12 +17,6 @@ and had `tools:` restrictions added; behavior and intent are preserved.
 - `blockchain-developer.md` — `plugins/blockchain-web3/agents/blockchain-developer.md`
 - `ai-engineer.md` — `plugins/llm-application-dev/agents/ai-engineer.md`
 
-### From [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) — MIT, © 2025 VoltAgent
-
-- `research-analyst.md` — `categories/10-research-analysis/research-analyst.md`
-- `competitive-analyst.md` — `categories/10-research-analysis/competitive-analyst.md`
-- `project-idea-validator.md` — `categories/10-research-analysis/project-idea-validator.md`
-
 ### From [coleam00/Archon](https://github.com/coleam00/Archon) — MIT, © 2025-2026 Cole Medin
 
 - `type-system-expert.md` — adapted from `.claude/agents/type-design-analyzer.md`,
@@ -46,8 +40,6 @@ and had `tools:` restrictions added; behavior and intent are preserved.
 - wshobson agents: added explicit `tools:` restrictions; trimmed
   language-specific and process sections that did not improve routing
   accuracy.
-- VoltAgent `project-idea-validator.md`: removed `Write, Edit` from `tools:`
-  to keep validation read-only.
 - Archon `type-design-analyzer.md`: renamed to `type-system-expert`,
   extended scope from pure type-design rubric to include type-system
   mechanics (HKTs, GADTs, branded / phantom types, traits, lifetimes).
@@ -57,8 +49,6 @@ and had `tools:` restrictions added; behavior and intent are preserved.
 
 ## Why bundled
 
-These agents serve as a default fallback so the `empire-team:review` and
-`empire-team:research` skills work out of the box without requiring users
-to install a separate marketplace. For richer coverage, install
-[VoltAgent's marketplace](https://github.com/VoltAgent/awesome-claude-code-subagents)
-or [wshobson's plugins](https://github.com/wshobson/agents) directly.
+These agents serve as a default fallback so the `empire-dev:review` skill
+works out of the box without requiring users to install a separate
+marketplace. For richer coverage, install upstream marketplaces directly.

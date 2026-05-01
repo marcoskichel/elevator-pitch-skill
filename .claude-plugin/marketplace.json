@@ -16,14 +16,14 @@
       "description": "Git workflow skills: worktree lifecycle (open, close, merge, list, cleanup, help) and PR description templating."
     },
     {
-      "name": "empire-team",
-      "source": "./plugins/empire-team",
-      "description": "Parallel agentic collaboration: review and research via specialist subagents."
+      "name": "empire-dev",
+      "source": "./plugins/empire-dev",
+      "description": "Development collaboration: parallel specialist code review (review skill) plus 11 bundled dev subagents (code review, paradigms, domain experts)."
     },
     {
-      "name": "empire-agents",
-      "source": "./plugins/empire-agents",
-      "description": "Bundled fallback subagents: code review, paradigms (FP, concurrency, types), domain (blockchain, AI), and research specialists."
+      "name": "empire-research",
+      "source": "./plugins/empire-research",
+      "description": "Research collaboration: parallel approach exploration (research skill) plus three bundled research subagents (synthesis, comparative, idea validation)."
     },
     {
       "name": "empire-product",

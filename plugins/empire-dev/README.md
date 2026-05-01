@@ -1,6 +1,6 @@
-# empire-agents
+# empire-dev
 
-Bundled fallback subagents covering code review, paradigm specialists, domain experts, and research roles. Pairs with `empire-team`'s `review` and `research` skills, which auto-discover whatever specialist subagents are installed and pick the best match per task.
+Development collaboration: parallel specialist code review plus a bundled roster of dev subagents covering generalist review, paradigm specialists, and domain experts.
 
 Part of the [empire](../../README.md) marketplace.
 
@@ -8,7 +8,7 @@ Part of the [empire](../../README.md) marketplace.
 
 ```sh
 /plugin marketplace add marcoskichel/empire
-/plugin install empire-agents@empire
+/plugin install empire-dev@empire
 ```
 
 Or install the full empire bundle (which includes this plugin):
@@ -17,7 +17,17 @@ Or install the full empire bundle (which includes this plugin):
 /plugin install empire@empire
 ```
 
-## Agents
+## Skill
+
+### `review`
+
+Spawn parallel specialist subagents to review a diff or PR, then consolidate findings into a single deduplicated report. Findings stay local — never posted to GitHub.
+
+Triggers: "team review", "have specialists review", "review my changes", "re-review", "another pass", "ask the team", "specialist review".
+
+Source: [`skills/review/SKILL.md`](skills/review/SKILL.md)
+
+## Bundled agents
 
 Code review:
 
@@ -38,27 +48,13 @@ Paradigm specialists:
 | `concurrency-reviewer`          | Race conditions, deadlocks, async / await correctness     |
 | `type-system-expert`            | Type design, invariants, generics, GADTs, branded types   |
 
-Domain specialists:
+Domain experts:
 
 | Agent                  | Use                                                  |
 | ---------------------- | ---------------------------------------------------- |
 | `blockchain-developer` | Smart contracts, DeFi, Web3, gas optimization, audit |
 | `ai-engineer`          | LLM apps, RAG, agents, prompts, vector search        |
 
-Research:
+The `review` skill auto-discovers whatever specialist subagents are installed and picks the best match per task. If your environment has more specialized subagents from another marketplace, the skill will use them.
 
-| Agent                    | Use                                           |
-| ------------------------ | --------------------------------------------- |
-| `research-analyst`       | Multi-source research synthesis and reporting |
-| `competitive-analyst`    | Vendor / library / option comparisons         |
-| `project-idea-validator` | Brutal go/no-go pressure-testing of ideas     |
-
-## How they're used
-
-Agents register automatically on install. They appear in `/agents` and are callable via the `Agent` tool's `subagent_type` parameter. The `empire-team:review` and `empire-team:research` skills auto-discover them at dispatch time — no skill configuration required.
-
-If your environment has more specialized subagents installed (from other marketplaces), the skills will pick the best match available.
-
-## Attribution
-
-See [`agents/NOTICE.md`](agents/NOTICE.md) for full upstream attribution and modification details. All bundled agents are MIT-licensed.
+Upstream attribution and modifications: [`agents/NOTICE.md`](agents/NOTICE.md).

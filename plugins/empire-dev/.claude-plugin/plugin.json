@@ -1,7 +1,8 @@
 {
-  "name": "empire-agents",
+  "name": "empire-dev",
   "version": "0.1.0",
-  "description": "Bundled fallback subagents covering code review, paradigm specialists (functional programming, concurrency, type system), domain experts (blockchain, AI), and research specialists. Pairs with empire-team's review and research skills.",
+  "description": "Development collaboration plugin: parallel specialist code review (review skill) plus 11 bundled subagents covering generalist review, paradigm specialists (functional programming, concurrency, type system), and domain experts (blockchain, AI).",
+  "dependencies": ["empire-rules"],
   "author": {
     "name": "Marcos Kichel",
     "url": "https://github.com/marcoskichel"
@@ -11,12 +12,13 @@
   "license": "MIT",
   "keywords": [
     "claude-code",
+    "skills",
     "subagents",
     "code-review",
+    "parallel-agents",
     "ai",
     "blockchain",
     "functional-programming",
-    "concurrency",
-    "type-system"
+    "concurrency"
   ]
 }
