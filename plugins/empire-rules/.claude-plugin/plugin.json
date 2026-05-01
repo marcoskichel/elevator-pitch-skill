@@ -1,0 +1,13 @@
+{
+  "name": "empire-rules",
+  "version": "0.1.0",
+  "description": "Sync hand-authored skill-routing rules from installed empire-* plugins into the project's AGENTS.md.",
+  "author": {
+    "name": "Marcos Kichel",
+    "url": "https://github.com/marcoskichel"
+  },
+  "homepage": "https://github.com/marcoskichel/empire",
+  "repository": "https://github.com/marcoskichel/empire",
+  "license": "MIT",
+  "keywords": ["claude-code", "skills", "agents-md", "claude-md", "rules", "sync"]
+}
