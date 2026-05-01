@@ -1,11 +1,12 @@
 ---
-name: team-research
+name: research
 description: >
-  Trigger when user says: "team research", "research approaches", "/team-research",
-  "explore options", "investigate approaches", "spawn research team", "research the
-  options", "compare approaches", "what are the options", "options analysis", "have
-  the team research". Dispatches parallel research subagents to evaluate approaches
-  and consolidates findings. Never posts to external systems.
+  Trigger when user says: "team research", "research approaches",
+  "/empire-team:research", "explore options", "investigate approaches",
+  "spawn research team", "research the options", "compare approaches",
+  "what are the options", "options analysis", "have the team research".
+  Dispatches parallel research subagents to evaluate approaches and consolidates
+  findings. Never posts to external systems.
 ---
 
 <section id="context-gathering">

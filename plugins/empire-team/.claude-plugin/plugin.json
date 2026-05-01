@@ -1,0 +1,13 @@
+{
+  "name": "empire-team",
+  "version": "0.1.0",
+  "description": "Parallel agentic collaboration skills: dispatch specialist subagents to review code or research approaches, then consolidate findings.",
+  "author": {
+    "name": "Marcos Kichel",
+    "url": "https://github.com/marcoskichel"
+  },
+  "homepage": "https://github.com/marcoskichel/empire",
+  "repository": "https://github.com/marcoskichel/empire",
+  "license": "MIT",
+  "keywords": ["claude-code", "skills", "subagents", "code-review", "research", "parallel-agents"]
+}

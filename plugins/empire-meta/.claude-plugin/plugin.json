@@ -1,0 +1,14 @@
+{
+  "name": "empire",
+  "version": "0.3.0",
+  "description": "Meta plugin: installs the full empire skill suite (empire-git, empire-team, empire-product).",
+  "author": {
+    "name": "Marcos Kichel",
+    "url": "https://github.com/marcoskichel"
+  },
+  "homepage": "https://github.com/marcoskichel/empire",
+  "repository": "https://github.com/marcoskichel/empire",
+  "license": "MIT",
+  "keywords": ["claude-code", "skills", "solo-founder", "indie", "bundle"],
+  "dependencies": ["empire-git", "empire-team", "empire-product"]
+}

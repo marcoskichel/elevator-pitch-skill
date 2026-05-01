@@ -1,6 +1,6 @@
 ---
 name: worktree-open
-description: Create or reopen a git worktree for parallel development. Use this whenever the user wants to work on something in parallel, start a new task without disrupting their current branch, spin up an isolated environment for an agent, or mentions worktrees, parallel branches, or "work on X separately". Also triggers for `/empire:worktree-open [branch | task description]`.
+description: Create or reopen a git worktree for parallel development. Use this whenever the user wants to work on something in parallel, start a new task without disrupting their current branch, spin up an isolated environment for an agent, or mentions worktrees, parallel branches, or "work on X separately". Also triggers for `/empire-git:worktree-open [branch | task description]`.
 model: sonnet
 allowed-tools: Bash Read Glob Grep
 argument-hint: "[branch | task description] [--base <branch>]"
@@ -109,4 +109,4 @@ This skill is **deterministic** — the same branch name always produces the sam
 
 Git only allows a branch to be checked out in one worktree at a time, so the setup script will refuse if the branch is already in use elsewhere. If that happens, surface the error clearly so the user knows which worktree has it.
 
-If the setup script fails partway through, just report what happened. Don't try to auto-clean — partial state is easier for the user to inspect and fix (via `/empire:worktree-close`) than state that was silently deleted.
+If the setup script fails partway through, just report what happened. Don't try to auto-clean — partial state is easier for the user to inspect and fix (via `/empire-git:worktree-close`) than state that was silently deleted.

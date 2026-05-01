@@ -1,6 +1,6 @@
 ---
 name: worktree-merge
-description: Merge a worktree's branch into another branch using git merge. Use this when the user wants to combine a worktree branch into a parent branch, batch small fixes into one branch, or fold sub-feature branches back together. This is always a real git merge — for pushing to remote, use `/empire:worktree-close --push` instead. Also triggers for `/empire:worktree-merge [branch] --into <target> [--no-close]`.
+description: Merge a worktree's branch into another branch using git merge. Use this when the user wants to combine a worktree branch into a parent branch, batch small fixes into one branch, or fold sub-feature branches back together. This is always a real git merge — for pushing to remote, use `/empire-git:worktree-close --push` instead. Also triggers for `/empire-git:worktree-merge [branch] --into <target> [--no-close]`.
 model: sonnet
 allowed-tools: Bash Read Glob Grep
 argument-hint: "<branch> --into <target> [--no-close]"
@@ -57,7 +57,7 @@ git -C "<source-worktree-path>" status --porcelain
 
 If there are uncommitted changes, **stop** and tell the user:
 
-> This worktree has uncommitted changes. Please commit them first (e.g., run `/commit`), then re-run `/empire:worktree-merge`.
+> This worktree has uncommitted changes. Please commit them first (e.g., run `/commit`), then re-run `/empire-git:worktree-merge`.
 
 ### Commits to merge
 
@@ -84,7 +84,7 @@ The `--no-ff` flag preserves the branch history as a merge commit, which makes t
    git -C "<target-worktree-path>" diff --name-only --diff-filter=U
    ```
 2. Report the conflicts clearly to the user.
-3. **Stop.** Merge conflicts need human judgment — auto-resolving risks silently introducing bugs. Tell the user to resolve conflicts in the target worktree, then run `/empire:worktree-close` on the source worktree when ready.
+3. **Stop.** Merge conflicts need human judgment — auto-resolving risks silently introducing bugs. Tell the user to resolve conflicts in the target worktree, then run `/empire-git:worktree-close` on the source worktree when ready.
 
 **On success**, print:
 
@@ -96,7 +96,7 @@ Merged '<source-branch>' into '<target-branch>'.
 
 If `--no-close` was in the arguments, skip this step and just print the result. The user may want to keep the source worktree around for further work.
 
-Otherwise, present the same cleanup options as `/empire:worktree-close`:
+Otherwise, present the same cleanup options as `/empire-git:worktree-close`:
 
 1. **Remove worktree only** — keeps the branch around in case it's needed
 2. **Remove worktree + delete branch** — full cleanup, since the commits now live in the target branch
@@ -127,23 +127,23 @@ Print a summary of what was done.
 **Batching small fixes:** Several small worktree branches (typo, dep bump, color tweak) merged locally into one branch before opening a single PR:
 
 ```
-/empire:worktree-merge fix/typo --into feat/cleanup
-/empire:worktree-merge fix/deps --into feat/cleanup
-/empire:worktree-merge fix/color --into feat/cleanup
+/empire-git:worktree-merge fix/typo --into feat/cleanup
+/empire-git:worktree-merge fix/deps --into feat/cleanup
+/empire-git:worktree-merge fix/color --into feat/cleanup
 # Then open one PR from feat/cleanup
 ```
 
 **Branch decomposition:** Sub-branches merged back into a parent feature branch:
 
 ```
-/empire:worktree-merge feat/auth-nav --into feat/auth
-/empire:worktree-merge feat/auth-table --into feat/auth
+/empire-git:worktree-merge feat/auth-nav --into feat/auth
+/empire-git:worktree-merge feat/auth-table --into feat/auth
 # Then open one PR from feat/auth
 ```
 
 ## Guiding principles
 
-**This skill does one thing: git merge.** For pushing to remote, use `/empire:worktree-close --push`. For opening PRs, use the user's own PR workflow. Keeping these concerns separate avoids conflicts with existing conventions.
+**This skill does one thing: git merge.** For pushing to remote, use `/empire-git:worktree-close --push`. For opening PRs, use the user's own PR workflow. Keeping these concerns separate avoids conflicts with existing conventions.
 
 **Merge conflicts need human judgment.** When conflicts occur, clearly list the affected files and let the user decide. Attempting to auto-resolve risks silently introducing bugs.
 

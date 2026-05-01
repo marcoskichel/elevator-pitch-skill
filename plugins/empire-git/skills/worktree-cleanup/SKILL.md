@@ -1,6 +1,6 @@
 ---
 name: worktree-cleanup
-description: Batch cleanup of stale worktrees and orphaned branches. Use this when the user wants to tidy up, has accumulated worktrees over time, asks about old branches, or mentions cleaning up their workspace. Also triggers for `/empire:worktree-cleanup [--dry-run]`.
+description: Batch cleanup of stale worktrees and orphaned branches. Use this when the user wants to tidy up, has accumulated worktrees over time, asks about old branches, or mentions cleaning up their workspace. Also triggers for `/empire-git:worktree-cleanup [--dry-run]`.
 model: haiku
 allowed-tools: Bash Read Glob Grep
 argument-hint: "[--dry-run]"
@@ -8,7 +8,7 @@ argument-hint: "[--dry-run]"
 
 # Worktree Cleanup
 
-Scan for stale worktrees and orphaned branches, then let the user decide what to clean up. This is the batch housekeeping counterpart to `/empire:worktree-close` (which handles one worktree at a time).
+Scan for stale worktrees and orphaned branches, then let the user decide what to clean up. This is the batch housekeeping counterpart to `/empire-git:worktree-close` (which handles one worktree at a time).
 
 **User input:** $ARGUMENTS
 
@@ -99,12 +99,12 @@ For each remaining local branch, check:
 
 Classify:
 
-| Status              | Criteria                                                                     |
-| ------------------- | ---------------------------------------------------------------------------- |
-| **Remote deleted**  | Tracked a remote that's gone (PR likely merged and branch deleted on GitHub) |
-| **Merged orphan**   | Merged into `$DEFAULT_BRANCH`, no worktree, no remote — safe to delete       |
+| Status              | Criteria                                                                          |
+| ------------------- | --------------------------------------------------------------------------------- |
+| **Remote deleted**  | Tracked a remote that's gone (PR likely merged and branch deleted on GitHub)      |
+| **Merged orphan**   | Merged into `$DEFAULT_BRANCH`, no worktree, no remote — safe to delete            |
 | **Unmerged orphan** | Not merged into `$DEFAULT_BRANCH`, no worktree, no remote — may be abandoned work |
-| **Has open PR**     | Skip — still in use                                                          |
+| **Has open PR**     | Skip — still in use                                                               |
 
 ## Step 3 — Present findings
 

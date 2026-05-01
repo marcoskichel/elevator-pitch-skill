@@ -1,6 +1,6 @@
 ---
 name: worktree-close
-description: Finish work in a worktree — push, remove the worktree, and optionally delete the branch. Use this when the user is done with a worktree, wants to clean up, push and move on, or mentions they no longer need a parallel environment. Also triggers for `/empire:worktree-close [branch] [--push] [--force]`.
+description: Finish work in a worktree — push, remove the worktree, and optionally delete the branch. Use this when the user is done with a worktree, wants to clean up, push and move on, or mentions they no longer need a parallel environment. Also triggers for `/empire-git:worktree-close [branch] [--push] [--force]`.
 model: sonnet
 allowed-tools: Bash Read Glob Grep
 argument-hint: "[branch | path] [--push] [--force]"
@@ -40,7 +40,7 @@ git -C "<worktree-path>" status --short
 
 Then present options:
 
-1. **Commit first** (recommended) — suggest running `/commit` in the worktree, then re-run `/empire:worktree-close`
+1. **Commit first** (recommended) — suggest running `/commit` in the worktree, then re-run `/empire-git:worktree-close`
 2. **Discard changes** — proceed with force removal (requires explicit confirmation)
 3. **Abort** — cancel the close operation
 
@@ -92,7 +92,7 @@ git worktree remove --force "<worktree-path>"
 
 ### Option 2: Remove worktree + delete branch
 
-**Critical: both commands MUST run in a single Bash call.** Claude Code's Bash tool resolves the shell's cwd at the start of each invocation. If the session is running from inside the worktree and you remove the worktree in one Bash call, the *next* Bash call will fail immediately ("No such file or directory") before any command — including `git -C` — can execute. The branch delete becomes impossible and the branch is orphaned.
+**Critical: both commands MUST run in a single Bash call.** Claude Code's Bash tool resolves the shell's cwd at the start of each invocation. If the session is running from inside the worktree and you remove the worktree in one Bash call, the _next_ Bash call will fail immediately ("No such file or directory") before any command — including `git -C` — can execute. The branch delete becomes impossible and the branch is orphaned.
 
 The worktree must be removed before the branch delete (`git branch -d` refuses to delete a branch that's checked out in a worktree). So the correct sequence is: remove worktree, then delete branch — but **in one shell invocation**.
 

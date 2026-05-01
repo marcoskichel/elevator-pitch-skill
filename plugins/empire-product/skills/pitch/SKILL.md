@@ -1,6 +1,6 @@
 ---
-name: elevator-pitch
-description: Generate a personal elevator pitch or a repository/project pitch. Use when user asks for "elevator pitch", "pitch this project", "introduce myself", "personal pitch", "how do I pitch myself", "pitch for this repo", or wants a "tell me about yourself" answer.
+name: pitch
+description: Generate a personal elevator pitch or a repository/project pitch. Use when user asks for "elevator pitch", "pitch this project", "introduce myself", "personal pitch", "how do I pitch myself", "pitch for this repo", "/empire-product:pitch", or wants a "tell me about yourself" answer.
 ---
 
 # Elevator Pitch Generator

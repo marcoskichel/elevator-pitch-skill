@@ -1,0 +1,13 @@
+{
+  "name": "empire-product",
+  "version": "0.1.0",
+  "description": "Product communication skills: pitches, positioning, and (future) competitive analysis and documentation.",
+  "author": {
+    "name": "Marcos Kichel",
+    "url": "https://github.com/marcoskichel"
+  },
+  "homepage": "https://github.com/marcoskichel/empire",
+  "repository": "https://github.com/marcoskichel/empire",
+  "license": "MIT",
+  "keywords": ["claude-code", "skills", "product", "pitch", "elevator-pitch", "marketing"]
+}

@@ -1,12 +1,12 @@
 ---
-name: team-review
+name: review
 description: >
   Trigger when user says: "team review", "have specialists review", "review my
   changes", "re-review", "review again", "another pass", "ask the team",
-  "specialist review", "/team-review", "/team-rereview", "have the team look at
-  this", "get specialists to review", "run a team review", "do a specialist
-  review". Spawns parallel specialist subagents to review diffs and consolidates
-  findings. Never posts to GitHub.
+  "specialist review", "/empire-team:review", "have the team look at this",
+  "get specialists to review", "run a team review", "do a specialist review".
+  Spawns parallel specialist subagents to review diffs and consolidates findings.
+  Never posts to GitHub.
 ---
 
 <section id="target-detection">
@@ -88,7 +88,7 @@ description: >
 
 <section id="rereview-mode">
 
-- Trigger: user says "re-review", "review again", "another pass", `/team-rereview`
+- Trigger: user says "re-review", "review again", "another pass"
 - MUST use same roster as prior review; scroll back in conversation to find it
 - Pass each specialist:
   - Their prior review findings

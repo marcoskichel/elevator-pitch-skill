@@ -1,0 +1,13 @@
+{
+  "name": "empire-git",
+  "version": "0.1.0",
+  "description": "Git workflow skills for solo founders: worktree lifecycle and PR description templating.",
+  "author": {
+    "name": "Marcos Kichel",
+    "url": "https://github.com/marcoskichel"
+  },
+  "homepage": "https://github.com/marcoskichel/empire",
+  "repository": "https://github.com/marcoskichel/empire",
+  "license": "MIT",
+  "keywords": ["claude-code", "skills", "git", "worktree", "git-worktree", "pr-description", "parallel-development"]
+}

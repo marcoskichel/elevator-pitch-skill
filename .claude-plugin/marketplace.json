@@ -7,8 +7,23 @@
   "plugins": [
     {
       "name": "empire",
-      "source": "./plugins/empire",
-      "description": "Skills for solo founders: elevator-pitch, team-review, team-research, pr-description."
+      "source": "./plugins/empire-meta",
+      "description": "Bundle: installs all empire skills."
+    },
+    {
+      "name": "empire-git",
+      "source": "./plugins/empire-git",
+      "description": "Git workflow skills: worktree lifecycle (open, close, merge, list, cleanup, help) and PR description templating."
+    },
+    {
+      "name": "empire-team",
+      "source": "./plugins/empire-team",
+      "description": "Parallel agentic collaboration: review and research via specialist subagents."
+    },
+    {
+      "name": "empire-product",
+      "source": "./plugins/empire-product",
+      "description": "Product communication: pitches, positioning, and (future) competitive analysis and docs."
     }
   ]
 }

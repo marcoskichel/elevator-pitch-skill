@@ -1,6 +1,6 @@
 ---
 name: worktree-list
-description: List active worktrees with branch, status, sync state, and staleness info. Use this when the user asks what worktrees exist, wants to see what's in flight, check which branches have worktrees, or asks about stale or forgotten parallel work. Also triggers for `/empire:worktree-list [--stale]`.
+description: List active worktrees with branch, status, sync state, and staleness info. Use this when the user asks what worktrees exist, wants to see what's in flight, check which branches have worktrees, or asks about stale or forgotten parallel work. Also triggers for `/empire-git:worktree-list [--stale]`.
 model: haiku
 allowed-tools: Bash Read Glob Grep
 argument-hint: "[--stale]"
@@ -28,7 +28,7 @@ Identify the main working tree (first entry) and label it as such.
 
 If there are no worktrees beyond the main working tree, report:
 
-> No additional worktrees found. Use `/empire:worktree-open` to create one.
+> No additional worktrees found. Use `/empire-git:worktree-open` to create one.
 
 Then stop.
 
@@ -103,7 +103,7 @@ If `$ARGUMENTS` contains `--stale`, only show worktrees flagged as stale.
 
 After the listing, add actionable suggestions for any issues found:
 
-- **Stale worktrees:** "Consider closing stale worktrees with `/empire:worktree-close <branch>` to keep your workspace tidy."
+- **Stale worktrees:** "Consider closing stale worktrees with `/empire-git:worktree-close <branch>` to keep your workspace tidy."
 - **Dirty worktrees:** "Worktree `<branch>` has uncommitted changes. Consider committing with `/commit`."
 - **Behind remote:** "Worktree `<branch>` is behind its remote. Consider pulling."
 - **Port offset collisions:** If two worktrees share the same port offset, warn about potential port conflicts.
