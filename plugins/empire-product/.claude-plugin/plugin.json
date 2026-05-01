@@ -1,7 +1,8 @@
 {
   "name": "empire-product",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Product communication skills: pitches, positioning, and (future) competitive analysis and documentation.",
+  "dependencies": ["empire-rules"],
   "author": {
     "name": "Marcos Kichel",
     "url": "https://github.com/marcoskichel"
