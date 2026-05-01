@@ -21,6 +21,11 @@
       "description": "Parallel agentic collaboration: review and research via specialist subagents."
     },
     {
+      "name": "empire-agents",
+      "source": "./plugins/empire-agents",
+      "description": "Bundled fallback subagents: code review, paradigms (FP, concurrency, types), domain (blockchain, AI), and research specialists."
+    },
+    {
       "name": "empire-product",
       "source": "./plugins/empire-product",
       "description": "Product communication: pitches, positioning, and (future) competitive analysis and docs."

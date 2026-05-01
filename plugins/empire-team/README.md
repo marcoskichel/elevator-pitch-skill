@@ -34,3 +34,13 @@ Spawn parallel research subagents to evaluate approaches to a problem. First doe
 Triggers: "team research", "research approaches", "explore options", "investigate approaches", "compare approaches", "what are the options", "options analysis".
 
 Source: [`skills/research/SKILL.md`](skills/research/SKILL.md)
+
+## Companion plugin
+
+The `review` and `research` skills auto-discover whatever specialist subagents are installed. For a ready-made roster of fallback agents (code review, paradigm specialists, domain experts, research roles), install [`empire-agents`](../empire-agents/README.md):
+
+```sh
+/plugin install empire-agents@empire
+```
+
+The full `empire@empire` bundle includes both plugins. If you already have specialized subagents from another marketplace, the skills will pick the best match available — no extra configuration required.

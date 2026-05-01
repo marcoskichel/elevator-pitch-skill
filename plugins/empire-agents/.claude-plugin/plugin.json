@@ -1,0 +1,22 @@
+{
+  "name": "empire-agents",
+  "version": "0.1.0",
+  "description": "Bundled fallback subagents covering code review, paradigm specialists (functional programming, concurrency, type system), domain experts (blockchain, AI), and research specialists. Pairs with empire-team's review and research skills.",
+  "author": {
+    "name": "Marcos Kichel",
+    "url": "https://github.com/marcoskichel"
+  },
+  "homepage": "https://github.com/marcoskichel/empire",
+  "repository": "https://github.com/marcoskichel/empire",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "subagents",
+    "code-review",
+    "ai",
+    "blockchain",
+    "functional-programming",
+    "concurrency",
+    "type-system"
+  ]
+}
