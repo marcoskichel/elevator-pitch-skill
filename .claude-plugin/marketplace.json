@@ -24,6 +24,11 @@
       "name": "empire-product",
       "source": "./plugins/empire-product",
       "description": "Product communication: pitches, positioning, and (future) competitive analysis and docs."
+    },
+    {
+      "name": "empire-rules",
+      "source": "./plugins/empire-rules",
+      "description": "Utility: sync per-plugin routing snippets into the project's AGENTS.md. Auto-installed as a dependency of other empire-* plugins."
     }
   ]
 }
