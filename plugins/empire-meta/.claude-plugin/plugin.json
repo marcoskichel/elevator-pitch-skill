@@ -1,6 +1,6 @@
 {
   "name": "empire",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "Meta plugin: installs the full empire skill suite (empire-git, empire-team, empire-product).",
   "author": {
     "name": "Marcos Kichel",
