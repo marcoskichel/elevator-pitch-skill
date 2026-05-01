@@ -1,0 +1,13 @@
+{
+  "name": "empire",
+  "version": "0.1.0",
+  "description": "Skills for the solo founder commanding a one-person empire.",
+  "author": {
+    "name": "Marcos Kichel",
+    "url": "https://github.com/marcoskichel"
+  },
+  "homepage": "https://github.com/marcoskichel/empire",
+  "repository": "https://github.com/marcoskichel/empire",
+  "license": "MIT",
+  "keywords": ["claude-code", "skills", "solo-founder", "indie", "pr-description", "team-review", "team-research", "elevator-pitch"]
+}

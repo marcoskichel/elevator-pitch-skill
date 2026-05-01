@@ -1,30 +1,17 @@
-# marcoskichel/skills
+# empire
 
-A growing collection of personal Claude Code skills, published as a plugin marketplace and via `npx skills`.
+Claude Code skills for the solo founder commanding a one-person empire.
+
+You're the CEO. The skills are your staff — review your PRs, research approaches, draft pitches, write release notes. Solo on paper. Crewed in practice.
 
 ## Install — Claude Code plugin marketplace
 
-Add the marketplace once, then install the skills you want:
-
 ```sh
-/plugin marketplace add marcoskichel/skills
-/plugin install elevator-pitch@marcoskichel-skills
-/plugin install team-review@marcoskichel-skills
-/plugin install team-research@marcoskichel-skills
-/plugin install pr-description@marcoskichel-skills
+/plugin marketplace add marcoskichel/empire
+/plugin install empire@empire
 ```
 
-Plugin skills are namespaced under their plugin name. Invoke them as `/elevator-pitch:elevator-pitch` or `/team-review:team-review`. See the per-skill SKILL.md for trigger phrases that Claude will also recognize automatically.
-
-## Install — `npx skills` CLI
-
-```sh
-npx skills add marcoskichel/skills                       # all skills
-npx skills add marcoskichel/skills --skill elevator-pitch
-npx skills add marcoskichel/skills --skill team-review
-npx skills add marcoskichel/skills --skill team-research
-npx skills add marcoskichel/skills --skill pr-description
-```
+One install brings every skill below. Plugin skills are namespaced under the plugin name. Invoke them as `/empire:elevator-pitch`, `/empire:team-review`, etc. See each SKILL.md for trigger phrases that Claude will also recognize automatically.
 
 ## Skills
 
@@ -34,7 +21,7 @@ Generate elevator pitches for repos or people. Reads project context (`package.j
 
 Triggers: "elevator pitch", "pitch this project", "introduce myself", "personal pitch", "how do I pitch myself", "pitch for this repo", "tell me about yourself".
 
-Source: [`plugins/elevator-pitch/skills/elevator-pitch/SKILL.md`](plugins/elevator-pitch/skills/elevator-pitch/SKILL.md)
+Source: [`plugins/empire/skills/elevator-pitch/SKILL.md`](plugins/empire/skills/elevator-pitch/SKILL.md)
 
 ### team-review
 
@@ -42,7 +29,7 @@ Spawn parallel specialist subagents (architecture, security, performance, tests,
 
 Triggers: "team review", "have specialists review", "review my changes", "re-review", "another pass", "ask the team", "specialist review".
 
-Source: [`plugins/team-review/skills/team-review/SKILL.md`](plugins/team-review/skills/team-review/SKILL.md)
+Source: [`plugins/empire/skills/team-review/SKILL.md`](plugins/empire/skills/team-review/SKILL.md)
 
 ### team-research
 
@@ -50,7 +37,7 @@ Spawn parallel research subagents to evaluate approaches to a problem. First doe
 
 Triggers: "team research", "research approaches", "explore options", "investigate approaches", "compare approaches", "what are the options", "options analysis".
 
-Source: [`plugins/team-research/skills/team-research/SKILL.md`](plugins/team-research/skills/team-research/SKILL.md)
+Source: [`plugins/empire/skills/team-research/SKILL.md`](plugins/empire/skills/team-research/SKILL.md)
 
 ### pr-description
 
@@ -64,7 +51,7 @@ To make it impossible for the agent to bypass, add this one-line rule to your pr
 - Before any `gh pr create --body*` or `gh pr edit --body*`, MUST invoke the `pr-description` skill and use its output verbatim.
 ```
 
-Source: [`plugins/pr-description/skills/pr-description/SKILL.md`](plugins/pr-description/skills/pr-description/SKILL.md)
+Source: [`plugins/empire/skills/pr-description/SKILL.md`](plugins/empire/skills/pr-description/SKILL.md)
 
 ## License
 

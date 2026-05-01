@@ -1,29 +1,14 @@
 {
-  "name": "marcoskichel-skills",
+  "name": "empire",
   "owner": {
     "name": "Marcos Kichel"
   },
-  "description": "A growing collection of Claude Code skills.",
+  "description": "Claude Code skills for the solo founder commanding a one-person empire.",
   "plugins": [
     {
-      "name": "elevator-pitch",
-      "source": "./plugins/elevator-pitch",
-      "description": "Generate elevator pitches for repos or people."
-    },
-    {
-      "name": "team-review",
-      "source": "./plugins/team-review",
-      "description": "Spawn parallel specialist subagents to review diffs."
-    },
-    {
-      "name": "team-research",
-      "source": "./plugins/team-research",
-      "description": "Spawn parallel research subagents to compare approaches to a problem."
-    },
-    {
-      "name": "pr-description",
-      "source": "./plugins/pr-description",
-      "description": "Canonical PR description template with idempotency markers."
+      "name": "empire",
+      "source": "./plugins/empire",
+      "description": "Skills for solo founders: elevator-pitch, team-review, team-research, pr-description."
     }
   ]
 }
