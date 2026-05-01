@@ -37,7 +37,7 @@ Ask `/empire-git:worktree-help <your question>` for anything specific (VSCode se
 
 ### Credits
 
-Inspired by [`@thinkvelta/claude-worktree-tools`](https://github.com/ThinkVelta/claude-worktree-tools) (MIT) — repackaged as a Claude Code plugin with auto-detection so per-repo setup is no longer required.
+Inspired by [`@thinkvelta/claude-worktree-tools`](https://github.com/ThinkVelta/claude-worktree-tools) (MIT).
 
 ---
 
