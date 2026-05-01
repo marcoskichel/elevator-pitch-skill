@@ -20,11 +20,11 @@ Then install everything in one shot via the `empire` bundle:
 
 `empire` is a meta plugin that pulls in three sub-plugins:
 
-| Plugin            | Skills                                                                          | Install individually                  |
-| ----------------- | ------------------------------------------------------------------------------- | ------------------------------------- |
-| `empire-git`      | `worktree-open`, `worktree-close`, `worktree-merge`, `worktree-list`, `worktree-cleanup`, `worktree-help`, `pr-description` | `/plugin install empire-git@empire`     |
-| `empire-team`     | `review`, `research`                                                            | `/plugin install empire-team@empire`    |
-| `empire-product`  | `pitch`                                                                         | `/plugin install empire-product@empire` |
+| Plugin           | Skills                                                                                                                      | Install individually                    |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `empire-git`     | `worktree-open`, `worktree-close`, `worktree-merge`, `worktree-list`, `worktree-cleanup`, `worktree-help`, `pr-description` | `/plugin install empire-git@empire`     |
+| `empire-team`    | `review`, `research`                                                                                                        | `/plugin install empire-team@empire`    |
+| `empire-product` | `pitch`                                                                                                                     | `/plugin install empire-product@empire` |
 
 Skills are namespaced by plugin. Invoke as `/empire-git:worktree-open`, `/empire-team:review`, `/empire-product:pitch`, etc. Claude also auto-routes based on the trigger phrases listed in each SKILL.md.
 
@@ -80,20 +80,40 @@ Run multiple branches of the same repo in parallel, each in its own isolated git
 
 Zero per-repo setup: the bundled `worktree-setup.sh` auto-detects the package manager from lockfiles (`pnpm`, `npm`, `yarn`, `bun`, `uv`, `poetry`, `pipenv`, `bundler`, `cargo`, `go` modules) and writes `.claude/worktrees` to `.git/info/exclude` so the host repo's tracked `.gitignore` stays untouched.
 
-| Command                                                              | Purpose                                                  |
-| -------------------------------------------------------------------- | -------------------------------------------------------- |
-| `/empire-git:worktree-open <branch \| task> [--base <b>]`            | Create or reopen a worktree (env, deps, ports handled)   |
-| `/empire-git:worktree-list [--stale]`                                | List active worktrees with branch, sync state, staleness |
-| `/empire-git:worktree-merge <branch> --into <target> [--no-close]`   | Local `git merge` of one branch into another             |
-| `/empire-git:worktree-close [branch] [--push] [--force]`             | Push, remove the worktree, optionally delete the branch  |
-| `/empire-git:worktree-cleanup [--dry-run]`                           | Batch cleanup of stale worktrees and orphaned branches   |
-| `/empire-git:worktree-help [question]`                               | FAQ about worktrees, ports, env files, VSCode setup      |
+| Command                                                            | Purpose                                                  |
+| ------------------------------------------------------------------ | -------------------------------------------------------- |
+| `/empire-git:worktree-open <branch \| task> [--base <b>]`          | Create or reopen a worktree (env, deps, ports handled)   |
+| `/empire-git:worktree-list [--stale]`                              | List active worktrees with branch, sync state, staleness |
+| `/empire-git:worktree-merge <branch> --into <target> [--no-close]` | Local `git merge` of one branch into another             |
+| `/empire-git:worktree-close [branch] [--push] [--force]`           | Push, remove the worktree, optionally delete the branch  |
+| `/empire-git:worktree-cleanup [--dry-run]`                         | Batch cleanup of stale worktrees and orphaned branches   |
+| `/empire-git:worktree-help [question]`                             | FAQ about worktrees, ports, env files, VSCode setup      |
 
 Triggers: "open a worktree", "work on X separately", "in parallel", "spin up a branch", "list worktrees", "what worktrees do I have", "close this worktree", "merge worktree", "clean up worktrees", "stale worktrees".
 
 Inspired by [`@thinkvelta/claude-worktree-tools`](https://github.com/ThinkVelta/claude-worktree-tools) (MIT) — repackaged as a Claude Code plugin with auto-detection so per-repo `npx` install and `/wt-adopt` are no longer required.
 
 Source: [`plugins/empire-git/skills/worktree-open/SKILL.md`](plugins/empire-git/skills/worktree-open/SKILL.md), [`plugins/empire-git/scripts/worktree-setup.sh`](plugins/empire-git/scripts/worktree-setup.sh)
+
+## Contributing
+
+Format and lint hooks run via [`pre-commit`](https://pre-commit.com). One-time setup:
+
+```sh
+brew install pre-commit
+pre-commit install
+```
+
+After that, every `git commit` runs:
+
+- `prettier` — markdown / YAML / JSON formatting
+- `shfmt` — shell script formatting (`-i 2 -ci -bn`)
+- `shellcheck` — shell script linting / security
+- `actionlint` — GitHub Actions workflow linting (catches `${{ github.event.* }}` injection)
+- `gitleaks` — secret scanning
+- end-of-file / trailing-whitespace / merge-conflict / JSON / YAML basics
+
+CI mirrors the same checks on every push and PR via `.github/workflows/validate.yml`.
 
 ## License
 

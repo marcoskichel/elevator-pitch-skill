@@ -9,5 +9,13 @@
   "homepage": "https://github.com/marcoskichel/empire",
   "repository": "https://github.com/marcoskichel/empire",
   "license": "MIT",
-  "keywords": ["claude-code", "skills", "git", "worktree", "git-worktree", "pr-description", "parallel-development"]
+  "keywords": [
+    "claude-code",
+    "skills",
+    "git",
+    "worktree",
+    "git-worktree",
+    "pr-description",
+    "parallel-development"
+  ]
 }

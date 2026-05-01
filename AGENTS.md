@@ -43,6 +43,14 @@ This file provides guidance for AI agents working with code in this repository.
 - Skill prose = imperative mood, MUST/SHOULD/MAY, fragments. See `plugins/empire-team/skills/review/SKILL.md` for section-tag style.
 - Scripts use `set -euo pipefail`, color-coded `info/warn/die/success` helpers (pattern in `worktree-setup.sh`).
 
+## Formatting and linting
+
+- All formatting + security hooks orchestrated by `pre-commit` (config in `.pre-commit-config.yaml`).
+- Tools: `prettier` (markdown/yaml/json), `shfmt` (shell), `shellcheck` (shell security), `actionlint` (GH Actions), `gitleaks` (secrets).
+- One-time dev setup: `brew install pre-commit && pre-commit install`.
+- CI runs identical checks via `.github/workflows/validate.yml`.
+- Never bypass with `--no-verify`. If a hook fails, fix the underlying issue.
+
 ## What this repo is NOT
 
 - Not a Node/Python/Go project. No `package.json`, no `pyproject.toml`. Don't add a build system unless asked.

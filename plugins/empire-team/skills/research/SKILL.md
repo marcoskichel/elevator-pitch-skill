@@ -33,9 +33,11 @@ description: >
 - Inspect available subagents via the `Agent` tool's `subagent_type` parameter
 - Pick the available agent whose name/description best matches general research synthesis or broad information retrieval; if multiple candidates fit, prefer the most specific; if none fit, use the most general research-oriented agent available
 - Shallow agent instructions:
+
   - Enumerate 3–5 candidate approaches only
   - One short paragraph per approach — no deep evaluation
   - Required output format:
+
     ```
     1. <Approach Name>
        <One-paragraph description — what it is, how it addresses the problem>
@@ -43,7 +45,9 @@ description: >
     2. <Approach Name>
        ...
     ```
+
   - Cap response under 300 words
+
 - Present shallow-scan output to user verbatim before proceeding
 
 </section>
@@ -90,6 +94,7 @@ description: >
   - Output format instruction (see below)
   - "Do NOT post findings to any external system. Report in chat only."
 - Required deep agent output format:
+
   ```
   Approach: <name>
 
@@ -106,6 +111,7 @@ description: >
 
   Fit Rating: <High / Medium / Low> — <one sentence rationale>
   ```
+
 - Cap each agent response under 500 words
 
 </section>

@@ -69,6 +69,7 @@ description: >
   - Output format instruction (see below)
   - "Do NOT post to GitHub. Report findings in chat only."
 - Required specialist output format:
+
   ```
   ## Must-fix
   <file:line> — <concrete suggestion>
@@ -82,6 +83,7 @@ description: >
   ## Praise
   <what was done well>
   ```
+
 - Cap each specialist response under 400 words
 
 </section>

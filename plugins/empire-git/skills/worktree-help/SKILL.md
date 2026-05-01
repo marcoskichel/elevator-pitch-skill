@@ -24,14 +24,14 @@ The empire worktree skills are a toolkit for running multiple branches of the sa
 
 ### Available skills
 
-| Command                                                               | Purpose                                                       |
-| --------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `/empire-git:worktree-open [branch or description] [--base <branch>]`     | Create or reopen a worktree (env, deps, ports handled)        |
-| `/empire-git:worktree-list [--stale]`                                     | List active worktrees with branch, sync state, staleness      |
-| `/empire-git:worktree-merge <branch> --into <target> [--no-close]`        | Local git merge of one branch into another                    |
-| `/empire-git:worktree-close [branch] [--push] [--force]`                  | Push, remove the worktree, optionally delete the branch       |
-| `/empire-git:worktree-cleanup [--dry-run]`                                | Batch cleanup of stale worktrees and orphaned branches        |
-| `/empire-git:worktree-help [question]`                                    | This help — ask any worktree question in natural language     |
+| Command                                                               | Purpose                                                   |
+| --------------------------------------------------------------------- | --------------------------------------------------------- |
+| `/empire-git:worktree-open [branch or description] [--base <branch>]` | Create or reopen a worktree (env, deps, ports handled)    |
+| `/empire-git:worktree-list [--stale]`                                 | List active worktrees with branch, sync state, staleness  |
+| `/empire-git:worktree-merge <branch> --into <target> [--no-close]`    | Local git merge of one branch into another                |
+| `/empire-git:worktree-close [branch] [--push] [--force]`              | Push, remove the worktree, optionally delete the branch   |
+| `/empire-git:worktree-cleanup [--dry-run]`                            | Batch cleanup of stale worktrees and orphaned branches    |
+| `/empire-git:worktree-help [question]`                                | This help — ask any worktree question in natural language |
 
 Ask `/empire-git:worktree-help <your question>` for anything specific (VSCode setup, ports, env files, merge strategy, etc.).
 

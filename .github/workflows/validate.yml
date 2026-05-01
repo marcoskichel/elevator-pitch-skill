@@ -1,0 +1,58 @@
+name: validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  pre-commit:
+    name: pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: pre-commit/action@v3.0.1
+
+  manifest:
+    name: marketplace + plugin manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JSON manifests
+        run: |
+          set -euo pipefail
+          fail=0
+          for f in .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json; do
+            if ! python3 -m json.tool "$f" > /dev/null; then
+              echo "::error file=$f::invalid JSON"
+              fail=1
+            fi
+          done
+          exit $fail
+      - name: Verify SKILL.md frontmatter name matches dir
+        run: |
+          set -euo pipefail
+          fail=0
+          for skill in plugins/*/skills/*/SKILL.md; do
+            dir=$(basename "$(dirname "$skill")")
+            name=$(awk '/^name:/ {print $2; exit}' "$skill")
+            if [ "$dir" != "$name" ]; then
+              echo "::error file=$skill::frontmatter name '$name' does not match dir '$dir'"
+              fail=1
+            fi
+          done
+          exit $fail
+      - name: Verify each plugin has a manifest
+        run: |
+          set -euo pipefail
+          fail=0
+          for d in plugins/*/; do
+            if [ ! -f "${d}.claude-plugin/plugin.json" ]; then
+              echo "::error::missing plugin.json in ${d}"
+              fail=1
+            fi
+          done
+          exit $fail

@@ -42,23 +42,23 @@ REOPEN=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-  --base)
-    [[ -z "${2:-}" ]] && die "--base requires a branch name argument"
-    BASE_BRANCH="$2"
-    shift 2
-    ;;
-  --reopen)
-    REOPEN=true
-    shift
-    ;;
-  -*)
-    die "Unknown option: $1"
-    ;;
-  *)
-    [[ -n "$BRANCH_NAME" ]] && die "Unexpected argument: $1 (branch name already set to '$BRANCH_NAME')"
-    BRANCH_NAME="$1"
-    shift
-    ;;
+    --base)
+      [[ -z "${2:-}" ]] && die "--base requires a branch name argument"
+      BASE_BRANCH="$2"
+      shift 2
+      ;;
+    --reopen)
+      REOPEN=true
+      shift
+      ;;
+    -*)
+      die "Unknown option: $1"
+      ;;
+    *)
+      [[ -n "$BRANCH_NAME" ]] && die "Unexpected argument: $1 (branch name already set to '$BRANCH_NAME')"
+      BRANCH_NAME="$1"
+      shift
+      ;;
   esac
 done
 
@@ -68,11 +68,11 @@ done
 # Derived paths
 # ---------------------------------------------------------------------------
 
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" ||
-  die "Not inside a git repository"
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" \
+  || die "Not inside a git repository"
 
-GIT_COMMON_DIR="$(git rev-parse --git-common-dir 2>/dev/null)" ||
-  die "Could not resolve git common dir"
+GIT_COMMON_DIR="$(git rev-parse --git-common-dir 2>/dev/null)" \
+  || die "Could not resolve git common dir"
 
 # Convert slashes to hyphens for a human-readable prefix, then append a short
 # hash of the original branch name to prevent collisions between branches that
@@ -88,8 +88,8 @@ if [[ -z "$BASE_BRANCH" ]]; then
   elif git show-ref --verify --quiet refs/heads/master 2>/dev/null; then
     BASE_BRANCH="master"
   else
-    BASE_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" ||
-      die "Cannot determine default base branch"
+    BASE_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" \
+      || die "Cannot determine default base branch"
   fi
 fi
 
@@ -116,12 +116,12 @@ if [[ "$REOPEN" = true ]]; then
   fi
   info "Reopening existing worktree at ${WORKTREE_DIR}"
 else
-  git show-ref --verify --quiet "refs/heads/${BASE_BRANCH}" 2>/dev/null ||
-    die "Base branch '${BASE_BRANCH}' does not exist locally"
+  git show-ref --verify --quiet "refs/heads/${BASE_BRANCH}" 2>/dev/null \
+    || die "Base branch '${BASE_BRANCH}' does not exist locally"
 
   CHECKED_OUT_IN="$(
-    git worktree list --porcelain |
-      awk -v branch="refs/heads/${BRANCH_NAME}" '
+    git worktree list --porcelain \
+      | awk -v branch="refs/heads/${BRANCH_NAME}" '
           /^worktree / { wt = substr($0, 10) }
           /^branch /   { if ($2 == branch) print wt }
         '

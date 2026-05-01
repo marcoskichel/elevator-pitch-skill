@@ -18,13 +18,14 @@ description: Generate a personal elevator pitch or a repository/project pitch. U
 
 Infer from user request:
 
-| Signal | Mode |
-|---|---|
-| "pitch myself", "introduce myself", "tell me about yourself" | Personal |
-| "pitch this project/repo/library", "elevator pitch for X" | Repo |
-| Ambiguous + active repo in context | Ask via `AskUserQuestion` |
+| Signal                                                       | Mode                      |
+| ------------------------------------------------------------ | ------------------------- |
+| "pitch myself", "introduce myself", "tell me about yourself" | Personal                  |
+| "pitch this project/repo/library", "elevator pitch for X"    | Repo                      |
+| Ambiguous + active repo in context                           | Ask via `AskUserQuestion` |
 
 If ambiguous, use `AskUserQuestion`:
+
 ```
 question: "What would you like to pitch?"
 header: "Pitch type"
@@ -42,6 +43,7 @@ options:
 ### 1. Read context silently
 
 Before asking anything, read:
+
 - `package.json` — name, description, keywords
 - `README.md` — what it does, why it exists
 - `git log --oneline -10` — recent trajectory
@@ -96,12 +98,12 @@ Question 3 (only if no proof point found in README/package.json):
 
 ### 3. Framework by context
 
-| Context | Framework | Length |
-|---|---|---|
-| Developer / one-liner | Problem + differentiator, no fluff | 1 sentence |
-| Developer networking | Problem image → What it does → Design decision → Hook question | 30–45s |
-| Conference / demo day | Counterintuitive claim → Solution → Architecture hook | 20–30s |
-| Investor meeting | Problem at scale → Solution → Traction → Explicit ask | 60s |
+| Context               | Framework                                                      | Length     |
+| --------------------- | -------------------------------------------------------------- | ---------- |
+| Developer / one-liner | Problem + differentiator, no fluff                             | 1 sentence |
+| Developer networking  | Problem image → What it does → Design decision → Hook question | 30–45s     |
+| Conference / demo day | Counterintuitive claim → Solution → Architecture hook          | 20–30s     |
+| Investor meeting      | Problem at scale → Solution → Traction → Explicit ask          | 60s        |
 
 ### 4. Output
 
@@ -149,11 +151,11 @@ Question 2 (if role/domain not clear from context):
 
 ### 3. Framework by context
 
-| Context | Framework | Length |
-|---|---|---|
-| Networking event | Who I help → How → Why it matters → Hook question | 30–45s |
-| Job interview | Present → Past → Future → close to the role | 60–90s |
-| Investor meeting | Problem at scale → Solution → Traction → Explicit ask | 60s |
+| Context          | Framework                                               | Length |
+| ---------------- | ------------------------------------------------------- | ------ |
+| Networking event | Who I help → How → Why it matters → Hook question       | 30–45s |
+| Job interview    | Present → Past → Future → close to the role             | 60–90s |
+| Investor meeting | Problem at scale → Solution → Traction → Explicit ask   | 60s    |
 | Conference intro | Counterintuitive claim → what you're curious about here | 15–20s |
 
 IMPORTANT: "What do you do?" and "Tell me about yourself" are different. For casual networking, generate the short-form version first.
