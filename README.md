@@ -34,8 +34,9 @@ Or hire individual departments:
 | [`empire-git`](plugins/empire-git/README.md)         | Git workflow: parallel worktree lifecycle (`open`, `close`, `merge`, `list`, `cleanup`, `help`) and canonical `pr-description` templating. |
 | [`empire-team`](plugins/empire-team/README.md)       | Parallel agentic collaboration: dispatch specialist subagents for code `review` and approach `research`, then consolidate findings.        |
 | [`empire-product`](plugins/empire-product/README.md) | Product communication: elevator `pitch` for repos and people.                                                                              |
+| [`empire-rules`](plugins/empire-rules/README.md)     | Utility: `/empire-rules:sync-rules` reconciles per-plugin routing snippets into the project's `AGENTS.md`. Auto-installed as a dependency. |
 
-Skills are namespaced by plugin and invoked as `/<plugin>:<skill>`, e.g. `/empire-git:worktree-open`, `/empire-team:review`, `/empire-product:pitch`. Claude also auto-routes based on the trigger phrases listed in each skill's `SKILL.md`.
+Skills are namespaced by plugin and invoked as `/<plugin>:<skill>`, e.g. `/empire-git:worktree-open`, `/empire-team:review`, `/empire-product:pitch`. Claude also auto-routes based on the trigger phrases listed in each skill's `SKILL.md`. To wire those routing rules into a project's `AGENTS.md`, run `/empire-rules:sync-rules` from the repo root.
 
 ## Contributing
 
