@@ -9,11 +9,20 @@ allowed-tools: Bash
 
 Reconcile installed empire-\* plugin snippets into the project's `AGENTS.md`.
 
+## Required output structure
+
+Every reply for this skill MUST follow these three blocks, in order:
+
+1. **Summary line** — copy the `==>` summary lines from the script verbatim.
+2. **Diff** — embed the script's unified-diff output inside a fenced ` ```diff ` block. Do not summarize, truncate, or paraphrase. If the script reported `Already in sync.`, write `_no changes_` instead and stop here.
+3. **Confirmation prompt** — on its own line, write exactly: `Apply these changes? [y/N]`
+
+Stop after the confirmation prompt. Wait for the user's reply.
+
 ## Two-call flow
 
-1. **Preview**. Run `${CLAUDE_PLUGIN_ROOT}/scripts/sync-rules.sh "$ARGUMENTS"`. Print the script's stdout verbatim — it contains the planned add / update / remove summary plus a unified diff.
-2. **Confirm**. If the summary shows no changes (`Already in sync.`), stop. Otherwise ask the user: `Apply these changes? [y/N]`. Wait for their reply.
-3. **Apply**. On confirmation only, run `${CLAUDE_PLUGIN_ROOT}/scripts/sync-rules.sh "$ARGUMENTS" --apply`. Print the script's stdout verbatim. On any other answer, do not run the apply step.
+1. **Preview**. Run `${CLAUDE_PLUGIN_ROOT}/scripts/sync-rules.sh "$ARGUMENTS"`. Capture the entire stdout. Render it per the structure above.
+2. **Apply**. Only after the user replies `y`/`yes`, run `${CLAUDE_PLUGIN_ROOT}/scripts/sync-rules.sh "$ARGUMENTS" --apply`. Embed the full stdout in a fenced code block.
 
 Never invoke `--apply` before showing the preview to the user.
 
@@ -23,7 +32,7 @@ Never invoke `--apply` before showing the preview to the user.
 
 ## Rules for the model
 
-- Pass the script's output through verbatim. Do not summarize or paraphrase.
+- Render the script's full stdout in the chat reply. Hidden tool output does NOT satisfy the "show the diff" requirement — the diff must appear in your reply text.
 - Do not invent flags or pre-flight steps not in the script.
-- If the script exits non-zero, surface its error message exactly. Do not retry.
+- If the script exits non-zero, embed the error message in a fenced code block and stop. Do not retry.
 - The script enforces "must be in a git working tree". If it errors out for that reason, relay the message — do not attempt to `cd` elsewhere.
