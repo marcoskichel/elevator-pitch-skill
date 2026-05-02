@@ -14,7 +14,7 @@ This file provides guidance for AI agents working with code in this repository.
 - `.claude-plugin/marketplace.json` — marketplace manifest. Each `plugins[]` entry points to one of the `plugins/empire-*` dirs.
 - `plugins/empire-meta/.claude-plugin/plugin.json` — meta plugin (`name: "empire"`). Empty skills dir. Uses `dependencies` field to auto-install the sub-plugins.
 - `plugins/empire-git/` — git workflow skills (`worktree-*`, `pr-description`) + `scripts/worktree-setup.sh`.
-- `plugins/empire-dev/` — code `review` skill plus 11 bundled dev subagents (code review, paradigms, domain experts).
+- `plugins/empire-dev/` — code `team-review` skill plus 11 bundled dev subagents (code review, paradigms, domain experts).
 - `plugins/empire-research/` — `explore` (open-ended) and `compare` (closed) research skills, with `research-analyst` as bundled fallback subagent.
 - `plugins/empire-product/` — `pitch`, `vet` (idea pressure-test), and `recon` (competitor matrix) skills, plus three bundled subagents (`project-idea-validator`, `competitive-analyst`, `market-researcher`).
 - `plugins/empire-*/skills/<skill-name>/SKILL.md` — one dir per skill. Skill name in frontmatter MUST match dir name.
@@ -42,7 +42,12 @@ This file provides guidance for AI agents working with code in this repository.
 
 - Kebab-case for skill dirs and script filenames.
 - Conventional Commits with optional scope. Use the plugin name as scope: `empire-git`, `empire-dev`, `empire-research`, `empire-product`, `empire-meta`, `empire-rules`. Use `marketplace` for marketplace-level changes. Use `!` for breaking marketplace/manifest changes.
-- Skill prose = imperative mood, MUST/SHOULD/MAY, fragments. See `plugins/empire-dev/skills/review/SKILL.md` for section-tag style.
+- Skill prose voice depends on plugin:
+  - `empire-dev`, `empire-product`, `empire-research`, `empire-rules`: imperative mood, MUST/SHOULD/MAY, fragments, `<section>` tags. See `plugins/empire-dev/skills/team-review/SKILL.md` as the reference.
+  - `empire-git`: procedural prose with `## Step N` headers permitted. Command-style tools read more clearly as numbered procedures than as fragment lists. See `plugins/empire-git/skills/worktree-open/SKILL.md` as the reference.
+- `allowed-tools` declaration:
+  - Declare on skills that directly invoke `Bash`/`Read`/`Glob`/`Grep` (e.g. `worktree-*`, `sync-rules`, `pr-description`).
+  - Do NOT declare on skills that purely delegate to subagents via `Agent` tool (e.g. `team-review`, `vet`, `recon`, `compare`, `explore`, `pitch`).
 - Scripts use `set -euo pipefail`, color-coded `info/warn/die/success` helpers (pattern in `worktree-setup.sh`).
 
 ## Formatting and linting
