@@ -27,7 +27,10 @@ Or hire individual departments:
 /plugin install empire-product@empire
 ```
 
-> [!NOTE] > **Optional but recommended.** Run `/empire-rules:sync-rules` after installing to wire the skill routing rules into your `AGENTS.md` or `~/.claude/CLAUDE.md`. Claude routes more reliably with them.
+<!-- prettier-ignore-start -->
+> [!NOTE]
+> **Optional but recommended.** Run `/empire-rules:sync-rules` after installing to wire the skill routing rules into your `AGENTS.md` or `~/.claude/CLAUDE.md`. Claude routes more reliably with them.
+<!-- prettier-ignore-end -->
 
 ## Plugins
 
