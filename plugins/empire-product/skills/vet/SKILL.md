@@ -2,8 +2,8 @@
 name: vet
 description: >
   Trigger when user says: "vet this idea", "vet idea", "validate idea",
-  "/empire-product:vet", "go no go", "pressure test", "is this idea good",
-  "kill the idea", "should I build this", "fatal flaw check",
+  "go no go", "pressure test", "is this idea good",
+  "kill the idea", "should I build this", "fatal flaw check", "what do you think of this product",
   "stress test the idea", "brutal honesty on this idea". Pressure-tests a
   product idea with brutal honesty: web research for competitors and demand,
   fatal-flaw hypothesis, anti-sycophancy mode, structured go/no-go output with
@@ -93,7 +93,9 @@ description: >
 
   ## Recommendation
 
-  <one of: PROCEED / PIVOT / KILL — with rationale>
+  <one of: PROCEED / PIVOT / KILL / INSUFFICIENT_DATA — with rationale>
+
+  Use INSUFFICIENT_DATA when key signals (demand, competitor traction, willingness-to-pay) are `[Inferred]`-only and a confident verdict would manufacture false signal. Pair it with a concrete list of "evidence needed" items.
 
   ## Suggested Pivots (if PIVOT)
 
@@ -132,14 +134,23 @@ description: >
 
 </section>
 
+<section id="preconditions">
+
+- MUST verify web-search capability available before dispatch (`WebSearch` or equivalent in the validator agent's toolset)
+- If unavailable → MUST refuse and tell user: validation depends on demand signals from public search data, competitor reviews, and public reports. Without web access the validator can only produce `[Inferred]` reasoning, which violates the anti-sycophancy contract.
+
+</section>
+
 <section id="guardrails">
 
 - MUST gather and confirm pitch before dispatch
+- MUST verify web-search capability before dispatch (see `preconditions`)
 - MUST dispatch with anti-sycophancy framing in agent prompt
 - MUST keep findings local in chat only
 - MUST NOT post to Slack, GitHub, Jira, or external systems unless user explicitly authorizes
 - MUST NOT soften critique on user pushback unless user supplies new evidence — explicitly require evidence to update the recommendation
 - MUST distinguish confirmed evidence from inferred reasoning
 - MUST NOT begin implementation work — even if recommendation is PROCEED
+- If zero suitable validator/competitor agents exist in the environment → MUST stop and tell user; never inline-impersonate a validator
 
 </section>

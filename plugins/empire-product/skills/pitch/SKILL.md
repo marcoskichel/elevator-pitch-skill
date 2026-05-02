@@ -1,6 +1,14 @@
 ---
 name: pitch
-description: Generate a personal elevator pitch or a repository/project pitch. Use when user asks for "elevator pitch", "pitch this project", "introduce myself", "personal pitch", "how do I pitch myself", "pitch for this repo", "/empire-product:pitch", or wants a "tell me about yourself" answer.
+description: >
+  Generate a personal elevator pitch or a repository/project pitch. Use when
+  user asks for "elevator pitch", "pitch this project", "introduce myself",
+  "personal pitch", "how do I pitch myself", "pitch for this repo",
+  "/empire-product:pitch", or wants a "tell me about yourself" answer. Also
+  triggers on: "what's a good way to introduce this", "explain this repo in
+  one line", "describe this project", "intro paragraph", "tagline",
+  "one-liner", "GitHub repo description", "package.json description", "what
+  does this do".
 ---
 
 # Elevator Pitch Generator
@@ -23,6 +31,8 @@ Infer from user request:
 | "pitch myself", "introduce myself", "tell me about yourself" | Personal                  |
 | "pitch this project/repo/library", "elevator pitch for X"    | Repo                      |
 | Ambiguous + active repo in context                           | Ask via `AskUserQuestion` |
+
+"Active repo in context" = `git rev-parse --is-inside-work-tree` returns true (cwd is inside a git repo).
 
 If ambiguous, use `AskUserQuestion`:
 

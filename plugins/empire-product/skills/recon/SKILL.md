@@ -7,7 +7,9 @@ description: >
   comparison vs competitors", "positioning analysis", "competitive landscape".
   Maps competitor pricing, features, positioning, and gaps across a chosen
   dimension set. Produces side-by-side matrix with confidence-tagged data and
-  positioning angle. Findings stay local — never posted externally.
+  positioning angle. Different from `/empire-research:compare`, which
+  evaluates tools, libraries, vendors, or architectural choices — NOT
+  competitors. Findings stay local — never posted externally.
 ---
 
 <section id="purpose">
@@ -138,9 +140,17 @@ User can add, remove, or reweight dimensions before dispatch.
 
 </section>
 
+<section id="preconditions">
+
+- MUST verify web-search capability available before dispatch (`WebSearch` or equivalent in scout agents' toolset)
+- If unavailable → MUST refuse and tell user: scouting depends on public sites, reviews, ads, and reports. Without web access scout agents can only emit `[Inferred]` data, which violates the confidence-tagging contract.
+
+</section>
+
 <section id="guardrails">
 
 - MUST gather competitor list, dimensions, decision goal before dispatch
+- MUST verify web-search capability before dispatch (see `preconditions`)
 - MUST confirm with user before dispatch
 - MUST dispatch in parallel (single message, multiple tool uses), one agent per competitor
 - MUST keep findings local in chat only
@@ -148,5 +158,6 @@ User can add, remove, or reweight dimensions before dispatch.
 - MUST tag every cell with confidence + as-of date
 - MUST refuse out-of-scope tactics (social engineering, unauthorized access)
 - MUST NOT begin implementation of any action item — recommendation only
+- If zero suitable competitive-research/market-research agents exist in environment → MUST stop and tell user; never inline-impersonate a scout
 
 </section>
