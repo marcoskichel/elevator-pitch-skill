@@ -27,7 +27,7 @@ Or hire individual departments:
 /plugin install empire-product@empire
 ```
 
-After installing, run `/empire-rules:sync-rules` to wire the skill routing rules into your `AGENTS.md` or `~/.claude/CLAUDE.md`. Recommended — Claude routes more reliably with them — but optional.
+> [!NOTE] > **Optional but recommended.** Run `/empire-rules:sync-rules` after installing to wire the skill routing rules into your `AGENTS.md` or `~/.claude/CLAUDE.md`. Claude routes more reliably with them.
 
 ## Plugins
 
