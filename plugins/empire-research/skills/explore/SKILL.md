@@ -148,5 +148,6 @@ description: >
 - MUST NOT post to Slack, GitHub, Jira, or any external system unless user explicitly authorizes
 - MUST NOT implement chosen approach — recommendation only
 - MUST NOT proceed through any gate without explicit user confirmation
+- If zero suitable research-synthesis agents exist in environment → MUST stop and tell user; never inline-impersonate a researcher
 
 </section>

@@ -4,10 +4,12 @@ description: >
   Trigger when user says: "compare libs", "compare frameworks",
   "/empire-research:compare", "evaluate options", "side by side", "head to
   head", "X vs Y", "which is better", "tooling comparison", "weigh these
-  options", "decide between these". Closed comparison: user already has a known
-  set of options (libs, frameworks, vendors, architectural choices); skill
-  produces a side-by-side matrix across user-defined dimensions and recommends
-  a winner. Findings stay local — never posted externally.
+  options", "decide between these". Closed comparison of tools, libraries,
+  frameworks, vendors, or architectural choices — NOT competitors (use
+  `/empire-product:recon` for competitor mapping). User already has a known
+  set of options; skill produces a side-by-side matrix across user-defined
+  dimensions and recommends a winner. Findings stay local — never posted
+  externally.
 ---
 
 <section id="purpose-vs-explore">
@@ -140,5 +142,6 @@ User can add, remove, or reweight dimensions before dispatch.
 - MUST NOT pick a winner without showing the matrix
 - MUST NOT begin implementation
 - MUST mark inferred data as such — never present speculation as fact
+- If zero suitable research/code/architecture agents exist in environment → MUST stop and tell user; never inline-impersonate an evaluator
 
 </section>
