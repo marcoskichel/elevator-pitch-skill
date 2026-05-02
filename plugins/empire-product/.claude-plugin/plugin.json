@@ -1,7 +1,7 @@
 {
   "name": "empire-product",
-  "version": "0.2.0",
-  "description": "Product communication skills: pitches, positioning, and (future) competitive analysis and documentation.",
+  "version": "0.3.0",
+  "description": "Product communication and intelligence: elevator pitches (pitch), idea pressure-testing (vet), and competitor mapping (recon). Bundles three fallback subagents.",
   "dependencies": ["empire-rules"],
   "author": {
     "name": "Marcos Kichel",
@@ -10,5 +10,14 @@
   "homepage": "https://github.com/marcoskichel/empire",
   "repository": "https://github.com/marcoskichel/empire",
   "license": "MIT",
-  "keywords": ["claude-code", "skills", "product", "pitch", "elevator-pitch", "marketing"]
+  "keywords": [
+    "claude-code",
+    "skills",
+    "product",
+    "pitch",
+    "validation",
+    "competitive-analysis",
+    "go-no-go",
+    "subagents"
+  ]
 }

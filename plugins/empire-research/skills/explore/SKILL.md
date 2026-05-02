@@ -1,20 +1,29 @@
 ---
-name: research
+name: explore
 description: >
-  Trigger when user says: "team research", "research approaches",
-  "/empire-research:research", "explore options", "investigate approaches",
-  "spawn research team", "research the options", "compare approaches",
-  "what are the options", "options analysis", "have the team research".
-  Dispatches parallel research subagents to evaluate approaches and consolidates
-  findings. Never posts to external systems.
+  Trigger when user says: "explore options", "what could we do for X",
+  "research approaches", "/empire-research:explore",
+  "investigate approaches", "spawn research team", "what are the options",
+  "options analysis", "explore solutions", "have the team explore". Open-ended
+  exploration: shallow scan to enumerate 3–5 candidate approaches, user picks
+  subset to deep-dive, parallel research per approach, consolidated comparison
+  with a recommended direction. Findings stay local — never posted externally.
 ---
+
+<section id="purpose-vs-compare">
+
+- Use `explore` when the solution space is open: user knows the problem, not the options
+- Use `/empire-research:compare` instead when user already has a known set of options to evaluate head-to-head
+- If user input names specific options (A vs B vs C), suggest `/empire-research:compare` and confirm before proceeding here
+
+</section>
 
 <section id="context-gathering">
 
 - Read conversation for problem statement, scope, constraints, success criteria
 - Signals to read:
   - Explicit user description of the problem
-  - Recent code/files providing technical context
+  - Recent code or files providing technical context
   - Stated constraints (budget, timeline, stack, team size)
   - Prior approaches already ruled out
   - Definition of "good enough" outcome
@@ -71,12 +80,9 @@ description: >
 - For each selected approach, identify its dominant signal from these categories:
   - General synthesis, multi-source aggregation
   - Fast targeted retrieval, known-solution space
-  - Comparative analysis — products, vendors, libraries, options
-  - Audience sizing, market fit, user demand
   - Quantitative datasets, benchmarks, numerical evidence
   - Peer-reviewed or scientific evidence
   - Emerging-tech trajectory, trend analysis
-  - Go/no-go pressure-testing, idea validation
 - For each signal that applies, pick the available agent whose name/description best matches; if multiple candidates fit, prefer the most specific; if none fit, use the most general research-synthesis agent available
 - MUST always include at least one general research-synthesis agent to anchor the roster
 - List chosen agent per approach (using its actual `subagent_type` value) + one-line rationale BEFORE dispatch

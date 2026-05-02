@@ -19,8 +19,8 @@ That's it — this plugin contributes no skills of its own. It declares `empire-
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | [`empire-git`](../empire-git/README.md)           | Worktree lifecycle (`open`, `close`, `merge`, `list`, `cleanup`, `help`) and `pr-description` |
 | [`empire-dev`](../empire-dev/README.md)           | Code `review` skill plus 11 bundled dev subagents (code review, paradigms, domain experts)    |
-| [`empire-research`](../empire-research/README.md) | Approach `research` skill plus three bundled research subagents                               |
-| [`empire-product`](../empire-product/README.md)   | Product communication: `pitch` (and more to come)                                             |
+| [`empire-research`](../empire-research/README.md) | `explore` (open-ended) and `compare` (closed) research skills with parallel agent dispatch    |
+| [`empire-product`](../empire-product/README.md)   | `pitch`, `vet` (idea pressure-test), `recon` (competitor matrix) plus three bundled subagents |
 
 ## Want a subset?
 

@@ -1,7 +1,7 @@
 {
   "name": "empire-research",
-  "version": "0.1.0",
-  "description": "Research collaboration plugin: parallel approach exploration (research skill) plus three bundled research subagents (synthesis, comparative analysis, idea validation).",
+  "version": "0.2.0",
+  "description": "Research collaboration plugin: open-ended exploration (explore skill) plus closed comparison (compare skill), with parallel agent dispatch and consolidated reports. Bundles research-analyst as a fallback subagent.",
   "dependencies": ["empire-rules"],
   "author": {
     "name": "Marcos Kichel",
@@ -10,13 +10,5 @@
   "homepage": "https://github.com/marcoskichel/empire",
   "repository": "https://github.com/marcoskichel/empire",
   "license": "MIT",
-  "keywords": [
-    "claude-code",
-    "skills",
-    "subagents",
-    "research",
-    "parallel-agents",
-    "competitive-analysis",
-    "idea-validation"
-  ]
+  "keywords": ["claude-code", "skills", "subagents", "research", "compare", "parallel-agents"]
 }

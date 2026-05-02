@@ -1,6 +1,6 @@
 # empire-research
 
-Research collaboration: parallel approach exploration with consolidated comparison, plus three bundled research subagents.
+Research collaboration: open-ended exploration plus closed comparison, with consolidated reports. Two skills, one bundled subagent.
 
 Part of the [empire](../../README.md) marketplace.
 
@@ -17,24 +17,30 @@ Or install the full empire bundle (which includes this plugin):
 /plugin install empire@empire
 ```
 
-## Skill
+## Skills
 
-### `research`
+### `explore`
 
-Spawn parallel research subagents to evaluate approaches to a problem. First does a shallow scan to enumerate 3–5 candidate approaches, then dispatches one research agent per approach the user selects, then consolidates a comparison report with pros / cons and a recommended direction. Findings stay local — never posted externally.
+Open-ended approach exploration. Used when the solution space is open: user knows the problem, not the options. Workflow: confirm problem → shallow scan to enumerate 3–5 candidate approaches → user picks subset → parallel deep dive per approach → consolidated report with recommendation. Findings stay local — never posted externally.
 
-Triggers: "team research", "research approaches", "explore options", "investigate approaches", "compare approaches", "what are the options", "options analysis".
+Triggers: "explore options", "what could we do for X", "research approaches", "investigate approaches", "what are the options", "options analysis".
 
-Source: [`skills/research/SKILL.md`](skills/research/SKILL.md)
+Source: [`skills/explore/SKILL.md`](skills/explore/SKILL.md)
+
+### `compare`
+
+Closed comparison of a known set of options head-to-head. Used when user already has options A, B, C and wants a side-by-side matrix. Workflow: confirm option list + dimensions → parallel scoring per option → consolidated weighted matrix → recommendation with caveats. Confidence-tagged data. Findings stay local.
+
+Triggers: "compare libs", "compare frameworks", "evaluate options", "side by side", "head to head", "X vs Y", "which is better", "tooling comparison", "decide between these".
+
+Source: [`skills/compare/SKILL.md`](skills/compare/SKILL.md)
 
 ## Bundled agents
 
-| Agent                    | Use                                           |
-| ------------------------ | --------------------------------------------- |
-| `research-analyst`       | Multi-source research synthesis and reporting |
-| `competitive-analyst`    | Vendor / library / option comparisons         |
-| `project-idea-validator` | Brutal go/no-go pressure-testing of ideas     |
+| Agent              | Use                                                   |
+| ------------------ | ----------------------------------------------------- |
+| `research-analyst` | Multi-source research synthesis, broad info retrieval |
 
-The `research` skill auto-discovers whatever specialist subagents are installed and picks the best match per task. If your environment has more specialized research subagents from another marketplace, the skill will use them.
+Both skills auto-discover whatever specialist subagents are installed and pick the best match per task. If your environment has more specialized subagents from another marketplace, the skills will use them.
 
 Upstream attribution: [`agents/NOTICE.md`](agents/NOTICE.md).
