@@ -45,6 +45,23 @@ Or hire individual departments:
 
 Skills are namespaced by plugin and invoked as `/<plugin>:<skill>`, e.g. `/empire-git:worktree-open`, `/empire-dev:team-review`, `/empire-research:explore`, `/empire-research:compare`, `/empire-product:pitch`, `/empire-product:vet`, `/empire-product:recon`. Claude also auto-routes based on the trigger phrases listed in each skill's `SKILL.md`. To wire those routing rules into a project's `AGENTS.md`, run `/empire-rules:sync-rules` from the repo root.
 
+## Good companions
+
+Plugins that pair well with empire:
+
+- [`superpowers@claude-plugins-official`](https://github.com/anthropics/skills) — discipline skills (TDD, debugging, brainstorming, planning, requesting code review). Pairs with `empire-git` for the commit/PR loop and with `empire-dev` for review rigor.
+
+  ```sh
+  /plugin install superpowers@claude-plugins-official
+  ```
+
+- [`voltagent-lang@voltagent-subagents`](https://github.com/VoltAgent/awesome-claude-code-subagents) — language-specialist subagents (TypeScript, Python, Rust, Go, Swift, Kotlin, and more). `empire-dev:team-review` auto-discovers them and dispatches the right specialist per file when present.
+
+  ```sh
+  /plugin marketplace add VoltAgent/awesome-claude-code-subagents
+  /plugin install voltagent-lang@voltagent-subagents
+  ```
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md)
