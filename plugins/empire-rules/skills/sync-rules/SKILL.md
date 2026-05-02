@@ -1,6 +1,13 @@
 ---
 name: sync-rules
-description: Reconcile per-plugin skill-routing snippets from installed empire-* plugins into a target rules file (project AGENTS.md or user-global ~/.claude/CLAUDE.md). Idempotent. Use when the user asks to "sync empire rules", "update AGENTS.md from empire", "apply empire routing rules", "install empire skill rules", or after installing or updating an empire-* plugin and wanting its routing block written to the rules file.
+description: >
+  Reconcile per-plugin skill-routing snippets from installed empire-* plugins
+  into a target rules file (project AGENTS.md or user-global
+  ~/.claude/CLAUDE.md). Idempotent. Use when the user asks to "sync empire
+  rules", "update AGENTS.md from empire", "apply empire routing rules",
+  "install empire skill rules", "refresh empire CLAUDE.md", "rewrite empire
+  rules", or after installing or updating an empire-* plugin and wanting its
+  routing block written to the rules file.
 argument-hint: "[plugin] [--scope user|project|both]"
 allowed-tools: Bash, Read, Write
 ---

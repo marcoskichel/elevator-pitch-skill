@@ -23,7 +23,7 @@ Each `empire-*` plugin ships a `rules/AGENTS.md` snippet describing its skills a
 
 Scope is auto-detected from existing markers across both candidate files. On first run with markers in neither, the skill asks where to write. Pass `--scope user|project|both` to skip the prompt.
 
-Triggers: "sync empire rules", "update AGENTS.md from empire", "apply empire routing rules", "install empire skill rules".
+Triggers: "sync empire rules", "update AGENTS.md from empire", "apply empire routing rules", "install empire skill rules", "refresh empire CLAUDE.md", "rewrite empire rules".
 
 Usage:
 
