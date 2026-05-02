@@ -48,8 +48,6 @@ Or hire individual departments:
 > Each plugin README documents its skills and bundled agents in detail, with a per-skill flow diagram. Click any plugin name above for the breakdown.
 <!-- prettier-ignore-end -->
 
-Skills are namespaced by plugin and invoked as `/<plugin>:<skill>`, e.g. `/empire-git:worktree-open`, `/empire-dev:team-review`, `/empire-research:explore`, `/empire-research:compare`, `/empire-product:pitch`, `/empire-product:vet`, `/empire-product:recon`. Claude also auto-routes based on the trigger phrases listed in each skill's `SKILL.md`. To wire those routing rules into a project's `AGENTS.md`, run `/empire-rules:sync-rules` from the repo root.
-
 ## Good companions
 
 Plugins that pair well with empire:
