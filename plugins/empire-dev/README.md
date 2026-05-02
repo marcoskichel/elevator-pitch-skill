@@ -19,13 +19,15 @@ Or install the full empire bundle (which includes this plugin):
 
 ## Skill
 
-### `review`
+### `team-review`
 
 Spawn parallel specialist subagents to review a diff or PR, then consolidate findings into a single deduplicated report. Findings stay local — never posted to GitHub.
 
-Triggers: "team review", "have specialists review", "review my changes", "re-review", "another pass", "ask the team", "specialist review".
+Strong triggers (dispatch immediately): "team review", "specialist review", "have specialists review", "ask the team", "parallel review", "have the team look", "re-review", "another pass".
 
-Source: [`skills/review/SKILL.md`](skills/review/SKILL.md)
+Weak triggers (skill confirms before dispatch): "review my changes", "review again", "look at this".
+
+Source: [`skills/team-review/SKILL.md`](skills/team-review/SKILL.md)
 
 ## Bundled agents
 
@@ -55,6 +57,6 @@ Domain experts:
 | `blockchain-developer` | Smart contracts, DeFi, Web3, gas optimization, audit |
 | `ai-engineer`          | LLM apps, RAG, agents, prompts, vector search        |
 
-The `review` skill auto-discovers whatever specialist subagents are installed and picks the best match per task. If your environment has more specialized subagents from another marketplace, the skill will use them.
+The `team-review` skill auto-discovers whatever specialist subagents are installed and picks the best match per task. If your environment has more specialized subagents from another marketplace, the skill will use them.
 
 Upstream attribution and modifications: [`agents/NOTICE.md`](agents/NOTICE.md).

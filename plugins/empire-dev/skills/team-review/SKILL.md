@@ -1,13 +1,26 @@
 ---
-name: review
+name: team-review
 description: >
   Trigger when user says: "team review", "have specialists review", "review my
   changes", "re-review", "review again", "another pass", "ask the team",
-  "specialist review", "/empire-dev:review", "have the team look at this",
+  "specialist review", "/empire-dev:team-review", "have the team look at this",
   "get specialists to review", "run a team review", "do a specialist review".
   Spawns parallel specialist subagents to review diffs and consolidates findings.
   Never posts to GitHub.
 ---
+
+<section id="intent-gate">
+
+- Trigger phrases split into two classes:
+  - Strong: "team review", "specialist review", "have specialists", "ask the team", "parallel review", "have the team look", "/empire-dev:team-review", "re-review", "another pass"
+  - Weak: "review my changes", "review again", "look at this"
+- If user used a Strong phrase → proceed without confirmation
+- If user used only a Weak phrase → MUST confirm before dispatch:
+  - "Run a parallel team review (3–6 specialists), or a single-pass review?"
+  - Default to single-pass on ambiguity; dispatch a team review only when user explicitly opts in or repo CLAUDE.md mandates it for non-trivial diffs
+- MUST NOT silently dispatch a multi-agent review on weak phrasing alone
+
+</section>
 
 <section id="target-detection">
 
@@ -92,6 +105,7 @@ description: >
 
 - Trigger: user says "re-review", "review again", "another pass"
 - MUST use same roster as prior review; scroll back in conversation to find it
+- If prior roster cannot be located (long conversation, summarization, ambiguity) → MUST ask user to confirm the roster before dispatch; do NOT improvise a new roster silently
 - Pass each specialist:
   - Their prior review findings
   - User's responses or decisions since last review
@@ -122,5 +136,12 @@ description: >
 - MUST wait for user reply before implementing anything
 - Implement only chosen fixes
 - One atomic commit per logical fix (follow repo git rules)
+
+</section>
+
+<section id="agent-availability">
+
+- If zero suitable code-review/specialist agents exist in the environment → MUST stop and tell user; never inline-impersonate a specialist
+- MUST NOT fabricate specialist personas inside the main thread
 
 </section>

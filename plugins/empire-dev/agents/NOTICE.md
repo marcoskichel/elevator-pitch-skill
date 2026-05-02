@@ -49,6 +49,6 @@ and had `tools:` restrictions added; behavior and intent are preserved.
 
 ## Why bundled
 
-These agents serve as a default fallback so the `empire-dev:review` skill
+These agents serve as a default fallback so the `empire-dev:team-review` skill
 works out of the box without requiring users to install a separate
 marketplace. For richer coverage, install upstream marketplaces directly.
