@@ -9,6 +9,16 @@ License. Originals live at the repos below.
 
 - `research-analyst.md` — `categories/10-research-analysis/research-analyst.md`
 
+## Local modifications
+
+- Removed the `## Communication Protocol` section and the "Query context
+  manager for..." workflow line. Upstream VoltAgent agents target their own
+  multi-agent orchestration framework where a `context-manager` agent
+  fields JSON-shaped queries; that framework does not exist in standalone
+  Claude Code dispatch, so the protocol was dead prompt overhead. Replaced
+  with "Confirm objectives... from the dispatching prompt" to reflect how
+  the agent actually receives context.
+
 ## Why bundled
 
 This agent serves as a default fallback so the `empire-research:explore` and

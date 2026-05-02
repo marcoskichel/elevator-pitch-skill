@@ -15,6 +15,13 @@ License. Originals live at the repos below.
 
 - `project-idea-validator.md`: removed `Write, Edit` from `tools:` to keep
   validation read-only (no file mutations during pressure-testing).
+- All three agents: removed the `## Communication Protocol` section and the
+  "Query context manager for..." workflow line. Upstream VoltAgent agents
+  target their own multi-agent orchestration framework where a
+  `context-manager` agent fields JSON-shaped queries; that framework does
+  not exist in standalone Claude Code dispatch, so the protocol was dead
+  prompt overhead. Replaced with "Confirm... from the dispatching prompt"
+  to reflect how the agent actually receives context.
 
 ## Skill references
 
