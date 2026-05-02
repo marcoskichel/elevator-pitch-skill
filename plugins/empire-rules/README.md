@@ -34,16 +34,10 @@ Scope is auto-detected from existing markers across both candidate files. On fir
 ```
 
 ```mermaid
-flowchart TD
-  invoke[Invoke sync-rules.sh] --> scan[Enumerate installed empire-* plugins]
-  scan --> agg[Aggregate per-plugin rule snippets]
-  agg --> scope{Scope determined?}
-  scope -- no --> prompt[Prompt user: u / p / b]
-  scope -- yes --> diff[Render unified diff preview]
-  prompt --> rerun[Re-run with --scope flag]
-  rerun --> diff
-  diff --> confirm[User confirms write]
-  confirm --> write[Write between markers in target file]
+flowchart LR
+  scan[Scan installed plugins] --> agg[Aggregate snippets]
+  agg --> diff[Diff preview]
+  diff --> write[Write to target]
 ```
 
 **Source:** [`skills/sync-rules/SKILL.md`](skills/sync-rules/SKILL.md), [`scripts/sync-rules.sh`](scripts/sync-rules.sh)

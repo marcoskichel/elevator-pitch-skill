@@ -32,9 +32,8 @@ Want a subset? Install any sub-plugin individually instead:
 `empire-rules` is auto-installed as a transitive dependency of every sub-plugin and provides `/empire-rules:sync-rules` for wiring routing snippets into your `AGENTS.md` or `~/.claude/CLAUDE.md`.
 
 ```mermaid
-flowchart TD
-  install[/plugin install empire@empire] --> meta[empire meta]
-  meta --> git[empire-git]
+flowchart LR
+  meta[empire meta] --> git[empire-git]
   meta --> dev[empire-dev]
   meta --> research[empire-research]
   meta --> product[empire-product]

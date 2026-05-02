@@ -28,15 +28,10 @@ Spawn parallel specialist subagents to review a diff or PR, then consolidate fin
 **Triggers (weak, skill confirms before dispatch):** "review my changes", "review again", "look at this".
 
 ```mermaid
-flowchart TD
-  intent[Detect intent: strong vs weak trigger] --> target[Identify review target: files, PR, diff]
-  target --> signals[Scan diff for signals: language, security, perf, arch, tests]
-  signals --> roster[Pick 3-6 specialists, list with rationale]
-  roster --> confirm[User confirms roster]
-  confirm --> dispatch[Parallel Agent calls, one per specialist]
-  dispatch --> collect[Collect must-fix / should-fix / nits from each]
-  collect --> consolidate[Dedupe, summary table, conflicts, recommendations]
-  consolidate --> gate[User picks which fixes to apply]
+flowchart LR
+  diff[Diff] --> roster[Pick specialists]
+  roster --> dispatch[Parallel review]
+  dispatch --> report[Consolidated report]
 ```
 
 **Source:** [`skills/team-review/SKILL.md`](skills/team-review/SKILL.md)

@@ -28,16 +28,10 @@ Create or reopen an isolated git worktree for parallel development. Derives a de
 **Usage:** `/empire-git:worktree-open [branch | task description] [--base <branch>]`
 
 ```mermaid
-flowchart TD
-  args[Arguments] --> parse[Parse intent: branch name or task description]
-  parse --> base[Resolve base branch]
-  base --> hash[Compute deterministic path hash]
-  hash --> exists{Worktree exists?}
-  exists -- yes --> reopen[Reopen: re-copy env, refresh deps]
-  exists -- no --> create[Create branch and worktree]
-  reopen --> setup[worktree-setup.sh: detect lockfile, install deps]
-  create --> setup
-  setup --> out[Print path, branch, port offset]
+flowchart LR
+  args[Branch or task] --> resolve[Resolve path]
+  resolve --> setup[Copy env + install deps]
+  setup --> open[Worktree ready]
 ```
 
 **Source:** [`skills/worktree-open/SKILL.md`](skills/worktree-open/SKILL.md), [`scripts/worktree-setup.sh`](scripts/worktree-setup.sh)
@@ -51,14 +45,9 @@ Read-only inventory of active worktrees with branch, dirty/clean status, ahead/b
 **Usage:** `/empire-git:worktree-list [--stale]`
 
 ```mermaid
-flowchart TD
-  start[Start] --> list[git worktree list --porcelain]
-  list --> enrich[Per worktree: status, ahead/behind, last commit, age]
-  enrich --> stale{Stale filter?}
-  stale -- yes --> filter[Keep entries 3+ days idle]
-  stale -- no --> all[Keep all entries]
-  filter --> render[Format blocks with recommendations]
-  all --> render
+flowchart LR
+  scan[Scan worktrees] --> enrich[Status + age]
+  enrich --> render[Report]
 ```
 
 **Source:** [`skills/worktree-list/SKILL.md`](skills/worktree-list/SKILL.md)
@@ -72,16 +61,10 @@ Fold one worktree's branch into another local branch using `git merge` (defaults
 **Usage:** `/empire-git:worktree-merge <branch> --into <target> [--no-close] [--ff]`
 
 ```mermaid
-flowchart TD
-  args[Arguments] --> source[Identify source worktree and branch]
-  source --> target[Resolve --into target branch]
-  target --> checks[Pre-flight: clean tree, commits to merge]
-  checks --> merge[git merge --no-ff or --ff]
-  merge --> conflict{Conflicts?}
-  conflict -- yes --> stop[List conflicts, stop for human]
-  conflict -- no --> close{--no-close?}
-  close -- yes --> done[Print summary]
-  close -- no --> cleanup[Offer cleanup: keep, remove, or delete]
+flowchart LR
+  source[Source branch] --> target[Target branch]
+  target --> merge[git merge]
+  merge --> close[Optional cleanup]
 ```
 
 **Source:** [`skills/worktree-merge/SKILL.md`](skills/worktree-merge/SKILL.md)
@@ -95,17 +78,10 @@ Finish work in a single worktree: optional push, remove the worktree, and let yo
 **Usage:** `/empire-git:worktree-close [branch] [--push] [--discard] [--force]`
 
 ```mermaid
-flowchart TD
-  args[Arguments] --> identify[Identify target worktree]
-  identify --> dirty{Uncommitted work?}
-  dirty -- yes --> prompt[Prompt: commit, discard, or abort]
-  dirty -- no --> push{--push set?}
-  prompt --> push
-  push -- yes --> doPush[git push -u origin]
-  push -- no --> choice
-  doPush --> choice[Cleanup choice: keep, remove, or remove plus delete]
-  choice --> exec[Execute remove and optional branch delete in single shell]
-  exec --> prune[git worktree prune and summary]
+flowchart LR
+  target[Target worktree] --> push[Optional push]
+  push --> remove[Remove worktree]
+  remove --> branch[Optional branch delete]
 ```
 
 **Source:** [`skills/worktree-close/SKILL.md`](skills/worktree-close/SKILL.md)
@@ -119,15 +95,10 @@ Batch housekeeping: scan for stale worktrees and orphaned branches, classify the
 **Usage:** `/empire-git:worktree-cleanup [--dry-run] [--days N]`
 
 ```mermaid
-flowchart TD
-  start[Start] --> inventory[Inventory worktrees: age, dirty/clean, missing]
-  inventory --> fetch[git fetch --prune]
-  fetch --> branches[Classify branches: merged, remote-gone, has PR, unmerged]
-  branches --> report[Group findings by action category]
-  report --> dry{--dry-run?}
-  dry -- yes --> stop[Print report and stop]
-  dry -- no --> pick[User picks actions to apply]
-  pick --> exec[Execute prune, remove, branch delete]
+flowchart LR
+  scan[Scan worktrees + branches] --> classify[Classify stale + orphan]
+  classify --> pick[User picks actions]
+  pick --> exec[Execute]
 ```
 
 **Source:** [`skills/worktree-cleanup/SKILL.md`](skills/worktree-cleanup/SKILL.md)
@@ -141,11 +112,9 @@ Natural-language FAQ for the worktree toolkit. Answers questions about VSCode in
 **Usage:** `/empire-git:worktree-help [question]`
 
 ```mermaid
-flowchart TD
-  args[Arguments] --> empty{Empty?}
-  empty -- yes --> overview[Print overview verbatim]
-  empty -- no --> match[Match against FAQ entries]
-  match --> answer[Concise practical answer]
+flowchart LR
+  question[Question] --> match[Match FAQ]
+  match --> answer[Answer]
 ```
 
 **Source:** [`skills/worktree-help/SKILL.md`](skills/worktree-help/SKILL.md)
@@ -157,15 +126,10 @@ Canonical PR description template. Senior-reviewer voice, ≤200 words, sections
 **Triggers:** "PR description", "PR body", "pull request description", "PR summary", "PR template", "GitHub PR body", "draft a PR", "write the PR", "summarize this branch for review", "regenerate PR body".
 
 ```mermaid
-flowchart TD
-  invoke[Invoke skill] --> diff[Read diff: size, language, breaking signals]
-  diff --> existing{Existing body?}
-  existing -- yes --> preserve[Keep content outside markers]
-  existing -- no --> fresh[Generate new body]
-  preserve --> render[Render Why, What changed, Risk, Test plan]
-  fresh --> render
-  render --> markers[Wrap in pr-description:start/end markers]
-  markers --> stdout[Output markdown for gh pr create or edit]
+flowchart LR
+  diff[Diff + existing body] --> render[Render template]
+  render --> markers[Wrap in markers]
+  markers --> stdout[Output to gh pr create/edit]
 ```
 
 To make it impossible for the agent to bypass, add this one-line rule to your project or user CLAUDE.md:

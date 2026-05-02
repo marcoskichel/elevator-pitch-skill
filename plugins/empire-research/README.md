@@ -26,14 +26,10 @@ Open-ended approach exploration. Use when the solution space is open: you know t
 **Triggers:** "explore options", "what could we do for X", "research approaches", "investigate approaches", "spawn research team", "what are the options", "options analysis", "explore solutions", "have the team explore".
 
 ```mermaid
-flowchart TD
-  problem[Confirm problem statement] --> shallow[Shallow scan: one researcher enumerates 3-5 approaches]
-  shallow --> pick[User picks subset to deep-dive]
-  pick --> roster[Pick one agent per approach, confirm]
-  roster --> dispatch[Parallel Agent calls per approach]
-  dispatch --> collect[Collect summary, pros, cons, evidence, fit]
-  collect --> report[Consolidate matrix, conflicts, recommendation]
-  report --> stop[Stop and ask user which direction]
+flowchart LR
+  problem[Problem] --> shallow[Shallow scan]
+  shallow --> deep[Parallel deep dive]
+  deep --> report[Recommendation]
 ```
 
 **Source:** [`skills/explore/SKILL.md`](skills/explore/SKILL.md)
@@ -45,14 +41,10 @@ Closed comparison of a known set of options head-to-head. Use when you already h
 **Triggers:** "compare libs", "compare frameworks", "evaluate options", "side by side", "head to head", "X vs Y", "which is better", "tooling comparison", "weigh these options", "decide between these".
 
 ```mermaid
-flowchart TD
-  inputs[Confirm option list and dimensions] --> roster[Pick one agent per option, confirm]
-  roster --> dispatch[Parallel Agent calls, one option each]
-  dispatch --> score[Per-option scoring vs each dimension]
-  score --> matrix[Build weighted side-by-side matrix]
-  matrix --> tag[Apply Confirmed / Estimated / Inferred tags]
-  tag --> rec[Winner, runner-up criteria, caveats]
-  rec --> stop[Stop and ask user to choose]
+flowchart LR
+  options[Options + dimensions] --> dispatch[Parallel scoring]
+  dispatch --> matrix[Weighted matrix]
+  matrix --> rec[Recommendation]
 ```
 
 **Source:** [`skills/compare/SKILL.md`](skills/compare/SKILL.md)
