@@ -2,29 +2,29 @@
 name: sync-rules
 description: Reconcile per-plugin skill-routing snippets from installed empire-* plugins into a target rules file (project AGENTS.md or user-global ~/.claude/CLAUDE.md). Idempotent. Use when the user asks to "sync empire rules", "update AGENTS.md from empire", "apply empire routing rules", "install empire skill rules", or after installing or updating an empire-* plugin and wanting its routing block written to the rules file.
 argument-hint: "[plugin] [--scope user|project|both]"
-allowed-tools: Bash
+allowed-tools: Bash, Read, Write
 ---
 
 # sync-rules
 
 Reconcile installed empire-\* plugin snippets into a rules file. Default target is the user-global file (`~/.claude/CLAUDE.md`) — that matches the default `claude plugin install` scope so the routing rules apply wherever the skills do. Project scope (`./AGENTS.md`) is for teammates who share rules via version control.
 
-## Required output structure
-
-Every reply for this skill MUST follow these blocks, in order:
-
-1. **Summary lines** — copy the `==>` summary lines from the script verbatim (Scope, Target, Add/Update/Remove/Noop). With `--scope both`, two summary blocks appear.
-2. **Diff** — embed the script's unified-diff output inside a fenced ` ```diff ` block. Do not summarize, truncate, or paraphrase. If a scope reports `Already in sync.`, write `_no changes_` for that scope.
-3. **Confirmation prompt** — on its own line, write exactly: `Apply these changes? [y/N]`
-
-Stop after the confirmation prompt. Wait for the user's reply.
-
 ## Flow
 
-1. **Preview** — run `${CLAUDE_PLUGIN_ROOT}/scripts/sync-rules.sh "$ARGUMENTS"`.
+1. **Run preview** — invoke `${CLAUDE_PLUGIN_ROOT}/scripts/sync-rules.sh "$ARGUMENTS"`. The script prints a summary, a unified diff, and one or two pairs of lines like:
 
-   - **Exit 0**: render the output per the structure above. Remember the `Scope:` line(s) printed — you will reuse them on apply.
-   - **Exit 3** (no scope determined and no existing markers): the script printed instructions on stdout / stderr. Do NOT show those instructions. Instead ask the user this exact prompt and stop, waiting for the reply:
+   ```
+   ==> NEW_FILE: /path/to/persistent/new-<scope>.md
+   ==> TARGET:   /path/to/target/file.md
+   ```
+
+   Print the script's full stdout in your reply so the user can read the summary and diff.
+
+2. **Handle exit codes**:
+
+   - **0 + "Already in sync"**: stop. Nothing to do.
+   - **0 + ops > 0**: continue to step 3.
+   - **3** (no scope determined): the script printed instructions. Do NOT show those instructions. Instead ask the user this exact prompt and stop, waiting for the reply:
 
      > Where should empire routing rules be written?
      >
@@ -34,21 +34,26 @@ Stop after the confirmation prompt. Wait for the user's reply.
      >
      > Pick scope: [U/p/b]
 
-     On reply, re-run the script with the chosen `--scope <user|project|both>` and the original `$ARGUMENTS`. Render that output per the structure.
+     On reply, re-run the script with `--scope <user|project|both>` and the original positional arguments.
 
-   - Other non-zero exit: embed the error in a fenced code block and stop. Do not retry.
+   - **Any other non-zero exit**: surface the script's stderr in a fenced code block and stop.
 
-2. **Apply** — only after the user replies `y`/`yes` to the confirmation prompt, run the script again with the same arguments **plus** `--apply`. Embed the full stdout in a fenced code block. Do not invoke `--apply` before the user has confirmed.
+3. **Apply via Write tool** — for each `NEW_FILE` / `TARGET` pair the script printed:
+
+   1. Use the `Read` tool on `NEW_FILE` to load the reconciled content.
+   2. Use the `Read` tool on `TARGET` (only if it exists — skip on first sync). Required by `Write` for files that already exist.
+   3. Use the `Write` tool on `TARGET` with content **byte-identical** to what `Read` returned for `NEW_FILE`. Claude Code will display a native diff and ask the user to approve the write.
+
+   When `--scope both`, the script emits two pairs. Process them sequentially: Write the user-scope pair first, then the project-scope pair.
 
 ## Argument
 
 - `[plugin]`: optional plugin name (e.g. `empire-git`). Restricts reconciliation to that plugin's marker block.
-- `--scope user|project|both`: optional. When passed by the user, skip the auto-detect prompt; otherwise the script auto-detects from existing markers and prompts only when neither file has them.
+- `--scope user|project|both`: optional. When passed, the script uses that scope; otherwise it auto-detects from existing markers and exits 3 if neither file has them.
 
 ## Rules for the model
 
-- Render the script's full stdout in the chat reply. Hidden tool output does NOT satisfy the "show the diff" requirement.
-- When the script exits 3, do NOT pass `--scope` automatically. Ask the user; default to user scope only after they pick.
-- Do not invent flags. Only `--apply` and `--scope <user|project|both>` are valid.
-- If the script exits 1 (precondition failure) or any other unexpected non-zero, surface its stderr exactly and stop.
-- For `--scope both`, the script writes two files; both diffs appear in the preview.
+- The `Write` tool's `content` parameter MUST be byte-identical to the `Read` result of `NEW_FILE`. Do not paraphrase, reformat list bullets, normalize whitespace, fix typos, or "improve" markdown. Copy the bytes exactly.
+- Do not invoke `Edit` or `Write` on a target before showing the script's preview output to the user.
+- Do not invent flags. Only `--scope <user|project|both>` and a positional plugin name are valid.
+- If the script exits 1 or any other unexpected non-zero, surface its stderr exactly and stop. Do not retry.

@@ -5,7 +5,14 @@
 # Part of the empire-rules Claude Code plugin.
 #
 # Usage:
-#   sync-rules.sh [plugin] [--scope user|project|both] [--apply]
+#   sync-rules.sh [plugin] [--scope user|project|both]
+#
+# Always preview-only: prints summary, unified diff, and writes the
+# reconciled new content to a persistent temp file whose path is emitted on
+# stdout as `==> NEW_FILE: <path>`. The caller is responsible for copying
+# that file onto the target (e.g. via the Claude Code Write tool, or
+# `cp <new-file> <target>` in a shell). The script never writes target
+# files itself.
 #
 # If --scope is omitted, the script auto-detects existing empire markers in
 # both candidate files and uses the detected scope. With markers in both
@@ -13,7 +20,7 @@
 # exits with code 3 and asks the caller to pass --scope.
 #
 # Exit codes:
-#   0  success (preview shown, or apply succeeded, or already in sync)
+#   0  success (preview shown, or already in sync)
 #   1  precondition failure (missing tools, etc.)
 #   2  unexpected runtime error
 #   3  no scope determined and no existing markers — caller must choose
@@ -68,7 +75,6 @@ require_cmd claude
 # ---------------------------------------------------------------------------
 
 FILTER_PLUGIN=""
-APPLY=0
 REQUESTED_SCOPE=""
 
 while [[ $# -gt 0 ]]; do
@@ -78,7 +84,7 @@ while [[ $# -gt 0 ]]; do
 sync-rules.sh — sync empire-* skill routing snippets into a rules file.
 
 Usage:
-  sync-rules.sh [plugin] [--scope user|project|both] [--apply]
+  sync-rules.sh [plugin] [--scope user|project|both]
 
   plugin            Optional. Plugin name (e.g. empire-git). When set, only
                     that plugin's marker block is touched in the target
@@ -88,13 +94,12 @@ Usage:
                        user     -> ~/.claude/CLAUDE.md (or AGENTS.md)
                        project  -> ./AGENTS.md (or CLAUDE.md)
                        both     -> both files
-  --apply           Write the reconciled file(s). Default mode is preview.
+
+The script writes the reconciled new content to a persistent temp file
+and emits the path on stdout as '==> NEW_FILE: <path>'. The caller is
+responsible for copying it onto the target.
 EOF
       exit 0
-      ;;
-    --apply)
-      APPLY=1
-      shift
       ;;
     --scope)
       [[ -z "${2:-}" ]] && die "--scope requires a value (user, project, or both)"
@@ -392,22 +397,19 @@ reconcile_target() {
     diff -u --label /dev/null --label "b/$rel_target" /dev/null "$new_file" || true
   fi
 
-  if [[ "$APPLY" -eq 0 ]]; then
-    return 0
-  fi
+  local persistent_dir="${TMPDIR:-/tmp}/empire-rules-sync-$$"
+  mkdir -p "$persistent_dir"
+  local persistent_new="$persistent_dir/new-$scope_label.md"
+  cp "$new_file" "$persistent_new"
 
-  local write_dest="$target"
-  if [[ -L "$write_dest" ]]; then
-    write_dest="$(resolve_path "$write_dest")"
+  local resolved_target="$target"
+  if [[ -L "$resolved_target" ]]; then
+    resolved_target="$(resolve_path "$resolved_target")"
   fi
-  mkdir -p "$(dirname "$write_dest")"
-  local tmp_out
-  tmp_out="$(mktemp "$write_dest.empire-XXXXXX")"
-  cp "$new_file" "$tmp_out"
-  mv "$tmp_out" "$write_dest"
 
   echo
-  success "Wrote $write_dest (${#adds[@]} added, ${#updates[@]} updated, ${#removes[@]} removed)"
+  info "NEW_FILE: $persistent_new"
+  info "TARGET:   $resolved_target"
 }
 
 # ---------------------------------------------------------------------------
@@ -447,8 +449,3 @@ case "$REQUESTED_SCOPE" in
     reconcile_target "$(project_target_path "$REPO_ROOT")" "project" "$REPO_ROOT"
     ;;
 esac
-
-if [[ "$APPLY" -eq 0 ]]; then
-  echo
-  info "Preview only. Re-run with --apply to write changes."
-fi
