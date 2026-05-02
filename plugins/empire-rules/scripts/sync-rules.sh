@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
 # sync-rules.sh — Reconcile per-plugin skill-routing snippets from installed
-# empire-* plugins into the project's AGENTS.md (or CLAUDE.md).
+# empire-* plugins into a target rules file (project AGENTS.md or user-global
+# ~/.claude/CLAUDE.md).
 # Part of the empire-rules Claude Code plugin.
 #
 # Usage:
-#   sync-rules.sh [plugin] [--apply]
+#   sync-rules.sh [plugin] [--scope user|project|both] [--apply]
 #
-# Default (preview): prints summary + unified diff, exits 0 if changes pending.
-# With --apply:      writes target file atomically, prints summary.
+# If --scope is omitted, the script auto-detects existing empire markers in
+# both candidate files and uses the detected scope. With markers in both
+# files, both scopes are reconciled. With markers in neither, the script
+# exits with code 3 and asks the caller to pass --scope.
 #
 # Exit codes:
 #   0  success (preview shown, or apply succeeded, or already in sync)
-#   1  precondition failure (not in git repo, missing tools, etc.)
+#   1  precondition failure (missing tools, etc.)
 #   2  unexpected runtime error
+#   3  no scope determined and no existing markers — caller must choose
 
 set -euo pipefail
 
@@ -59,36 +63,46 @@ require_cmd diff
 require_cmd awk
 require_cmd claude
 
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" \
-  || die "Not inside a git working tree. Run from a project repo."
-
-cd "$REPO_ROOT"
-
 # ---------------------------------------------------------------------------
 # Argument parsing
 # ---------------------------------------------------------------------------
 
 FILTER_PLUGIN=""
 APPLY=0
+REQUESTED_SCOPE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h | --help)
       cat <<EOF
-sync-rules.sh — sync empire-* skill routing snippets into project AGENTS.md.
+sync-rules.sh — sync empire-* skill routing snippets into a rules file.
 
 Usage:
-  sync-rules.sh [plugin] [--apply]
+  sync-rules.sh [plugin] [--scope user|project|both] [--apply]
 
-  plugin   Optional. Plugin name (e.g. empire-git). When set, only that
-           plugin's marker block is touched; other empire blocks are left.
-  --apply  Write the reconciled file. Default mode prints a preview only.
+  plugin            Optional. Plugin name (e.g. empire-git). When set, only
+                    that plugin's marker block is touched in the target
+                    file(s); other empire blocks are left.
+  --scope <scope>   Choose target scope. Defaults to auto-detect from
+                    existing markers.
+                       user     -> ~/.claude/CLAUDE.md (or AGENTS.md)
+                       project  -> ./AGENTS.md (or CLAUDE.md)
+                       both     -> both files
+  --apply           Write the reconciled file(s). Default mode is preview.
 EOF
       exit 0
       ;;
     --apply)
       APPLY=1
       shift
+      ;;
+    --scope)
+      [[ -z "${2:-}" ]] && die "--scope requires a value (user, project, or both)"
+      case "$2" in
+        user | project | both) REQUESTED_SCOPE="$2" ;;
+        *) die "Invalid --scope '$2' (must be user, project, or both)" ;;
+      esac
+      shift 2
       ;;
     -*)
       die "Unknown option: $1"
@@ -102,27 +116,71 @@ EOF
 done
 
 # ---------------------------------------------------------------------------
-# Target file resolution
+# Target path resolution
 # ---------------------------------------------------------------------------
 
-if [[ -e "$REPO_ROOT/AGENTS.md" ]]; then
-  TARGET="$REPO_ROOT/AGENTS.md"
-elif [[ -e "$REPO_ROOT/CLAUDE.md" ]]; then
-  TARGET="$REPO_ROOT/CLAUDE.md"
-else
-  TARGET="$REPO_ROOT/AGENTS.md"
-fi
+USER_HOME_CLAUDE="$HOME/.claude"
 
-if [[ -L "$TARGET" ]]; then
-  RESOLVED="$(resolve_path "$TARGET")"
-  case "$RESOLVED" in
-    "$REPO_ROOT"/*) ;;
-    *) die "Target file resolves outside the repo: $RESOLVED" ;;
-  esac
-fi
+user_target_path() {
+  if [[ -f "$USER_HOME_CLAUDE/CLAUDE.md" ]]; then
+    printf '%s' "$USER_HOME_CLAUDE/CLAUDE.md"
+  elif [[ -f "$USER_HOME_CLAUDE/AGENTS.md" ]]; then
+    printf '%s' "$USER_HOME_CLAUDE/AGENTS.md"
+  else
+    printf '%s' "$USER_HOME_CLAUDE/CLAUDE.md"
+  fi
+}
+
+project_target_path() {
+  local repo_root="$1"
+  if [[ -f "$repo_root/AGENTS.md" ]]; then
+    printf '%s' "$repo_root/AGENTS.md"
+  elif [[ -f "$repo_root/CLAUDE.md" ]]; then
+    printf '%s' "$repo_root/CLAUDE.md"
+  else
+    printf '%s' "$repo_root/AGENTS.md"
+  fi
+}
 
 # ---------------------------------------------------------------------------
-# Plugin enumeration
+# Repo root (only required for project scope)
+# ---------------------------------------------------------------------------
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+
+require_repo_root() {
+  [[ -n "$REPO_ROOT" ]] || die "Project scope requires a git working tree. Run from a project repo, or pass --scope user."
+}
+
+# ---------------------------------------------------------------------------
+# Existing-scope detection
+# ---------------------------------------------------------------------------
+
+file_has_empire_markers() {
+  local f="$1"
+  [[ -f "$f" ]] || return 1
+  grep -qE '^<!-- empire:[^:[:space:]]+:start -->$' "$f"
+}
+
+detect_existing_scopes() {
+  local has_user=0 has_proj=0
+  if file_has_empire_markers "$(user_target_path)"; then has_user=1; fi
+  if [[ -n "$REPO_ROOT" ]] && file_has_empire_markers "$(project_target_path "$REPO_ROOT")"; then
+    has_proj=1
+  fi
+  if [[ $has_user -eq 1 && $has_proj -eq 1 ]]; then
+    printf 'both'
+  elif [[ $has_user -eq 1 ]]; then
+    printf 'user'
+  elif [[ $has_proj -eq 1 ]]; then
+    printf 'project'
+  else
+    printf 'none'
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Plugin enumeration (one-shot, scope-independent)
 # ---------------------------------------------------------------------------
 
 PLUGINS_JSON="$(claude plugin list --json 2>/dev/null)" \
@@ -142,15 +200,14 @@ if [[ -n "$FILTER_PLUGIN" && -n "$PLUGINS_TSV" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Snippet collection
+# Working directories
 # ---------------------------------------------------------------------------
 
 TMPDIR_WORK="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR_WORK"' EXIT
 
 INSTALLED_DIR="$TMPDIR_WORK/installed"
-EXISTING_DIR="$TMPDIR_WORK/existing"
-mkdir -p "$INSTALLED_DIR" "$EXISTING_DIR"
+mkdir -p "$INSTALLED_DIR"
 
 if [[ -n "$PLUGINS_TSV" ]]; then
   while IFS=$'\t' read -r plugin_name plugin_path; do
@@ -165,76 +222,7 @@ if [[ -n "$PLUGINS_TSV" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Existing-block extraction
-# ---------------------------------------------------------------------------
-
-if [[ -f "$TARGET" ]]; then
-  awk -v outdir="$EXISTING_DIR" '
-    /^<!-- empire:[^:[:space:]]+:start -->$/ {
-      short = $0
-      sub(/^<!-- empire:/, "", short)
-      sub(/:start -->$/, "", short)
-      name = "empire-" short
-      out = outdir "/" name
-      printf "" > out
-      in_block = 1
-      next
-    }
-    /^<!-- empire:[^:[:space:]]+:end -->$/ {
-      in_block = 0
-      out = ""
-      next
-    }
-    in_block { print >> out }
-  ' "$TARGET"
-fi
-
-# ---------------------------------------------------------------------------
-# Reconciliation
-# ---------------------------------------------------------------------------
-
-list_dir() {
-  local dir="$1"
-  [[ -d "$dir" ]] || return 0
-  find "$dir" -maxdepth 1 -mindepth 1 -type f -exec basename {} \; 2>/dev/null | sort
-}
-
-scope_names() {
-  {
-    list_dir "$INSTALLED_DIR"
-    list_dir "$EXISTING_DIR"
-  } | sort -u
-}
-
-ADDS=()
-UPDATES=()
-REMOVES=()
-NOOPS=()
-
-while IFS= read -r name; do
-  [[ -z "$name" ]] && continue
-  if [[ -n "$FILTER_PLUGIN" && "$name" != "$FILTER_PLUGIN" ]]; then
-    continue
-  fi
-  inst="$INSTALLED_DIR/$name"
-  exst="$EXISTING_DIR/$name"
-  if [[ -f "$inst" && ! -f "$exst" ]]; then
-    ADDS+=("$name")
-  elif [[ -f "$inst" && -f "$exst" ]]; then
-    if cmp -s "$inst" "$exst"; then
-      NOOPS+=("$name")
-    else
-      UPDATES+=("$name")
-    fi
-  elif [[ ! -f "$inst" && -f "$exst" ]]; then
-    REMOVES+=("$name")
-  fi
-done < <(scope_names)
-
-OPS_COUNT=$((${#ADDS[@]} + ${#UPDATES[@]} + ${#REMOVES[@]}))
-
-# ---------------------------------------------------------------------------
-# Render new target file
+# Per-target reconciliation (called once per scope)
 # ---------------------------------------------------------------------------
 
 format_block() {
@@ -252,119 +240,215 @@ format_block() {
   printf '<!-- empire:%s:end -->\n' "$short"
 }
 
-NEW_FILE="$TMPDIR_WORK/new-target.md"
-STRIPPED="$TMPDIR_WORK/stripped.md"
-: >"$STRIPPED"
+list_dir() {
+  local dir="$1"
+  [[ -d "$dir" ]] || return 0
+  find "$dir" -maxdepth 1 -mindepth 1 -type f -exec basename {} \; 2>/dev/null | sort
+}
 
-if [[ -f "$TARGET" ]]; then
-  awk '
-    /^<!-- empire:[^:[:space:]]+:start -->$/ { skip = 1; next }
-    /^<!-- empire:[^:[:space:]]+:end -->$/ { skip = 0; next }
-    skip { next }
-    { print }
-  ' "$TARGET" >"$STRIPPED"
-  awk 'NR==FNR { lines[NR] = $0; total = NR; next } END {
-    last = total
-    while (last > 0 && lines[last] == "") last--
-    for (i = 1; i <= last; i++) print lines[i]
-  }' "$STRIPPED" "$STRIPPED" >"$STRIPPED.trim"
-  mv "$STRIPPED.trim" "$STRIPPED"
-fi
+# Reconcile a single target file. Globals it consumes: INSTALLED_DIR,
+# FILTER_PLUGIN, APPLY. Globals it sets per call: WORK_RESULT_OPS_COUNT.
+reconcile_target() {
+  local target="$1" scope_label="$2" scope_root="$3"
+  local existing_dir="$TMPDIR_WORK/existing-$scope_label"
+  rm -rf "$existing_dir"
+  mkdir -p "$existing_dir"
 
-FINAL_NAMES=()
-if [[ -n "$FILTER_PLUGIN" ]]; then
-  while IFS= read -r name; do
-    [[ -z "$name" ]] && continue
-    if [[ "$name" == "$FILTER_PLUGIN" ]]; then
-      [[ -f "$INSTALLED_DIR/$name" ]] && FINAL_NAMES+=("$name")
-    else
-      [[ -f "$EXISTING_DIR/$name" ]] && FINAL_NAMES+=("$name")
-    fi
-  done < <(scope_names)
-else
-  while IFS= read -r name; do
-    [[ -z "$name" ]] && continue
-    [[ -f "$INSTALLED_DIR/$name" ]] && FINAL_NAMES+=("$name")
-  done < <(scope_names)
-fi
-
-cp "$STRIPPED" "$NEW_FILE"
-if [[ ${#FINAL_NAMES[@]} -gt 0 ]]; then
-  if [[ -s "$NEW_FILE" ]]; then
-    printf '\n' >>"$NEW_FILE"
+  if [[ -L "$target" ]]; then
+    local resolved
+    resolved="$(resolve_path "$target")"
+    case "$resolved" in
+      "$scope_root"/*) ;;
+      *) die "Target file resolves outside its scope root: $resolved" ;;
+    esac
   fi
-  first=1
-  for name in "${FINAL_NAMES[@]}"; do
-    if [[ "$first" -eq 0 ]]; then
-      printf '\n' >>"$NEW_FILE"
-    fi
-    first=0
-    if [[ -f "$INSTALLED_DIR/$name" ]]; then
-      format_block "$name" "$INSTALLED_DIR/$name" >>"$NEW_FILE"
-    elif [[ -f "$EXISTING_DIR/$name" ]]; then
-      format_block "$name" "$EXISTING_DIR/$name" >>"$NEW_FILE"
-    fi
-  done
-fi
 
-# ---------------------------------------------------------------------------
-# Summary output
-# ---------------------------------------------------------------------------
+  if [[ -f "$target" ]]; then
+    awk -v outdir="$existing_dir" '
+      /^<!-- empire:[^:[:space:]]+:start -->$/ {
+        short = $0
+        sub(/^<!-- empire:/, "", short)
+        sub(/:start -->$/, "", short)
+        name = "empire-" short
+        out = outdir "/" name
+        printf "" > out
+        in_block = 1
+        next
+      }
+      /^<!-- empire:[^:[:space:]]+:end -->$/ {
+        in_block = 0
+        out = ""
+        next
+      }
+      in_block { print >> out }
+    ' "$target"
+  fi
 
-print_summary() {
-  info "Target: $TARGET"
+  local scope_names
+  scope_names="$({
+    list_dir "$INSTALLED_DIR"
+    list_dir "$existing_dir"
+  } | sort -u)"
+
+  local adds=() updates=() removes=() noops=()
+
+  while IFS= read -r name; do
+    [[ -z "$name" ]] && continue
+    if [[ -n "$FILTER_PLUGIN" && "$name" != "$FILTER_PLUGIN" ]]; then
+      continue
+    fi
+    local inst="$INSTALLED_DIR/$name"
+    local exst="$existing_dir/$name"
+    if [[ -f "$inst" && ! -f "$exst" ]]; then
+      adds+=("$name")
+    elif [[ -f "$inst" && -f "$exst" ]]; then
+      if cmp -s "$inst" "$exst"; then
+        noops+=("$name")
+      else
+        updates+=("$name")
+      fi
+    elif [[ ! -f "$inst" && -f "$exst" ]]; then
+      removes+=("$name")
+    fi
+  done <<<"$scope_names"
+
+  local ops_count=$((${#adds[@]} + ${#updates[@]} + ${#removes[@]}))
+
+  local stripped="$TMPDIR_WORK/stripped-$scope_label.md"
+  : >"$stripped"
+  if [[ -f "$target" ]]; then
+    awk '
+      /^<!-- empire:[^:[:space:]]+:start -->$/ { skip = 1; next }
+      /^<!-- empire:[^:[:space:]]+:end -->$/ { skip = 0; next }
+      skip { next }
+      { print }
+    ' "$target" >"$stripped"
+    awk 'NR==FNR { lines[NR] = $0; total = NR; next } END {
+      last = total
+      while (last > 0 && lines[last] == "") last--
+      for (i = 1; i <= last; i++) print lines[i]
+    }' "$stripped" "$stripped" >"$stripped.trim"
+    mv "$stripped.trim" "$stripped"
+  fi
+
+  local final_names=()
+  if [[ -n "$FILTER_PLUGIN" ]]; then
+    while IFS= read -r name; do
+      [[ -z "$name" ]] && continue
+      if [[ "$name" == "$FILTER_PLUGIN" ]]; then
+        [[ -f "$INSTALLED_DIR/$name" ]] && final_names+=("$name")
+      else
+        [[ -f "$existing_dir/$name" ]] && final_names+=("$name")
+      fi
+    done <<<"$scope_names"
+  else
+    while IFS= read -r name; do
+      [[ -z "$name" ]] && continue
+      [[ -f "$INSTALLED_DIR/$name" ]] && final_names+=("$name")
+    done <<<"$scope_names"
+  fi
+
+  local new_file="$TMPDIR_WORK/new-$scope_label.md"
+  cp "$stripped" "$new_file"
+  if [[ ${#final_names[@]} -gt 0 ]]; then
+    if [[ -s "$new_file" ]]; then
+      printf '\n' >>"$new_file"
+    fi
+    local first=1
+    for name in "${final_names[@]}"; do
+      if [[ "$first" -eq 0 ]]; then
+        printf '\n' >>"$new_file"
+      fi
+      first=0
+      if [[ -f "$INSTALLED_DIR/$name" ]]; then
+        format_block "$name" "$INSTALLED_DIR/$name" >>"$new_file"
+      elif [[ -f "$existing_dir/$name" ]]; then
+        format_block "$name" "$existing_dir/$name" >>"$new_file"
+      fi
+    done
+  fi
+
+  printf '\n'
+  info "Scope:  $scope_label"
+  info "Target: $target"
   if [[ -n "$FILTER_PLUGIN" ]]; then
     info "Filter: $FILTER_PLUGIN"
   fi
-  if [[ ${#ADDS[@]} -gt 0 ]]; then
-    info "Add:    ${ADDS[*]}"
+  if [[ ${#adds[@]} -gt 0 ]]; then info "Add:    ${adds[*]}"; fi
+  if [[ ${#updates[@]} -gt 0 ]]; then info "Update: ${updates[*]}"; fi
+  if [[ ${#removes[@]} -gt 0 ]]; then info "Remove: ${removes[*]}"; fi
+  if [[ ${#noops[@]} -gt 0 ]]; then info "Noop:   ${noops[*]}"; fi
+
+  if [[ "$ops_count" -eq 0 ]]; then
+    success "Already in sync ($scope_label)."
+    return 0
   fi
-  if [[ ${#UPDATES[@]} -gt 0 ]]; then
-    info "Update: ${UPDATES[*]}"
+
+  echo
+  local rel_target="${target#"$scope_root"/}"
+  if [[ -f "$target" ]]; then
+    diff -u --label "a/$rel_target" --label "b/$rel_target" "$target" "$new_file" || true
+  else
+    diff -u --label /dev/null --label "b/$rel_target" /dev/null "$new_file" || true
   fi
-  if [[ ${#REMOVES[@]} -gt 0 ]]; then
-    info "Remove: ${REMOVES[*]}"
+
+  if [[ "$APPLY" -eq 0 ]]; then
+    return 0
   fi
-  if [[ ${#NOOPS[@]} -gt 0 ]]; then
-    info "Noop:   ${NOOPS[*]}"
+
+  local write_dest="$target"
+  if [[ -L "$write_dest" ]]; then
+    write_dest="$(resolve_path "$write_dest")"
   fi
+  mkdir -p "$(dirname "$write_dest")"
+  local tmp_out
+  tmp_out="$(mktemp "$write_dest.empire-XXXXXX")"
+  cp "$new_file" "$tmp_out"
+  mv "$tmp_out" "$write_dest"
+
+  echo
+  success "Wrote $write_dest (${#adds[@]} added, ${#updates[@]} updated, ${#removes[@]} removed)"
 }
 
-if [[ "$OPS_COUNT" -eq 0 ]]; then
-  print_summary
-  success "Already in sync."
-  exit 0
+# ---------------------------------------------------------------------------
+# Resolve final scope set
+# ---------------------------------------------------------------------------
+
+if [[ -z "$REQUESTED_SCOPE" ]]; then
+  detected="$(detect_existing_scopes)"
+  case "$detected" in
+    user | project | both) REQUESTED_SCOPE="$detected" ;;
+    none)
+      cat >&2 <<'EOF'
+ERROR: No empire markers found in either user (~/.claude/CLAUDE.md) or project (./AGENTS.md) files.
+Pass --scope to choose where to write rules:
+  --scope user     -> ~/.claude/CLAUDE.md  (recommended; follows install scope)
+  --scope project  -> ./AGENTS.md          (per-repo; teammates share via VC)
+  --scope both     -> write to both
+EOF
+      exit 3
+      ;;
+  esac
 fi
 
-print_summary
-echo
+case "$REQUESTED_SCOPE" in
+  project | both) require_repo_root ;;
+esac
 
-REL_TARGET="${TARGET#"$REPO_ROOT"/}"
-if [[ -f "$TARGET" ]]; then
-  diff -u --label "a/$REL_TARGET" --label "b/$REL_TARGET" "$TARGET" "$NEW_FILE" || true
-else
-  diff -u --label /dev/null --label "b/$REL_TARGET" /dev/null "$NEW_FILE" || true
-fi
+case "$REQUESTED_SCOPE" in
+  user)
+    reconcile_target "$(user_target_path)" "user" "$USER_HOME_CLAUDE"
+    ;;
+  project)
+    reconcile_target "$(project_target_path "$REPO_ROOT")" "project" "$REPO_ROOT"
+    ;;
+  both)
+    reconcile_target "$(user_target_path)" "user" "$USER_HOME_CLAUDE"
+    reconcile_target "$(project_target_path "$REPO_ROOT")" "project" "$REPO_ROOT"
+    ;;
+esac
 
 if [[ "$APPLY" -eq 0 ]]; then
   echo
   info "Preview only. Re-run with --apply to write changes."
-  exit 0
 fi
-
-# ---------------------------------------------------------------------------
-# Atomic write
-# ---------------------------------------------------------------------------
-
-WRITE_DEST="$TARGET"
-if [[ -L "$WRITE_DEST" ]]; then
-  WRITE_DEST="$(resolve_path "$WRITE_DEST")"
-fi
-
-mkdir -p "$(dirname "$WRITE_DEST")"
-TMP_OUT="$(mktemp "$WRITE_DEST.empire-XXXXXX")"
-cp "$NEW_FILE" "$TMP_OUT"
-mv "$TMP_OUT" "$WRITE_DEST"
-
-echo
-success "Wrote $WRITE_DEST (${#ADDS[@]} added, ${#UPDATES[@]} updated, ${#REMOVES[@]} removed)"
