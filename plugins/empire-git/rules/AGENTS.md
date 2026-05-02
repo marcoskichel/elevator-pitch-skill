@@ -4,6 +4,8 @@ Skills installed under the `empire-git` Claude Code plugin.
 
 ### Worktrees
 
+- SHOULD open `/empire-git:worktree-open` for any user-requested change — keeps current branch clean
+- MUST NOT push or open PR from worktree until user signals ship intent ("ship it", "open the PR", "let's merge", "push and PR") — default = work stays local in worktree
 - MUST use `/empire-git:worktree-*` skills — never raw `git worktree add|remove|prune`
 - Subagents doing isolated work MUST run inside a `/empire-git:worktree-open` worktree
 

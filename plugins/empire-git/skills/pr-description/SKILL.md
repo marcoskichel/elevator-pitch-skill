@@ -1,7 +1,16 @@
 ---
 name: pr-description
-description: Render the canonical PR description body. Use whenever drafting, writing, updating, refreshing, or regenerating a pull request body, PR description, PR summary, or any text destined for `gh pr create --body`, `gh pr edit --body`, or a GitHub PR template. Output is markdown ready to pipe to stdin.
-disable-model-invocation: false
+description: >
+  Render the canonical PR description body. Use whenever drafting, writing,
+  updating, refreshing, or regenerating a "PR description", "PR body", "pull
+  request description", "pull request body", "PR summary", "PR template",
+  "GitHub PR body", or any text destined for `gh pr create --body`, `gh pr
+  create --body-file`, `gh pr edit --body`, `gh pr edit --body-file`, or a
+  GitHub PR template. Triggers on phrases like "draft a PR", "write the PR",
+  "summarize this branch for review", "regenerate PR body". MUST be invoked
+  before any `gh pr create --body*` or `gh pr edit --body*` per the empire-git
+  rules. Output is markdown ready to pipe to stdin.
+allowed-tools: Bash Read Glob Grep
 ---
 
 # PR Description Template
@@ -17,10 +26,11 @@ IMPORTANT: Output the rendered description verbatim. Do not summarize, paraphras
 
 ## Length
 
-| Diff size | Budget                         |
-| --------- | ------------------------------ |
-| ≤ 500 LOC | ≤ 200 words, full sections     |
-| > 500 LOC | ≤ 200 words, flag size in Risk |
+| Diff size | Budget                                                    |
+| --------- | --------------------------------------------------------- |
+| ≤ 100 LOC | ≤ 80 words, drop Risk/Test plan if trivial                |
+| ≤ 500 LOC | ≤ 200 words, full sections                                |
+| > 500 LOC | ≤ 200 words, flag size in Risk, summarize at higher level |
 
 Skip empty sections entirely.
 

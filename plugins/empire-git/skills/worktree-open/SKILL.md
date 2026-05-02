@@ -1,6 +1,12 @@
 ---
 name: worktree-open
-description: Create or reopen a git worktree for parallel development. Use this whenever the user wants to work on something in parallel, start a new task without disrupting their current branch, spin up an isolated environment for an agent, or mentions worktrees, parallel branches, or "work on X separately". Also triggers for `/empire-git:worktree-open [branch | task description]`.
+description: >
+  Create or reopen a git worktree for parallel development. Use whenever the
+  user wants to "open a worktree", "spin up a branch", "work on X separately",
+  "work on this in parallel", "start a parallel task", "isolated environment
+  for an agent", "side branch without switching", or mentions worktrees,
+  parallel branches, or stacked work. Also triggers for
+  `/empire-git:worktree-open [branch | task description] [--base <branch>]`.
 model: sonnet
 allowed-tools: Bash Read Glob Grep
 argument-hint: "[branch | task description] [--base <branch>]"
@@ -37,7 +43,19 @@ Do not ask the user to confirm the branch name, just use it and proceed immediat
 
 If the user specified `--base <branch>` in their arguments, use that.
 
-Otherwise, default to the current branch. If the current branch looks like a feature branch and the user is creating a sub-feature, confirm whether they want to branch from `main` instead. Use multiple-choice for easy user selection.
+Otherwise, default base = the current branch. If the current branch matches `^(feat|fix|refactor|chore|docs|ci|test)/`, ask the user via `AskUserQuestion`:
+
+```
+question: "Branch from current `<current-branch>` or from the default branch?"
+header:   "Base branch"
+options:
+  - label: "Current (`<current-branch>`)"
+    description: "Stack this work on top of an existing feature branch"
+  - label: "Default (`main` or repo default)"
+    description: "Independent branch off the repo's default branch"
+```
+
+Resolve the repo's default branch via `git symbolic-ref --short refs/remotes/origin/HEAD | sed 's|^origin/||'`. If that fails, fall back to `main`, then `master`.
 
 ## Step 3 — Check if this worktree already exists
 

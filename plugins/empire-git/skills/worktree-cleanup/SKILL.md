@@ -1,9 +1,16 @@
 ---
 name: worktree-cleanup
-description: Batch cleanup of stale worktrees and orphaned branches. Use this when the user wants to tidy up, has accumulated worktrees over time, asks about old branches, or mentions cleaning up their workspace. Also triggers for `/empire-git:worktree-cleanup [--dry-run]`.
+description: >
+  Batch cleanup across MULTIPLE stale worktrees and orphaned branches. Use this
+  when the user wants to tidy up accumulated worktrees, asks about old
+  branches, mentions cleaning up their workspace, says "stale worktrees",
+  "orphan branches", "prune worktrees", "clean up old branches", "purge stale
+  worktrees", or "housekeeping". For finishing ONE specific worktree, use
+  worktree-close instead. Also triggers for `/empire-git:worktree-cleanup
+  [--dry-run] [--days N]`.
 model: haiku
 allowed-tools: Bash Read Glob Grep
-argument-hint: "[--dry-run]"
+argument-hint: "[--dry-run] [--days N]"
 ---
 
 # Worktree Cleanup
@@ -13,6 +20,8 @@ Scan for stale worktrees and orphaned branches, then let the user decide what to
 **User input:** $ARGUMENTS
 
 If `--dry-run` is in the arguments, report what would be cleaned up without making any changes.
+
+If `--days N` is in the arguments (e.g. `--days 14`), use `N` as the staleness threshold. Otherwise default to **7 days**. Note: `worktree-list` uses a softer 3-day threshold (informational warning); cleanup uses 7 days because removal is the action and the longer window reduces false positives.
 
 ## Step 1 — Inventory worktrees
 
@@ -35,11 +44,11 @@ For each worktree (excluding the main working tree), gather:
 
 Classify each worktree:
 
-| Status      | Criteria                                                            |
-| ----------- | ------------------------------------------------------------------- |
-| **Stale**   | Last commit more than 7 days ago and clean (no uncommitted changes) |
-| **Missing** | Directory no longer exists on disk (stale git metadata)             |
-| **Active**  | Recent commits or has uncommitted changes                           |
+| Status      | Criteria                                                                       |
+| ----------- | ------------------------------------------------------------------------------ |
+| **Stale**   | Last commit more than `--days` (default 7) ago and clean (no uncommitted work) |
+| **Missing** | Directory no longer exists on disk (stale git metadata)                        |
+| **Active**  | Recent commits or has uncommitted changes                                      |
 
 ## Step 2 — Find stale local branches
 

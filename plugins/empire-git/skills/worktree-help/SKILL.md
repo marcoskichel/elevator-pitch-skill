@@ -1,6 +1,12 @@
 ---
 name: worktree-help
-description: Answer common questions about working with worktrees — VSCode integration, gitignore, port offsets, env files, workflow tips. Use this when the user asks how worktrees work, why something looks different in their editor, how to see diffs, or has any question about the worktree setup. Also triggers for `/empire-git:worktree-help [topic]`.
+description: >
+  Answer questions about the worktree toolkit — VSCode integration, gitignore,
+  port offsets, env files, dependency installs, workflow tips. Use when the
+  user asks how worktrees work, "how do I open this in VSCode", "why is .env
+  copied", "what about port collisions", "how do worktrees affect main repo",
+  "worktree workflow", "show me the worktree FAQ", or any question about the
+  setup. Also triggers for `/empire-git:worktree-help [question]`.
 model: haiku
 allowed-tools: Bash Read Glob Grep
 argument-hint: "[question]"
@@ -8,7 +14,7 @@ argument-hint: "[question]"
 
 # Worktree Help
 
-`$ARGUMENTS` is the user's question. If empty, print the **Overview** section below verbatim. Otherwise, answer their question using the **FAQ** section as your primary reference, falling back to your knowledge of git worktrees and this plugin's setup.
+`$ARGUMENTS` is the user's question. If empty, MUST print the **Overview** section below byte-for-byte verbatim — do not paraphrase, summarize, or reorder. Otherwise, answer their question using the **FAQ** section as your primary reference, falling back to your knowledge of git worktrees and this plugin's setup.
 
 Keep answers concise and practical. When relevant, include `code .claude/worktrees/<branch-dir>` — it's the single most useful tip for new users.
 

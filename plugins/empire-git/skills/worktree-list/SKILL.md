@@ -1,6 +1,13 @@
 ---
 name: worktree-list
-description: List active worktrees with branch, status, sync state, and staleness info. Use this when the user asks what worktrees exist, wants to see what's in flight, check which branches have worktrees, or asks about stale or forgotten parallel work. Also triggers for `/empire-git:worktree-list [--stale]`.
+description: >
+  Read-only inventory of active worktrees with branch, status, sync state, and
+  staleness info. Use this when the user asks what worktrees exist, "list
+  worktrees", "show my worktrees", "what's in flight", "which branches have
+  worktrees", "stale worktrees", "any forgotten worktrees", or wants a
+  parallel-work overview. Reports state only — never deletes or modifies. For
+  removal use worktree-close (single) or worktree-cleanup (batch). Also
+  triggers for `/empire-git:worktree-list [--stale]`.
 model: haiku
 allowed-tools: Bash Read Glob Grep
 argument-hint: "[--stale]"
@@ -67,7 +74,7 @@ This gives relative time and subject (e.g., `2 hours ago|add JWT validation`).
 git -C "<path>" log -1 --format="%ct" 2>/dev/null
 ```
 
-Compare the commit timestamp to now. Flag as **stale** if the last commit is **3 or more days old**.
+Compare the commit timestamp to now. Flag as **stale** if the last commit is **3 or more days old**. This is the informational threshold; `worktree-cleanup` uses a stricter 7-day threshold for actual removal. The two thresholds differ on purpose: list is a soft warning, cleanup is the action.
 
 ## Step 3 — Format the output
 

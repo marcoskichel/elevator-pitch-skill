@@ -1,9 +1,19 @@
 ---
 name: worktree-merge
-description: Merge a worktree's branch into another branch using git merge. Use this when the user wants to combine a worktree branch into a parent branch, batch small fixes into one branch, or fold sub-feature branches back together. This is always a real git merge — for pushing to remote, use `/empire-git:worktree-close --push` instead. Also triggers for `/empire-git:worktree-merge [branch] --into <target> [--no-close]`.
+description: >
+  Fold ONE worktree's branch INTO another branch using git merge. Use this
+  when the user wants to combine a worktree branch into a parent branch,
+  batch small fixes into one branch before opening a single PR, or fold
+  sub-feature branches back together. Triggers on phrases like "merge this
+  worktree into X", "fold sub-branches back", "combine worktree branches",
+  "merge feat/X into main locally". This is always a real `git merge` and
+  defaults to `--no-ff`. For pushing to remote, use `worktree-close --push`
+  instead. For batch teardown of stale worktrees, use worktree-cleanup. Also
+  triggers for `/empire-git:worktree-merge [branch] --into <target>
+  [--no-close] [--ff]`.
 model: sonnet
 allowed-tools: Bash Read Glob Grep
-argument-hint: "<branch> --into <target> [--no-close]"
+argument-hint: "<branch> --into <target> [--no-close] [--ff]"
 ---
 
 # Worktree Merge
@@ -71,11 +81,19 @@ If there are no commits ahead of the target, **stop**:
 
 ## Step 4 — Perform the merge
 
+Default merge mode: `--no-ff` (preserves branch history as a merge commit, easier to read and revert).
+
+If `--ff` was in `$ARGUMENTS`, omit `--no-ff` and let git fast-forward when possible. Use this for rebase-only or linear-history teams.
+
 ```bash
+# Default
 git -C "<target-worktree-path>" merge "<source-branch>" --no-ff
+
+# With --ff
+git -C "<target-worktree-path>" merge "<source-branch>"
 ```
 
-The `--no-ff` flag preserves the branch history as a merge commit, which makes the history easier to read and revert if needed.
+If your team forbids merge commits entirely, this skill is the wrong tool — use `git rebase` directly in the source worktree, then `worktree-close --push`.
 
 **If merge conflicts occur:**
 

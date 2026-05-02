@@ -1,9 +1,17 @@
 ---
 name: worktree-close
-description: Finish work in a worktree — push, remove the worktree, and optionally delete the branch. Use this when the user is done with a worktree, wants to clean up, push and move on, or mentions they no longer need a parallel environment. Also triggers for `/empire-git:worktree-close [branch] [--push] [--force]`.
+description: >
+  Finish work in a SINGLE worktree — push, remove the worktree, and optionally
+  delete the branch. Use this when the user is done with a specific worktree,
+  wants to wrap one up, push and move on, or no longer needs a parallel
+  environment. Triggers on phrases like "close this worktree", "I'm done with
+  this worktree", "wrap up this branch", "push and remove", "tear down this
+  worktree". For batch cleanup of MULTIPLE stale worktrees, use
+  worktree-cleanup instead. Also triggers for `/empire-git:worktree-close
+  [branch] [--push] [--discard] [--force]`.
 model: sonnet
 allowed-tools: Bash Read Glob Grep
-argument-hint: "[branch | path] [--push] [--force]"
+argument-hint: "[branch | path] [--push] [--discard] [--force]"
 ---
 
 # Worktree Close
@@ -11,6 +19,16 @@ argument-hint: "[branch | path] [--push] [--force]"
 Finish work in a worktree: check for unsaved work, optionally push, remove the worktree, and let the user decide what happens to the branch.
 
 **User input:** $ARGUMENTS
+
+**Flag semantics (do not conflate):**
+
+| Flag        | Meaning                                                                       |
+| ----------- | ----------------------------------------------------------------------------- |
+| `--push`    | Push the branch to `origin` before removing the worktree.                     |
+| `--discard` | Skip the dirty-check prompt and proceed even with uncommitted changes.        |
+| `--force`   | Skip the cleanup-option prompt; default to "remove worktree + delete branch". |
+
+`--discard` and `--force` are independent. The user can pass either, both, or neither. Never treat one as implying the other.
 
 ## Step 1 — Identify the worktree to close
 
@@ -44,7 +62,7 @@ Then present options:
 2. **Discard changes** — proceed with force removal (requires explicit confirmation)
 3. **Abort** — cancel the close operation
 
-If `--force` was in `$ARGUMENTS`, skip this prompt and proceed with force removal.
+If `--discard` was in `$ARGUMENTS`, skip this prompt and proceed with force removal of uncommitted work.
 
 ## Step 3 — Push if requested
 
@@ -74,7 +92,7 @@ Pick a sensible default based on context:
 - Branch has an open PR → default to option 1
 - Branch has unmerged work → default to option 1
 
-If `--force` was specified, skip the prompt and use option 2 (but still use safe delete with `git branch -d`).
+If `--force` was specified, skip the cleanup-option prompt and use option 2 (but still use safe delete with `git branch -d`).
 
 ## Step 5 — Execute the chosen action
 
@@ -84,7 +102,7 @@ If `--force` was specified, skip the prompt and use option 2 (but still use safe
 git worktree remove "<worktree-path>"
 ```
 
-If the worktree is dirty and the user confirmed discard:
+If the worktree is dirty and the user confirmed discard (or passed `--discard`):
 
 ```bash
 git worktree remove --force "<worktree-path>"
@@ -137,7 +155,7 @@ Worktree closed.
 
 **The main working tree is not a worktree.** It's the user's primary repo checkout — removing it would be catastrophic. If someone accidentally targets it, explain the difference.
 
-**Uncommitted work is sacred.** Silently discarding changes is one of the worst things a tool can do. The user should always see what's at risk and explicitly choose to discard. The `--force` flag exists for when they've already made that choice.
+**Uncommitted work is sacred.** Silently discarding changes is one of the worst things a tool can do. The user should always see what's at risk and explicitly choose to discard. The `--discard` flag exists for when they've already made that choice. `--force` only skips the cleanup-option prompt — it does NOT authorize discarding uncommitted work.
 
 **Use `git branch -d` (safe delete), not `-D`.** If `-d` refuses, it means the branch has unmerged commits — that's valuable information to surface, not override. Tell the user the command to force-delete if they really want to.
 
