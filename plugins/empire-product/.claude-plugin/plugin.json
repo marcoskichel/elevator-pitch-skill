@@ -1,6 +1,6 @@
 {
   "name": "empire-product",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Product communication and intelligence: elevator pitches (pitch), idea pressure-testing (vet), and competitor mapping (recon). Bundles three fallback subagents.",
   "dependencies": ["empire-rules"],
   "author": {
