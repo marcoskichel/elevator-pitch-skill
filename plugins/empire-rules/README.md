@@ -11,21 +11,19 @@ Part of the [empire](../../README.md) marketplace. Auto-installed as a dependenc
 /plugin install empire-rules@empire
 ```
 
-You usually do not install this plugin directly — it is pulled in automatically when you install any `empire-git`, `empire-dev`, `empire-research`, or `empire-product`, and transitively when you install the `empire` bundle.
+You usually do not install this plugin directly — it is pulled in automatically when you install any of `empire-git`, `empire-dev`, `empire-research`, or `empire-product`, and transitively when you install the `empire` bundle.
 
 ## Skills
 
 ### `sync-rules`
 
-Reconcile per-plugin routing snippets into either `~/.claude/CLAUDE.md` (user scope) or the project's `AGENTS.md` (project scope) between idempotent HTML-comment markers. Diff preview before write. Single confirmation.
-
-Each `empire-*` plugin ships a `rules/AGENTS.md` snippet describing its skills and workflow conventions. `/empire-rules:sync-rules` enumerates installed plugins, aggregates snippets, and writes them into the chosen target. Re-running detects updates, additions, and orphan removals from uninstalled plugins.
+Reconcile per-plugin routing snippets into either `~/.claude/CLAUDE.md` (user scope) or the project's `AGENTS.md` (project scope), inserted between idempotent HTML-comment markers. The skill enumerates installed `empire-*` plugins, aggregates their `rules/AGENTS.md` snippets, shows a unified diff preview, and writes only after a single confirmation. Re-running detects updates, additions, and orphan removals from uninstalled plugins.
 
 Scope is auto-detected from existing markers across both candidate files. On first run with markers in neither, the skill asks where to write. Pass `--scope user|project|both` to skip the prompt.
 
-Triggers: "sync empire rules", "update AGENTS.md from empire", "apply empire routing rules", "install empire skill rules", "refresh empire CLAUDE.md", "rewrite empire rules".
+**Triggers:** "sync empire rules", "update AGENTS.md from empire", "apply empire routing rules", "install empire skill rules", "refresh empire CLAUDE.md", "rewrite empire rules".
 
-Usage:
+**Usage:**
 
 ```sh
 /empire-rules:sync-rules                       # auto-detect scope or prompt
@@ -35,4 +33,17 @@ Usage:
 /empire-rules:sync-rules empire-git            # restrict to one plugin
 ```
 
-Source: [`skills/sync-rules/SKILL.md`](skills/sync-rules/SKILL.md), [`scripts/sync-rules.sh`](scripts/sync-rules.sh)
+```mermaid
+flowchart TD
+  invoke[Invoke sync-rules.sh] --> scan[Enumerate installed empire-* plugins]
+  scan --> agg[Aggregate per-plugin rule snippets]
+  agg --> scope{Scope determined?}
+  scope -- no --> prompt[Prompt user: u / p / b]
+  scope -- yes --> diff[Render unified diff preview]
+  prompt --> rerun[Re-run with --scope flag]
+  rerun --> diff
+  diff --> confirm[User confirms write]
+  confirm --> write[Write between markers in target file]
+```
+
+**Source:** [`skills/sync-rules/SKILL.md`](skills/sync-rules/SKILL.md), [`scripts/sync-rules.sh`](scripts/sync-rules.sh)
