@@ -65,6 +65,12 @@ Plugins that pair well with empire:
   /plugin install voltagent-lang@voltagent-subagents
   ```
 
+- [`wshobson/agents`](https://github.com/wshobson/agents) — curated collection of language and domain specialist subagents. Same role as `voltagent-lang`; `empire-dev:team-review` auto-discovers whichever is installed.
+
+  ```sh
+  /plugin marketplace add wshobson/agents
+  ```
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md)
