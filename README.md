@@ -73,6 +73,21 @@ Plugins that pair well with empire:
   /plugin marketplace add wshobson/agents
   ```
 
+- [`mattpocock/skills`](https://github.com/mattpocock/skills) — engineering discipline skills. `grill-with-docs` interrogates a spec against your project's docs (`CLAUDE.md`, ADRs, glossaries) one question at a time, resolving fuzzy language and updating docs inline before you build. Feeds a clean spec into `empire-dev:handoff`. Ships its own installer, not a Claude Code plugin marketplace:
+
+  ```sh
+  npx skills@latest add mattpocock/skills
+  ```
+
+## Recommended workflow
+
+A feature loop that chains the crew end to end:
+
+1. `/brainstorming <your idea>` — pressure-test the idea before it becomes a spec (`superpowers`).
+2. Write the spec.
+3. `/grill-with-docs <the spec>` — interrogate the spec against your project's docs, killing fuzzy language before it becomes fuzzy code (`mattpocock/skills`).
+4. `/empire-dev:handoff write plan + implement PR, use subagents` — hand the grilled spec to `empire-dev`, which plans, implements, runs `team-review` with dispatched specialists, and opens the PR unattended.
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md)
