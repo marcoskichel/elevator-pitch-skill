@@ -86,15 +86,17 @@ If the task is ambiguous enough that you can't tell what "done" means, that's a 
 
 Here handoff deliberately **overrides** team-review's wait-for-the-user gate. The user already authorized action by invoking handoff, so apply the safe fixes and flag the rest rather than blocking.
 
-| Finding tier / kind                                                      | Action                                                                           |
-| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| Consensus Must-fix / Should-fix                                          | Apply. High agreement, clear defect.                                             |
-| Corroborated Must-fix                                                    | Apply.                                                                           |
-| Corroborated Should-fix                                                  | Apply if the fix is mechanical and low-risk; otherwise flag.                     |
-| Single-source (low-confidence)                                           | Do NOT auto-apply. Flag with the specialist's rationale so the human can decide. |
-| Conflicts between specialists                                            | Do NOT pick a side silently. Flag both positions.                                |
-| Nits                                                                     | Apply if trivial; otherwise drop. Don't flag nits — noise.                       |
-| Any fix that changes intended behaviour, public API, or security posture | Flag, don't apply. That's a product decision.                                    |
+| Finding tier / kind                                                      | Action                                                        |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| Consensus Must-fix / Should-fix                                          | Apply. High agreement, clear defect.                          |
+| Corroborated Must-fix (verified)                                         | Apply.                                                        |
+| Corroborated Should-fix (verified)                                       | Apply if the fix is mechanical and low-risk; otherwise flag.  |
+| Single-source Must-fix (verified)                                        | Apply if the fix is mechanical and low-risk; otherwise flag.  |
+| Single-source Should-fix (verified)                                      | Flag with the specialist's rationale so the human can decide. |
+| Rejected by verification                                                 | Not in team-review's Recommended actions — nothing to apply.  |
+| Conflicts between specialists                                            | Do NOT pick a side silently. Flag both positions.             |
+| Nits                                                                     | Apply if trivial; otherwise drop. Don't flag nits — noise.    |
+| Any fix that changes intended behaviour, public API, or security posture | Flag, don't apply. That's a product decision.                 |
 
 After applying, re-run the project's checks. A re-review pass is optional — use judgment on whether the change surface warrants it. If you re-dispatch `team-review`, it hits its own wait-for-the-user gate; override it exactly as this phase does — apply the safe tier, flag the rest, keep moving. Never let an autonomous run stall waiting for input it promised not to need.
 
@@ -154,7 +156,7 @@ The skill's value is knowing the difference between "decide and move on" and "a 
 
 - You picked between materially different implementation approaches and the choice has lasting consequences (data model, public API shape, dependency added).
 - You inferred a requirement the task didn't state.
-- A review finding was low-confidence, conflicting, or behaviour-changing (per [phase-address](#phase-address)).
+- A review finding was single-source and non-mechanical, conflicting, or behaviour-changing (per [phase-address](#phase-address)).
 - You worked around a CI failure rather than truly fixing it, or skipped a check.
 - You noticed something out of scope that looks wrong but you chose not to touch.
 
