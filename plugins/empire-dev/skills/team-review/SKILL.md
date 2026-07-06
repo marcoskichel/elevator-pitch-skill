@@ -132,21 +132,47 @@ If neither exists, proceed without them.
 
 </section>
 
-<section id="consolidated-report">
+<section id="verification-stage">
 
-- After all specialists return, produce consolidated report
-- Summary table:
-  ```
-  | Specialist | Must-fix | Should-fix | Nits |
-  |---|---|---|---|
-  ```
-- Aggregate findings by tier — vote across specialists on `(file, line-range, category)` match key
-- Two findings match when: same file path AND overlapping line-range (within ±5 lines) AND identical category
+- Compute match key across all specialist findings: same file path AND overlapping line-range (within ±5 lines) AND identical category
 - Merge matched findings into one entry; preserve clearest suggestion wording; tally specialist count
 - Tiers (let `M` = roster size):
   - `Consensus` — flagged by strict majority (> M/2)
   - `Corroborated` — flagged by ≥ 2 specialists, below majority
   - `Single-source` — flagged by exactly 1 specialist
+- Consensus findings skip verification — majority agreement is sufficient signal; verifying every finding would scale cost with total finding count instead of contested-finding count
+- Dispatch ONE verifier agent covering all Corroborated + Single-source findings in a single call — never one call per finding
+- Verifier MUST use a different `subagent_type` than any roster specialist where an alternative exists; otherwise use the most general code-reviewer-style agent available
+- Verifier receives:
+  - Full diff or PR number, list of changed files
+  - Each Corroborated/Single-source finding's `file:line-range`, `category`, and suggestion text ONLY — omit tier label and specialist count so severity isn't anchored to how many specialists agreed
+  - The fixed severity rubric below
+  - "Do NOT post to GitHub. Report findings in chat only."
+- Fixed severity rubric — verifier MUST classify each finding as exactly one of:
+  - `valid: must-fix` — confirmed defect breaking functionality, security, data integrity, or correctness in the changed lines or their direct blast radius
+  - `valid: should-fix` — confirmed real improvement, not urgent
+  - `valid: nit` — confirmed but cosmetic/style only
+  - `invalid` — claim does not hold up against the diff
+- Required verifier output format:
+
+  ```
+  <file:line-range> [`<category>`] — <valid: must-fix|valid: should-fix|valid: nit|invalid> — <one-sentence rationale>
+  ```
+
+- Rationale: single-pass isolated adjudication of contested/singleton findings beats both majority vote and generic LLM-as-judge on accuracy while bounding cost to auditing non-consensus items only ("Auditing Multi-Agent LLM Reasoning Trees Outperforms Majority Vote and LLM-as-Judge", arxiv:2602.09341); distinct from iterative peer debate, so this doesn't conflict with "Debate or Vote" (arxiv:2508.17536) — that finding is about repeated debate among the _generating_ agents, not a single downstream adjudication pass
+
+</section>
+
+<section id="consolidated-report">
+
+- After specialists and the verifier return, produce consolidated report
+- Summary table:
+  ```
+  | Specialist | Must-fix | Should-fix | Nits |
+  |---|---|---|---|
+  ```
+- Drop any finding the verifier ruled `invalid` from every section except `Rejected by verification`
+- For surviving findings, use the verifier's severity (`must-fix`/`should-fix`/`nit`) for Corroborated and Single-source entries; Consensus entries keep each specialist's original severity (skipped verification per `verification-stage`)
 - Required report structure:
 
   ```
@@ -160,28 +186,30 @@ If neither exists, proceed without them.
   ### Nits
   ...
 
-  ## Corroborated  (≥ 2 specialists)
+  ## Corroborated  (≥ 2 specialists — verified)
   ### Must-fix
   <file:line-range> [`<category>`] — <merged suggestion>  ×K  [<specialist-A>, <specialist-B>]
   ...
 
-  ## Single-source  (1 specialist — low confidence, treat as optional)
+  ## Single-source  (1 specialist — verified)
   ### Must-fix
   <file:line-range> [`<category>`] — <suggestion>  [<specialist>]
   ...
+
+  ## Rejected by verification
+  <file:line-range> [`<category>`] — <original suggestion> — <verifier rationale>
 
   ## Conflicts
   <file:line-range> — <specialist-A says X> vs <specialist-B says Y>
 
   ## Recommended actions
-  1. <action> — <rationale referencing tier + severity>
+  1. <action> — <rationale referencing tier + verified severity>
   ...
   ```
 
 - Omit any tier or severity heading that has no entries
-- Prioritize Recommended actions: Consensus before Corroborated before Single-source; within each tier, Must-fix before Should-fix before Nits
-- Single-source findings MUST carry the `low-confidence` tag and MUST be excluded from Recommended actions unless the lone specialist is the domain owner for that category (e.g. only security-auditor flagged a security finding); user may still promote them manually
-- Rationale: per-finding majority vote outperforms iterative debate at lower cost ("Debate or Vote", arxiv:2508.17536, NeurIPS 2025); tiering preserves recall without sacrificing precision
+- Prioritize Recommended actions by verified severity first (must-fix > should-fix > nit), then Consensus before Corroborated before Single-source as a tie-break within the same severity
+- Any finding present in `Rejected by verification` MUST NOT appear in Recommended actions
 
 </section>
 
@@ -196,7 +224,7 @@ If neither exists, proceed without them.
 
 <section id="agent-availability">
 
-- If zero suitable code-review/specialist agents exist in the environment → MUST stop and tell user; never inline-impersonate a specialist
-- MUST NOT fabricate specialist personas inside the main thread
+- If zero suitable code-review/specialist/verifier agents exist in the environment → MUST stop and tell user; never inline-impersonate one
+- MUST NOT fabricate specialist or verifier personas inside the main thread
 
 </section>

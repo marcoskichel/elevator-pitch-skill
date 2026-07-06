@@ -21,7 +21,7 @@ Or install the full empire bundle (which includes this plugin):
 
 ### `team-review`
 
-Spawn parallel specialist subagents to review a diff or PR, then aggregate findings into a tiered consensus report (Consensus / Corroborated / Single-source). The skill detects signals in the diff (language, security surface, architectural change, perf hotspots, tests), picks 3–6 specialists from the available roster, dispatches them in parallel, then votes findings by `(file, line-range, category)` match — surfacing high-confidence issues first while preserving every specialist's input. Reads `CONTEXT.md` and relevant `docs/adr/` entries before dispatch, passing project vocabulary to each specialist. Findings stay local — never posted to GitHub.
+Spawn parallel specialist subagents to review a diff or PR, then aggregate findings into a tiered, verified report (Consensus / Corroborated / Single-source). The skill detects signals in the diff (language, security surface, architectural change, perf hotspots, tests), picks 3–6 specialists from the available roster, dispatches them in parallel, then votes findings by `(file, line-range, category)` match. Corroborated and Single-source findings — anything below strict majority — go through one independent verifier agent that rules each valid/invalid against a fixed severity rubric, blind to specialist count, so a real issue caught by only one specialist isn't buried just for being single-source. Reads `CONTEXT.md` and relevant `docs/adr/` entries before dispatch, passing project vocabulary to each specialist. Findings stay local — never posted to GitHub.
 
 **Triggers (strong, dispatch immediately):** "team review", "specialist review", "have specialists review", "ask the team", "parallel review", "have the team look", "re-review", "another pass".
 
@@ -32,7 +32,8 @@ flowchart LR
   diff[Diff] --> roster[Pick specialists]
   roster --> dispatch[Parallel review]
   dispatch --> vote[Vote + tier]
-  vote --> report[Tiered report]
+  vote --> verify[Verify non-consensus]
+  verify --> report[Report]
 ```
 
 **Source:** [`skills/team-review/SKILL.md`](skills/team-review/SKILL.md)
