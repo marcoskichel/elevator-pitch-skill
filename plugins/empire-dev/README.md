@@ -40,18 +40,19 @@ flowchart LR
 
 ### `socratic-pr-review`
 
-Review a PR in the Socratic style: ask the genuine, curious question a teammate would, surfacing each issue (or clarifying intent) instead of dictating the fix. Runs `team-review` on the PR, converts its recommended actions into short question-style inline comments, re-checks every comment against the current code (with optional web research), then walks them past you one at a time to keep, adjust, or drop. After validation it proposes a verdict (approve / request changes / comment) plus an optional summary, and on your approval posts the entire review in a single GitHub API call. This is the one empire-dev skill that writes to GitHub, and only after you validate every comment and the verdict. Comments stay short (ideally under 150 chars), omit fix suggestions unless unambiguous, and use no dashes or emojis.
+Review a PR in the Socratic style: ask the genuine, curious question a teammate would, surfacing each issue (or clarifying intent) instead of dictating the fix. It first tells you, in plain words, what the PR does — parallel agents read the description, the diff, and how it wires into existing code — then gives a quick read on the direction, flagging tradeoffs and proposing a better alternative only when one is clearly better. Then it runs `team-review`, converts the recommended actions into short question-style inline comments, re-checks every comment against the current code (with optional web research), and walks them past you one at a time, each with a short note on the code it touches so you can weigh in with authority. It confirms sparingly: an obvious target isn't re-confirmed, and the verdict (approve / request changes / comment) plus summary and destination are settled in a single confirmation before it posts the entire review in one GitHub API call. This is the one empire-dev skill that writes to GitHub, and only after you OK the comments and the verdict. Comments stay short (ideally under 150 chars), omit fix suggestions unless unambiguous, and use no dashes or emojis.
 
 **Triggers:** "socratic review", "socratic pr review", "socratic code review", "review this PR socratically", "review the PR with questions", "ask questions on the PR", "question-style review", "leave socratic comments", "/empire-dev:socratic-pr-review".
 
 ```mermaid
 flowchart LR
-  pr[PR] --> tr[team-review]
+  pr[PR] --> what[What it does]
+  what --> dir[Check direction]
+  dir --> tr[team-review]
   tr --> draft[Draft questions]
   draft --> recheck[Re-check vs code]
-  recheck --> validate[Validate 1 by 1]
-  validate --> verdict[Verdict + summary]
-  verdict --> post[Post one review]
+  recheck --> walk[Walk 1 by 1 + context]
+  walk --> verdict[Verdict + post]
 ```
 
 **Source:** [`skills/socratic-pr-review/SKILL.md`](skills/socratic-pr-review/SKILL.md)

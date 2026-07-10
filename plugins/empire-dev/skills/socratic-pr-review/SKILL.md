@@ -4,36 +4,66 @@ description: >
   Trigger when user says: "socratic review", "socratic pr review", "socratic
   code review", "review this PR socratically", "review the PR with questions",
   "ask questions on the PR", "question-style review", "leave socratic comments",
-  "/empire-dev:socratic-pr-review". Runs team-review on a PR, turns recommended
-  actions into short question-style inline comments, validates each comment with
-  the user one by one, then posts ONE review (approve / request changes /
-  comment) at once. Posts to GitHub only after explicit user validation of every
-  comment and the final verdict.
+  "/empire-dev:socratic-pr-review". First explains in plain words what the PR
+  does and sanity-checks its direction, then runs team-review, turns findings
+  into short question-style inline comments, walks each past the user with a
+  quick note on the code it touches, and posts ONE review (approve / request
+  changes / comment) at the end. Posts to GitHub only after the user confirms
+  the comments and the final verdict.
 compatibility: Requires the gh CLI and network access; dispatches review subagents.
 allowed-tools: Bash Read Glob Grep Skill Agent WebSearch WebFetch
 ---
 
 <section id="overview">
 
-Socratic PR review: lead the author to the defect with a question, do not dictate the fix.
-Pipeline: resolve PR → team-review → draft question-comments → re-check vs code → validate one by one → propose verdict → post one review atomically.
-This is the one empire-dev skill that writes to GitHub. It posts exactly ONE review, only after the user validates every comment and the verdict.
+Socratic PR review: lead the author to the issue with a question; don't dictate the fix.
+Talk like a teammate — short phrases, plain words, no jargon. The point is to make the review easy to follow and easy to weigh in on.
+Pipeline: resolve PR → say what it does → check the direction → team-review → draft questions → re-check vs code → walk them one by one → post one review.
+Confirm sparingly. Skip the obvious. The one hard stop is the single GitHub post.
+This is the only empire-dev skill that writes to GitHub. It posts exactly ONE review, and only after the user OKs the comments and the verdict.
 
 </section>
 
 <section id="target-detection">
 
-- Resolve the target PR before anything else.
+- Resolve the target PR first.
 - Signals, in order:
   - Explicit PR number or URL in the invocation
   - Open PR for the current branch: `gh pr view --json number,url,headRefOid`
-  - PR referenced earlier in conversation
-- No open PR + no explicit target → ASK; do not guess.
-- Derive `OWNER`/`REPO` from the PR's OWN base repo, never from `gh repo view` (the cwd repo may differ from the PR's repo or fork):
+  - PR referenced earlier in the conversation
+- Derive `OWNER`/`REPO` from the PR's OWN base repo, never from `gh repo view` (cwd may be a different repo or fork):
   - `gh pr view "$PR" --json number,url,baseRefName,headRefOid` (a bare number resolves against cwd; pass a full URL for any other repo or fork)
   - Parse `OWNER`/`REPO` from the returned `.url` (`https://github.com/OWNER/REPO/pull/N`); set `PR` from `.number`
-- MUST echo `OWNER/REPO#PR @ <sha>` + url and confirm it is the intended PR before team-review or any post. A wrong target is unrecoverable once posted.
-- Treat `SHA` as provisional here; re-fetch it immediately before posting (see [post-review](#post-review)).
+- State the target in one line: `OWNER/REPO#PR @ <sha>` + url, then keep going.
+- Confirm ONLY when it's genuinely unclear — no explicit target and either zero or several candidate PRs. A clear target needs no confirmation.
+- Treat `SHA` as provisional; re-fetch it right before posting (see [post-review](#post-review)).
+
+</section>
+
+<section id="understand">
+
+Runs BEFORE any review. Goal: know what the PR does, so every later question lands in context.
+
+- Dispatch parallel agents in one message (Explore or general-purpose), findings in chat only:
+  - Reader — read the PR description + full diff → the change and the author's intent
+  - Integrator — trace how it wires into existing code → what calls it, what it replaces, where the data flows
+- From their results, tell the user in plain words:
+  - What it does — 1-3 short sentences, everyday language, the kind you'd say out loud
+  - Touches — the key files or areas
+  - Fits in by — one line on how it hooks into what's already there
+- Informational. Present it, then continue — no gate here.
+
+</section>
+
+<section id="check-direction">
+
+Right after "what it does", give a quick read on the approach — still plain words.
+
+- Direction — is this a sound way to solve it? one line
+- Tradeoffs — the real ones, as short phrases (e.g. "quick to ship, adds a dependency")
+- Alternative — propose one ONLY if its tradeoffs are clearly better; otherwise say the direction looks fine and move on
+- Keep it to a few lines. A gut-check on direction, not a design doc.
+- If a better alternative exists, pause so the user can pick the direction before you spend the review on this one. Otherwise continue.
 
 </section>
 
@@ -78,7 +108,7 @@ This is the one empire-dev skill that writes to GitHub. It posts exactly ONE rev
 
 <section id="recheck">
 
-- Re-verify EVERY draft comment against the current code in one batch pass, BEFORE the one-by-one validation loop.
+- Re-verify EVERY draft comment against the current code in one batch pass, BEFORE you walk the comments one by one.
 - Read the actual file and line; confirm the issue still exists in the diff as drafted.
 - MAY use WebSearch / WebFetch to confirm API behavior, version semantics, or library contracts the finding depends on.
 - Drop the comment if re-check shows it is wrong, already handled, or off-target. State dropped ones briefly.
@@ -96,38 +126,36 @@ This is the one empire-dev skill that writes to GitHub. It posts exactly ONE rev
 
 </section>
 
-<section id="one-by-one-validation">
+<section id="walk-comments">
 
-- Present comments ONE AT A TIME. Never dump the full list.
-- For each, show:
-  - `path:line` and a 1-2 line diff snippet for context
-  - The draft question comment
-  - One line on why it matters (tier + category from team-review)
-- Then discuss: keep as-is, adjust wording, or drop.
-- MUST wait for the user's decision on the current comment before showing the next.
-- Track the running set of validated comments; reflect edits verbatim.
+- Show comments ONE AT A TIME. Never dump the full list — one question is easy to weigh in on; ten at once isn't.
+- For each, in plain words:
+  - Context — what this bit of code does + what the change did to it, 1-2 short lines, so the user can weigh in with authority
+  - `path:line` + a 1-2 line diff snippet
+  - The draft question
+  - Why it matters — one short line (tier + category from team-review)
+- Then: keep as-is, reword, or drop.
+- Wait for the user's call on the current comment before showing the next.
+- Track the kept comments; apply any edits verbatim.
 
 </section>
 
 <section id="verdict">
 
-- After every comment is validated or dropped, propose the review event:
-  - `APPROVE` — no unresolved Must-fix; only questions or nits remain
-  - `REQUEST_CHANGES` — one or more unresolved Must-fix comments
-  - `COMMENT` — questions worth raising, no blocking stance
-- Propose a summary body (MAY be empty). Keep it short; same prose rules (no dashes, no emojis).
-- Present verdict + summary; MUST get explicit user approval of both before posting.
-- `REQUEST_CHANGES` blocks the PR; MUST confirm the blocking event explicitly, separate from summary approval.
-- User MAY override the event and edit the summary.
+- Once the comments are settled, propose the review in ONE message:
+  - Event — `APPROVE` (no unresolved must-fix), `REQUEST_CHANGES` (≥1 unresolved must-fix), or `COMMENT` (questions worth raising, no blocking stance)
+  - Summary — short, MAY be empty; same prose rules (no dashes, no emojis)
+  - Destination — `OWNER/REPO#PR @ <sha>`
+- One confirmation covers all three. Get an explicit "post" before writing to GitHub — this is the hard stop.
+- `REQUEST_CHANGES` blocks the PR; call that out in the same message.
+- User MAY switch the event or edit the summary before confirming.
 
 </section>
 
 <section id="post-review">
 
 - Post the ENTIRE review in ONE GitHub API call. Never post comments individually; never create a pending review then submit separately.
-- Immediately before posting:
-  - Re-fetch `SHA=$(gh pr view "$PR" --json headRefOid -q .headRefOid)`. If it changed since [target-detection](#target-detection), warn the user and re-confirm (anchors may have drifted).
-  - Re-display the exact destination + action — `OWNER/REPO#PR @ $SHA`, event — and get a final explicit "post" confirmation. The per-comment gate does not cover the destination.
+- Right before posting, re-fetch `SHA=$(gh pr view "$PR" --json headRefOid -q .headRefOid)`. If it changed since [target-detection](#target-detection), warn the user (anchors may have drifted) and re-confirm; otherwise the [verdict](#verdict) OK stands.
 - Build the payload with `jq` into a temp file; pass every comment `body` and the summary as `--arg` values, NEVER via string interpolation (bodies hold quotes, backticks, `$()`). Then a single POST, deleting the temp file after:
 
   ```bash
