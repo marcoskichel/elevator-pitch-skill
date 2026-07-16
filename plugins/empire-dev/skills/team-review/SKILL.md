@@ -141,37 +141,38 @@ If neither exists, proceed without them.
   - `Corroborated` — flagged by ≥ 2 specialists, below majority
   - `Single-source` — flagged by exactly 1 specialist
 - Consensus findings skip verification — majority agreement is sufficient signal; verifying every finding would scale cost with total finding count instead of contested-finding count
-- Dispatch ONE verifier agent covering all Corroborated + Single-source findings in a single call — never one call per finding
-- Verifier MUST use a different `subagent_type` than any roster specialist where an alternative exists; otherwise use the most general code-reviewer-style agent available
-- Verifier receives:
+- Dispatch verifiers in PARALLEL — one `Agent` call per Corroborated/Single-source finding — in a single message
+- Each verifier adjudicates exactly ONE finding in isolation; never one verifier judging multiple findings, never a serial single-verifier pass
+- Verifiers MUST use a different `subagent_type` than any roster specialist where an alternative exists; otherwise use the most general code-reviewer-style agent available
+- Each verifier receives:
   - Full diff or PR number, list of changed files
-  - Each Corroborated/Single-source finding's `file:line-range`, `category`, and suggestion text ONLY — omit tier label and specialist count so severity isn't anchored to how many specialists agreed
+  - Its one finding's `file:line-range`, `category`, and suggestion text ONLY — omit tier label and specialist count so severity isn't anchored to how many specialists agreed
   - The fixed severity rubric below
   - "Do NOT post to GitHub. Report findings in chat only."
-- Fixed severity rubric — verifier MUST classify each finding as exactly one of:
+- Fixed severity rubric — each verifier MUST classify its finding as exactly one of:
   - `valid: must-fix` — confirmed defect breaking functionality, security, data integrity, or correctness in the changed lines or their direct blast radius
   - `valid: should-fix` — confirmed real improvement, not urgent
   - `valid: nit` — confirmed but cosmetic/style only
   - `invalid` — claim does not hold up against the diff
-- Required verifier output format:
+- Required output format — each verifier returns exactly one line:
 
   ```
   <file:line-range> [`<category>`] — <valid: must-fix|valid: should-fix|valid: nit|invalid> — <one-sentence rationale>
   ```
 
-- Rationale: single-pass isolated adjudication of contested/singleton findings beats both majority vote and generic LLM-as-judge on accuracy while bounding cost to auditing non-consensus items only ("Auditing Multi-Agent LLM Reasoning Trees Outperforms Majority Vote and LLM-as-Judge", arxiv:2602.09341); distinct from iterative peer debate, so this doesn't conflict with "Debate or Vote" (arxiv:2508.17536) — that finding is about repeated debate among the _generating_ agents, not a single downstream adjudication pass
+- Rationale: per-finding isolated adjudication of contested/singleton findings beats both majority vote and generic LLM-as-judge on accuracy while bounding cost to auditing non-consensus items only ("Auditing Multi-Agent LLM Reasoning Trees Outperforms Majority Vote and LLM-as-Judge", arxiv:2602.09341); one verifier per finding preserves that isolation while cutting wall-clock latency vs a single serial pass, and removes cross-finding anchoring; distinct from iterative peer debate, so this doesn't conflict with "Debate or Vote" (arxiv:2508.17536) — that finding is about repeated debate among the _generating_ agents, not a single downstream adjudication pass
 
 </section>
 
 <section id="consolidated-report">
 
-- After specialists and the verifier return, produce consolidated report
+- After specialists and all verifiers return, produce consolidated report
 - Summary table:
   ```
   | Specialist | Must-fix | Should-fix | Nits |
   |---|---|---|---|
   ```
-- Drop any finding the verifier ruled `invalid` from every section except `Rejected by verification`
+- Drop any finding its verifier ruled `invalid` from every section except `Rejected by verification`
 - For surviving findings, use the verifier's severity (`must-fix`/`should-fix`/`nit`) for Corroborated and Single-source entries; Consensus entries keep each specialist's original severity (skipped verification per `verification-stage`)
 - Required report structure:
 
