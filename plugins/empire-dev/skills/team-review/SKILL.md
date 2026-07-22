@@ -7,7 +7,7 @@ description: >
   "get specialists to review", "run a team review", "do a specialist review".
   Spawns parallel specialist subagents to review diffs and consolidates findings.
   Never posts to GitHub.
-compatibility: Designed for Claude Code (or similar agents); dispatches review subagents.
+compatibility: Dispatches parallel review subagents. Runs in Claude Code and OpenAI Codex; bundled personas keep it self-contained when no named subagents are installed.
 ---
 
 <section id="intent-gate">
@@ -70,9 +70,11 @@ compatibility: Designed for Claude Code (or similar agents); dispatches review s
 - Inspect diff; pick 3–4 specialists matching the strongest change signals — hard cap 4
 - Rationale: the barrier waits on the slowest specialist (max-of-N grows with N) and each extra specialist adds singleton findings that each spawn a verifier; homogeneous same-model rosters show sharply diminishing recall gains past 3–4 (arxiv:2402.05120, arxiv:2602.03794)
 - More signals than roster slots → fold weaker signals into the closest specialist's brief (e.g. performance checklist into the generalist's brief), never grow the roster
-- Agent names vary by environment; do not assume a specific agent exists
-- Inspect available subagents via the `Agent` tool's `subagent_type` parameter
-- For each signal present in the diff, pick the available agent whose name/description best matches; if multiple candidates fit, prefer the most specific; if none fit, fall back to the most general code-reviewer-style agent available
+- Two ways to source each specialist; prefer the first, always have the second:
+  - Named subagent — if the platform exposes specialist subagents, inspect what is available and pick the best match (Claude Code: the `Agent` tool's `subagent_type`; other agents: their own spawn mechanism)
+  - Bundled persona — brief a general-purpose subagent with the matching persona in `references/personas/<name>.md`; use when no named subagent fits or the platform has no subagent registry
+- Agent names vary by environment; never assume a specific named agent exists — the bundled personas guarantee the roster can always be filled
+- For each signal, pick the best-matching source; if multiple fit, prefer the most specific; if none fit, use the general `code-reviewer` persona
 - Signals to detect in the diff:
   - Language/framework — dominant language or framework of changed files
   - Security surface — auth, crypto, secrets, permissions, input handling
@@ -81,7 +83,7 @@ compatibility: Designed for Claude Code (or similar agents); dispatches review s
   - Performance hotspot — hot paths, DB queries, batching, caching, resource allocation
   - Debugging need — complex logic, non-obvious control flow, subtle state mutations
   - Generalist coverage — always include at least one general code-reviewer agent to anchor the roster
-- MUST list chosen specialists with their actual `subagent_type` values + one-line rationale per pick BEFORE dispatch
+- MUST list chosen specialists (named `subagent_type` or persona filename) + one-line rationale per pick BEFORE dispatch
 - If confident in every pick (clear signal-to-agent fit, no ambiguity) → dispatch immediately; user may interrupt mid-flight
 - If uncertain about any pick (multiple candidates equally fit, no clear-fit agent for a signal, ambiguous diff scope) → MUST confirm roster with user before dispatch; allow swaps, additions, removals
 
@@ -111,18 +113,19 @@ compatibility: Designed for Claude Code (or similar agents); dispatches review s
   - Feed the returned tiers into `consolidated-report` — tier math is already done; render, don't recompute
   - Skip `parallel-dispatch` and `verification-stage` — the workflow owns dispatch and tiering
 
-- Fallback — Workflow tool unavailable: use `parallel-dispatch` then `verification-stage` below
+- Fallback — Workflow tool unavailable (e.g. OpenAI Codex): use `parallel-dispatch` then `verification-stage` below
 
 </section>
 
 <section id="parallel-dispatch">
 
 - Inline fallback — only when the Workflow tool is unavailable (see `dispatch-mode`)
-- Send single message with multiple `Agent` tool calls (one per specialist)
+- Dispatch all specialists in parallel, one subagent per specialist (Claude Code: one message with multiple `Agent` tool calls; other agents: spawn them concurrently)
 - Each specialist receives:
   - Diff text INLINED in the brief — never a bare PR number; per-agent `gh pr diff`/file re-fetches are serial tool turns inside the barrier
   - Exception: diff over ~1500 changed lines → inline changed-file list + one-line-per-file summary instead; specialists fetch details themselves
   - List of changed files
+  - For a persona-sourced specialist: the role and expertise from `references/personas/<name>.md`, as its instructions
   - User's stated intent (if provided)
   - `CONTEXT.md` vocabulary (read from repo root before dispatch; include if file exists, omit if absent)
   - Relevant ADRs from `docs/adr/` (include summaries of ADRs touching changed paths; omit if folder absent)
@@ -178,9 +181,9 @@ compatibility: Designed for Claude Code (or similar agents); dispatches review s
   - `Corroborated` — flagged by ≥ 2 specialists, below the Consensus threshold
   - `Single-source` — flagged by exactly 1 specialist
 - Consensus findings skip verification — ≥ 3 independent agreements is sufficient signal; the ≥ 3 floor exists because at small M a bare majority (2 of 3) is too weak to bypass adjudication
-- Dispatch verifiers in PARALLEL — one `Agent` call per Corroborated/Single-source finding — in a single message
+- Dispatch verifiers in PARALLEL — one subagent per Corroborated/Single-source finding, all at once (Claude Code: one message with multiple `Agent` calls)
 - Each verifier adjudicates exactly ONE finding in isolation; never one verifier judging multiple findings, never a serial single-verifier pass
-- Prefer the bundled `finding-verifier` agent (fast model, tuned for single-finding adjudication); else any `subagent_type` different from every roster specialist; else the most general code-reviewer-style agent available
+- Prefer the bundled `finding-verifier` agent (fast model, tuned for single-finding adjudication); else a general-purpose subagent briefed with `references/personas/finding-verifier.md`, using a different source than the finding's roster specialist; else the general `code-reviewer` persona
 - Each verifier receives:
   - The diff hunk(s) covering its finding's `file:line-range` ± ~15 lines, INLINED — goal: adjudicate in one turn with zero tool calls; tools stay available for blast-radius checks beyond the hunk
   - Its one finding's `file:line-range`, `category`, and suggestion text ONLY — omit tier label and specialist count so severity isn't anchored to how many specialists agreed
@@ -263,7 +266,8 @@ compatibility: Designed for Claude Code (or similar agents); dispatches review s
 
 <section id="agent-availability">
 
-- If zero suitable code-review/specialist/verifier agents exist in the environment → MUST stop and tell user; never inline-impersonate one
-- MUST NOT fabricate specialist or verifier personas inside the main thread
+- The bundled personas in `references/personas/` always provide a fallback roster — a missing named subagent is never a reason to stop
+- If the platform cannot spawn subagents at all → MUST stop and tell user; never inline-impersonate a specialist or verifier in the main thread
+- MUST NOT fabricate specialist or verifier findings inside the main thread
 
 </section>

@@ -44,7 +44,7 @@ This is the only empire-dev skill that writes to GitHub. It posts exactly ONE re
 
 Runs BEFORE any review. Goal: know what the PR does, so every later question lands in context.
 
-- Dispatch parallel agents in one message (Explore or general-purpose), findings in chat only:
+- Dispatch parallel read-only subagents (Claude Code: `Explore` or `general-purpose` in one message; other agents: spawn concurrently), findings in chat only:
   - Reader — read the PR description + full diff → the change and the author's intent
   - Integrator — trace how it wires into existing code → what calls it, what it replaces, where the data flows
 - From their results, tell the user in plain words:

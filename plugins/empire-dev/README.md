@@ -17,6 +17,16 @@ Or install the full empire bundle (which includes this plugin):
 /plugin install empire@empire
 ```
 
+## Use with Codex
+
+These skills also run in OpenAI Codex (and other runtimes that read the [Agent Skills](https://agentskills.io) format). Install with [skills.sh](https://skills.sh):
+
+```sh
+npx skills add marcoskichel/empire -a codex
+```
+
+Codex has no plugin namespace — invoke skills flat (`/team-review`, `$team-review`) or let Codex match them implicitly from their descriptions. `team-review` bundles its specialist personas, so it fills a full review roster even where no named subagents are installed. `handoff`'s end-to-end worktree/PR flow additionally relies on `empire-git` skills, which are not yet ported to Codex.
+
 ## Skills
 
 ### `team-review`
@@ -147,7 +157,7 @@ Domain experts:
 | `blockchain-developer` | Smart contracts, DeFi, Web3, gas optimization, audit |
 | `ai-engineer`          | LLM apps, RAG, agents, prompts, vector search        |
 
-The `team-review` skill auto-discovers whatever specialist subagents are installed and picks the best match per task. If your environment has more specialized subagents from another marketplace, the skill will use them.
+The `team-review` skill prefers whatever specialist subagents are installed and picks the best match per task — including specialists from another marketplace. Where a signal has no matching named subagent (or the platform has no subagent registry, as in Codex), it briefs a general-purpose subagent with the bundled persona in [`skills/team-review/references/personas/`](skills/team-review/references/personas/), so the roster is always complete. Those personas are generated from the files above by [`scripts/sync-codex.sh`](../../scripts/sync-codex.sh).
 
 ## Upstream attribution
 

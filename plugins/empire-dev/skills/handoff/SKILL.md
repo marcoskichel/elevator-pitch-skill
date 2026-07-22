@@ -12,7 +12,7 @@ description: >
   "implement, review, and open a PR", "build it, have the team review, then
   push a PR", "do the whole thing", "run this autonomously", "I'm stepping
   away — carry this to a PR", "ship this for me".
-compatibility: Requires the gh CLI and git; dispatches subagents. Designed for Claude Code.
+compatibility: Requires the gh CLI and git; dispatches subagents. Runs in Claude Code and OpenAI Codex; the full worktree/PR flow uses empire-git skills when installed.
 allowed-tools: Bash Read Edit Write Glob Grep Skill Agent TodoWrite
 argument-hint: "[task description | spec path]"
 ---
@@ -37,8 +37,8 @@ The point of handoff is to remove babysitting, not judgment. Run the routine; fl
 
 Before any work, build the spine so progress survives a long run and the user can see where you are.
 
-- Create a TodoWrite list with one item per phase below (0 Plan, 1 Implement, 2 Review, 3 Address, 4 PR, 5 CI, 6 Label). Mark each in-progress/done as you go — this is the user's progress bar for an unattended run.
-- Open an isolated worktree via `/empire-git:worktree-open` with a branch derived from the task, and do all work inside it. Rationale: handoff mutates files and pushes; keeping it off the user's current branch is the whole reason worktrees exist. The worktree lives until CI is green and labels are set — never close it mid-run (the CI fix loop needs it).
+- Create a task list with one item per phase below (0 Plan, 1 Implement, 2 Review, 3 Address, 4 PR, 5 CI, 6 Label) — TodoWrite on Claude Code, your platform's task tracker otherwise. Mark each in-progress/done as you go — this is the user's progress bar for an unattended run.
+- Open an isolated worktree via the `worktree-open` skill (empire-git) with a branch derived from the task, and do all work inside it. Rationale: handoff mutates files and pushes; keeping it off the user's current branch is the whole reason worktrees exist. If that skill is unavailable, create the worktree with native git and continue. The worktree lives until CI is green and labels are set — never close it mid-run (the CI fix loop needs it).
 - Work in place ONLY if the user explicitly says so. If working in place, hard-stop and ask before mutating when EITHER holds: the current branch is the default/protected branch (`main`, `master`), or the working tree already carries unrelated uncommitted changes. Pushing handoff's commits onto the user's main branch or entangling them with unrelated work is exactly the kind of irreversible surprise [autonomy-boundaries](#autonomy-boundaries) exists to prevent.
 - If `superpowers:*` skills referenced below are not installed, don't error mid-run: do the equivalent inline (plan/TDD by hand) or skip-with-a-flag. Never stall an unattended run on a missing optional dependency.
 - Read `CONTEXT.md` at repo root and relevant `docs/adr/` entries if present. Carry their vocabulary and decisions through every phase — plans, code, PR body, and flags all use project terms verbatim.
@@ -75,7 +75,7 @@ If the task is ambiguous enough that you can't tell what "done" means, that's a 
 
 ## Phase 2 — Team review
 
-- Invoke `/empire-dev:team-review` on the diff. It picks the specialist roster, dispatches in parallel, and returns a tiered consensus report.
+- Invoke the `team-review` skill on the diff. It picks the specialist roster, dispatches in parallel, and returns a tiered consensus report.
 - Let it choose the roster from the diff signals. Don't hand-pick unless the diff is so narrow one specialist obviously covers it.
 
 </section>
@@ -106,7 +106,7 @@ After applying, re-run the project's checks. A re-review pass is optional — us
 
 ## Phase 4 — Open the PR
 
-- Generate the body with `/empire-git:pr-description` and use its output verbatim — never hand-write a `gh pr create --body`. This is a repo rule, not a preference.
+- Generate the body with the `pr-description` skill (empire-git) and use its output verbatim — never hand-write a `gh pr create --body`. This is a repo rule, not a preference.
 - Append a flags section to the body so the human sees the judgment calls on the PR itself, not buried in chat:
 
   ```
@@ -117,7 +117,7 @@ After applying, re-run the project's checks. A re-review pass is optional — us
   Place it after the generated body. If the flag log is empty, omit the section entirely — don't write "None".
 
 - Title: Conventional Commits, lowercase, no period, ≤ 72 chars.
-- Push with `git push -u origin <branch>` from inside the worktree, then `gh pr create`. Do NOT run `/empire-git:worktree-close` here — it removes the worktree, and the CI fix loop in Phase 5 still needs it. Worktree teardown is the user's call after the PR lands; mention it in the final report rather than doing it mid-run.
+- Push with `git push -u origin <branch>` from inside the worktree, then `gh pr create`. Do NOT run the `worktree-close` skill here — it removes the worktree, and the CI fix loop in Phase 5 still needs it. Worktree teardown is the user's call after the PR lands; mention it in the final report rather than doing it mid-run.
 - Push only handoff's own feature branch. Never push to the base/default branch, and never force-push.
 
 </section>
