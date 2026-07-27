@@ -6,7 +6,7 @@ This file provides guidance for AI agents working with code in this repository.
 
 - Claude Code plugin marketplace. No build, no lint, no test harness.
 - Single marketplace (`.claude-plugin/marketplace.json`) exposes six plugins: `empire` (meta bundle), `empire-git`, `empire-dev`, `empire-research`, `empire-product`, `empire-visual`. Plus `empire-rules` (utility, auto-installed as a transitive dependency).
-- Plugin content = markdown SKILL files, dynamic-workflow `.js` scripts (in `empire-research`), bash scripts and a dependency-free unit-tested Node script (`pr-stack.mjs`) in `empire-git`.
+- Plugin content = markdown SKILL files, dynamic-workflow `.js` scripts (in `empire-research` and `empire-dev`), bash scripts and a dependency-free unit-tested Node script (`pr-stack.mjs`) in `empire-git`.
 - Validation = `.github/workflows/validate.yml`: pre-commit, manifest + SKILL.md spec checks, and `node --test` for `pr-stack`; plus install-and-invoke in Claude Code.
 
 ## Layout
@@ -14,7 +14,7 @@ This file provides guidance for AI agents working with code in this repository.
 - `.claude-plugin/marketplace.json` — marketplace manifest. Each `plugins[]` entry points to one of the `plugins/empire-*` dirs.
 - `plugins/empire-meta/.claude-plugin/plugin.json` — meta plugin (`name: "empire"`). Empty skills dir. Uses `dependencies` field to auto-install the sub-plugins.
 - `plugins/empire-git/` — git workflow skills (`worktree-*`, `pr-description`, stacked-PR `pr-stack`/`pr-merge`) + bash `scripts/` and the Node `scripts/pr-stack.mjs` (+ `pr-stack.test.mjs`).
-- `plugins/empire-dev/` — code `team-review` skill, pre-implementation engineering skills (`shape`, `weigh`, `slice`), plus 11 bundled dev subagents (code review, paradigms, domain experts).
+- `plugins/empire-dev/` — code `team-review` skill, `address-review` skill (driven by `workflows/address-review.js`), pre-implementation engineering skills (`shape`, `weigh`, `slice`), plus 11 bundled dev subagents (code review, paradigms, domain experts).
 - `plugins/empire-research/` — `explore` (open-ended), `compare` (closed), and `dissect` (claim investigation) research skills + `workflows/*.js` orchestration scripts, with `research-analyst` as bundled fallback subagent.
 - `plugins/empire-product/` — product skills (`pitch`, `vet`, `recon`, `mint`, `distill`, `probe`), plus three bundled subagents (`project-idea-validator`, `competitive-analyst`, `market-researcher`).
 - `plugins/empire-visual/` — `visual-first` output style (in `output-styles/`) + on-demand `visualize` skill for terminal-native ASCII diagrams. No subagents.
