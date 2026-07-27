@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Address PR review comments for /empire-dev:address-review — adversarial verification per comment, fix-approach evaluation, recheck of alternatives, parallel implementation grouped by file, direct-tone reply drafts.",
   whenToUse:
-    "Invoked by /empire-dev:address-review when the Workflow tool is available. Requires args {pr, comments:[{id, path, line, body, author, diffHunk, discussion}]}. Edits files in the working tree; never commits, pushes, or posts to GitHub.",
+    "Invoked by /empire-dev:address-review when the Workflow tool is available. Requires args {pr, owner, repo, comments:[{id, path, line, body, author, diffHunk, discussion, isOutdated}]}. Edits files in the working tree; never commits, pushes, or posts to GitHub.",
   phases: [
     { title: "Verify", detail: "adversarial check per comment" },
     { title: "Evaluate", detail: "best fix per valid comment" },
@@ -14,7 +14,7 @@ export const meta = {
 
 const VERDICT_SCHEMA = {
   type: "object",
-  required: ["valid", "rationale"],
+  required: ["valid", "rationale", "pushbackReply"],
   properties: {
     valid: { type: "boolean" },
     rationale: { type: "string" },
@@ -65,14 +65,18 @@ const FIX_SCHEMA = {
 
 const REPLY_RULES =
   "Reply rules: 1 or 2 short sentences maximum. Direct tone. " +
-  "No dashes of any kind. No semicolons. No trivia, no thanks, no filler. " +
+  "No em or en dashes. Hyphens inside identifiers and filenames are fine. No semicolons. No trivia, no thanks, no filler. " +
   "State the outcome and nothing else.";
 
 const pr = args?.pr ?? "";
+const owner = args?.owner ?? "";
+const repo = args?.repo ?? "";
 const comments = args?.comments ?? [];
 
-if (!pr || comments.length === 0) {
-  return { error: "address-review requires args {pr, comments:[{id, path, line, body}]}." };
+if (!pr || !owner || !repo || comments.length === 0) {
+  return {
+    error: "address-review requires args {pr, owner, repo, comments:[{id, path, line, body}]}.",
+  };
 }
 
 const label = (c) => c.path + ":" + (c.line ?? "?");
@@ -91,22 +95,31 @@ const COMMENT_BLOCK = (c) =>
   c.body +
   "\n" +
   (c.diffHunk ? "\n## Diff hunk\n```\n" + c.diffHunk + "\n```\n" : "") +
-  (c.discussion ? "\n## Thread discussion\n" + c.discussion + "\n" : "");
+  (c.discussion ? "\n## Thread discussion\n" + c.discussion + "\n" : "") +
+  (c.isOutdated
+    ? "\nNOTE: GitHub marks this thread outdated. The diff hunk and line number may not match current code. Locate the current code before judging.\n"
+    : "");
 
 const VERIFY_PROMPT = (c) =>
   "## Adversarial reviewer-of-the-reviewer\n\n" +
   "Try to REFUTE this PR review comment. Read the actual file and surrounding code; " +
   "run `gh pr diff " +
   pr +
+  " -R " +
+  owner +
+  "/" +
+  repo +
   "` if you need the full diff. " +
   "The comment is invalid if the issue does not exist in the current code, is already handled, " +
-  "rests on a wrong assumption, or asks for something outside the PR's scope.\n\n" +
+  "rests on a wrong assumption, or asks for work unrelated to the code this PR changes. " +
+  "When uncertain, default to valid=true; refute only with concrete evidence from the code.\n\n" +
   COMMENT_BLOCK(c) +
   "\n## Task\n" +
   "- valid=true only if the issue genuinely holds against the current code.\n" +
   "- rationale: one sentence.\n" +
   "- If invalid, write pushbackReply telling the reviewer why no change is made. " +
   REPLY_RULES +
+  "\n- When valid=true set pushbackReply to an empty string." +
   "\n- Do NOT edit files. Do NOT post to GitHub. Structured output only.";
 
 const EVAL_PROMPT = (c) =>
@@ -164,6 +177,10 @@ const FIX_PROMPT = (group) =>
     )
     .join("\n\n") +
   "\n\n## Task\n" +
+  "- Edit ONLY these files: " +
+  [...group.files].join(", ") +
+  ".\n" +
+  "- If a fix genuinely requires touching another file, do not edit it, set done=false and name the missing file in summary.\n" +
   "- Apply each plan with minimal edits; verify the result reads correctly in context.\n" +
   "- Per fix return: commentId, done (false if you could not apply it), one-line summary, " +
   "and reply (the text to post back to the reviewer). " +
@@ -206,7 +223,7 @@ const perComment = await pipeline(
         plan: {
           approach: "proposed",
           plan: "Apply the reviewer's proposed change as written in the comment.",
-          files: r.plan.files,
+          files: [r.comment.path],
           rationale: k ? k.rationale : "recheck unavailable, defaulting to proposed",
         },
       };
@@ -252,15 +269,38 @@ const fixOutputs = await parallel(
 const fixByComment = new Map();
 for (const entry of fixOutputs.filter(Boolean)) {
   const { group, out } = entry;
+  const groupIndex = groups.indexOf(group);
   if (!out) {
-    group.items.forEach((r) => fixByComment.set(r.comment.id, null));
+    group.items.forEach((r) => fixByComment.set(String(r.comment.id), { groupIndex }));
     continue;
   }
-  for (const f of out.fixes)
-    fixByComment.set(f.commentId, { ...f, filesChanged: out.filesChanged });
+  const offending = (out.filesChanged ?? []).filter((f) => !group.files.has(f));
+  if (offending.length > 0) {
+    log("fix group " + groupIndex + " edited files outside its allowlist: " + offending.join(", "));
+    group.items.forEach((r) =>
+      fixByComment.set(String(r.comment.id), {
+        groupIndex,
+        note: "fix agent edited files outside its group: " + offending.join(", "),
+      }),
+    );
+    continue;
+  }
+  for (const item of group.items) {
+    const match = (out.fixes ?? []).find((f) => String(f.commentId) === String(item.comment.id));
+    fixByComment.set(
+      String(item.comment.id),
+      match ? { ...match, filesChanged: out.filesChanged, groupIndex } : { groupIndex },
+    );
+  }
 }
 
-const results = settled.map((r) => {
+const settledById = new Map(settled.map((r) => [String(r.comment.id), r]));
+
+const results = comments.map((c) => {
+  const r = settledById.get(String(c.id));
+  if (!r) {
+    return { commentId: c.id, path: c.path, line: c.line ?? null, action: "failed", reply: "" };
+  }
   const base = {
     commentId: r.comment.id,
     path: r.comment.path,
@@ -268,11 +308,21 @@ const results = settled.map((r) => {
     rationale: r.verdict.rationale,
   };
   if (r.action === "pushback") {
-    return { ...base, action: "pushback", reply: r.verdict.pushbackReply || "" };
+    const reply = r.verdict.pushbackReply || "";
+    if (!reply.trim()) return { ...base, action: "failed", reply: "" };
+    return { ...base, action: "pushback", reply };
   }
   if (r.action === "failed") return { ...base, action: "failed", reply: "" };
-  const fix = fixByComment.get(r.comment.id);
-  if (!fix || !fix.done) return { ...base, action: "failed", reply: "" };
+  const fix = fixByComment.get(String(r.comment.id));
+  if (!fix || !fix.done) {
+    return {
+      ...base,
+      action: "failed",
+      reply: "",
+      ...(fix ? { groupIndex: fix.groupIndex } : {}),
+      ...(fix && fix.note ? { note: fix.note } : {}),
+    };
+  }
   return {
     ...base,
     action: "fixed",
@@ -280,6 +330,7 @@ const results = settled.map((r) => {
     summary: fix.summary,
     reply: fix.reply,
     files: fix.filesChanged,
+    groupIndex: fix.groupIndex,
   };
 });
 
@@ -301,6 +352,6 @@ return {
     total: comments.length,
     fixed: count("fixed"),
     pushback: count("pushback"),
-    failed: count("failed") + (comments.length - settled.length),
+    failed: count("failed"),
   },
 };

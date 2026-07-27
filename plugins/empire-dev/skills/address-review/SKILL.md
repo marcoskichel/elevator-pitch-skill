@@ -30,6 +30,7 @@ Everything before the gate is local. The ONE confirmation covers commits, push, 
   - PR referenced earlier in the conversation
 - Derive `OWNER`/`REPO` from the PR's `.url`, never from `gh repo view`.
 - Fixes land on the PR head branch. If the checked-out branch ≠ `headRefName` → STOP and tell the user to check out the PR branch (or open its worktree) before rerunning.
+- Run `git status --porcelain`. Uncommitted changes in the working tree → STOP and tell the user to commit or stash before rerunning.
 - State the target in one line: `OWNER/REPO#PR @ <branch>`, then keep going. Confirm only when genuinely ambiguous.
 
 </section>
@@ -43,17 +44,25 @@ Everything before the gate is local. The ONE confirmation covers commits, push, 
     query($owner:String!,$repo:String!,$pr:Int!){
       repository(owner:$owner,name:$repo){
         pullRequest(number:$pr){
-          reviewThreads(first:100){nodes{
-            isResolved isOutdated path line
-            comments(first:50){nodes{databaseId body author{login} diffHunk}}
-          }}
+          author{login}
+          reviewThreads(first:100){
+            pageInfo{hasNextPage endCursor}
+            nodes{
+              isResolved isOutdated path line
+              comments(first:50){nodes{databaseId body author{login} diffHunk}}
+            }
+          }
         }
       }
     }'
   ```
 
+- Loop with the `after:` cursor until `hasNextPage` is false. A thread reporting more than 50 comments → note the truncation in that comment record's `discussion`.
 - Keep threads where `isResolved == false`.
-- Per thread build one comment record: `id` = first comment's `databaseId`, `path`, `line`, `body` = first comment's body, `author`, `diffHunk`, `discussion` = remaining thread comments as `author: body` lines.
+- Skip threads whose most recent comment author is the PR author (already answered). List skipped threads in one line for awareness.
+- Bot reviewer comments are processed like any other unless the user says otherwise.
+- Per thread build one comment record: `id` = first comment's `databaseId`, `path`, `line`, `body` = first comment's body, `author`, `diffHunk`, `isOutdated`, `discussion` = remaining thread comments as `author: body` lines.
+- Outdated threads are flagged (passed through with `isOutdated: true`), not dropped.
 - Zero unresolved threads → report "no unresolved review comments" and stop.
 
 </section>
@@ -65,7 +74,7 @@ Everything before the gate is local. The ONE confirmation covers commits, push, 
   ```
   Workflow({
     scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/address-review.js",
-    args: { pr, comments: [{ id, path, line, body, author, diffHunk, discussion }] },
+    args: { pr, owner, repo, comments: [{ id, path, line, body, author, diffHunk, isOutdated, discussion }] },
   })
   ```
 
@@ -92,8 +101,9 @@ Everything before the gate is local. The ONE confirmation covers commits, push, 
 
 - Output MUST be a TLDR, not a wall of text:
   - One header line: `N fixed, M pushback, K failed`
-  - One table, one row per comment: `path:line | fixed/pushback/failed | reply text`
+  - One table, one row per comment: `path:line | fixed/pushback/failed | files | reply text` — `files` = the row's changed files from `results[].files`, comma-separated
   - Nothing else. No per-comment prose, no plan dumps. Details on request only.
+- User MAY ask to see any row's diff before confirming.
 - Single confirmation covers commits, push, and posting replies — this is the hard stop.
 - User MAY drop a row, edit a reply, or flip a pushback to a fix before confirming. Apply edits verbatim.
 - `failed` rows get no reply; list them for manual follow-up.
@@ -103,12 +113,16 @@ Everything before the gate is local. The ONE confirmation covers commits, push, 
 <section id="apply-and-reply">
 
 - Only after the gate.
-- Commit: one commit per fix group (conventional format, repo scope rules). Stage only the group's files — never `git add -A`. Never `--no-verify`.
+- Commit: one commit per fix group (conventional format, repo scope rules). Stage only files from `fixed` rows — never `git add -A`. Never `--no-verify`.
+- A `failed` row's files overlapping a `fixed` row's files in the same group → STOP before committing that group and surface the overlap to the user instead of pushing partial edits.
 - Push to the PR head branch.
-- Reply per comment, one call each, body passed as data:
+- Reply per comment, one call each. Reply bodies are always passed as `--arg` data, never interpolated into the command or JSON:
 
   ```bash
-  gh api --method POST "repos/$OWNER/$REPO/pulls/$PR/comments/$COMMENT_ID/replies" -f body="$REPLY"
+  payload=$(mktemp)
+  jq -n --arg body "$REPLY" '{body:$body}' >"$payload"
+  gh api --method POST "repos/$OWNER/$REPO/pulls/$PR/comments/$COMMENT_ID/replies" --input "$payload"
+  rm -f "$payload"
   ```
 
   - `COMMENT_ID` = the thread root `databaseId`
