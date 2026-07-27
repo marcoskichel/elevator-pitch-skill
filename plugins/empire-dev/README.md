@@ -57,6 +57,24 @@ flowchart LR
 
 **Source:** [`skills/socratic-pr-review/SKILL.md`](skills/socratic-pr-review/SKILL.md)
 
+### `address-review`
+
+Address PR review comments end to end. Every unresolved review thread goes through an adversarial pipeline: a verifier per comment tries to refute it against the current code (invalid comments get a pushback reply instead of a change), a strategist decides whether the reviewer's proposed change or a better alternative is the right fix, any alternative is adversarially rechecked (refuted alternatives revert to the reviewer's proposal), then fixes are implemented in parallel, grouped by overlapping files so agents never collide. A single compact TLDR — one row per comment with its verdict and draft reply — is the one confirmation gate; after it, the skill commits per fix group, pushes to the PR branch, and replies to every comment in a direct tone (1–2 short sentences, no dashes, no semicolons, no filler). Runs via the bundled `address-review.js` workflow when the Workflow tool is available, with a documented inline-Agent fallback.
+
+**Triggers:** "address review", "address review comments", "address PR comments", "handle review comments", "fix review comments", "respond to the review", "reply to review comments", "resolve review comments", "/empire-dev:address-review".
+
+```mermaid
+flowchart LR
+  pr[PR threads] --> verify[Adversarial verify]
+  verify --> eval[Evaluate fix]
+  eval --> recheck[Recheck alternatives]
+  recheck --> fix[Fix in parallel]
+  fix --> gate[TLDR gate]
+  gate --> ship[Commit + push + reply]
+```
+
+**Source:** [`skills/address-review/SKILL.md`](skills/address-review/SKILL.md)
+
 ### `handoff`
 
 Autonomously drive one task from intent to a labelled PR with green CI. Chains the workflow end-to-end: open a worktree, plan (via `superpowers:writing-plans` when a spec exists), implement, run `team-review`, auto-apply consensus fixes while flagging low-confidence/conflicting/behaviour-changing ones, open the PR (body via `pr-description`), watch CI in a bounded fix loop, and assign labels from the repo's actual label set. Invoking the skill is the ship-intent signal — it authorizes push and PR creation without per-step confirmation — but it hard-stops on ambiguous requirements, destructive/irreversible actions, security calls, scope explosions, and external side effects. Judgment calls are flagged for human review in a "Decisions & flags" PR section and the final chat report rather than guessed silently.
