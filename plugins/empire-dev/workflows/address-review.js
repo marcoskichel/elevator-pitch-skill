@@ -90,6 +90,15 @@ if (!pr || !owner || !repo || comments.length === 0) {
 
 const label = (c) => c.path + ":" + (c.line ?? "?");
 
+const sameFile = (a, b) =>
+  a === b ||
+  (a.startsWith("/") && a.endsWith("/" + b)) ||
+  (b.startsWith("/") && b.endsWith("/" + a));
+
+const addFile = (set, f) => {
+  if (![...set].some((h) => sameFile(f, h))) set.add(f);
+};
+
 const COMMENT_BLOCK = (c) =>
   "## Review comment\n" +
   "- PR: #" +
@@ -141,7 +150,7 @@ const EVAL_PROMPT = (c) =>
   "\n## Task\n" +
   "- approach: 'proposed' or 'alternative'.\n" +
   "- plan: concrete edit steps, minimal diff, no drive-by refactors.\n" +
-  "- files: every file the plan touches.\n" +
+  "- files: every file the plan touches, as repo-relative paths, never absolute.\n" +
   "- rationale: one sentence.\n" +
   "- Do NOT edit files. Do NOT post to GitHub. Structured output only.";
 
@@ -194,7 +203,7 @@ const FIX_PROMPT = (group) =>
   "- Per fix return: commentId, done (false if you could not apply it), one-line summary, " +
   "and reply (the text to post back to the reviewer). " +
   REPLY_RULES +
-  "\n- filesChanged: every file you edited.\n- Structured output only.";
+  "\n- filesChanged: every file you edited, as repo-relative paths, never absolute.\n- Structured output only.";
 
 log("Verifying " + comments.length + " review comments");
 
@@ -246,18 +255,20 @@ const fixable = settled.filter((r) => !r.action && r.plan);
 const groups = [];
 for (const r of fixable) {
   const files = new Set([r.comment.path, ...(r.plan.files || [])]);
-  const overlapping = groups.filter((g) => [...files].some((f) => g.files.has(f)));
+  const overlapping = groups.filter((g) =>
+    [...files].some((f) => [...g.files].some((h) => sameFile(f, h))),
+  );
   let target = overlapping[0];
   if (!target) {
     target = { files: new Set(), items: [] };
     groups.push(target);
   }
   for (const g of overlapping.slice(1)) {
-    g.files.forEach((f) => target.files.add(f));
+    g.files.forEach((f) => addFile(target.files, f));
     target.items.push(...g.items);
     groups.splice(groups.indexOf(g), 1);
   }
-  files.forEach((f) => target.files.add(f));
+  files.forEach((f) => addFile(target.files, f));
   target.items.push(r);
 }
 
@@ -266,24 +277,33 @@ log("Fixing " + fixable.length + " comments in " + groups.length + " parallel gr
 
 const fixOutputs = await parallel(
   groups.map(
-    (g) => () =>
+    (g, index) => () =>
       agent(FIX_PROMPT(g), {
         label: "fix:" + [...g.files][0],
         phase: "Fix",
         schema: FIX_SCHEMA,
-      }).then((out) => ({ group: g, out })),
+      }).then((out) => ({ groupIndex: index, out })),
   ),
 );
 
+const missingGroups = groups
+  .map((g, i) => i)
+  .filter((i) => !fixOutputs.some((e) => e && e.groupIndex === i));
+if (missingGroups.length > 0) {
+  log("fix agents returned nothing for groups: " + missingGroups.join(", "));
+}
+
 const fixByComment = new Map();
 for (const entry of fixOutputs.filter(Boolean)) {
-  const { group, out } = entry;
-  const groupIndex = groups.indexOf(group);
+  const { groupIndex, out } = entry;
+  const group = groups[groupIndex];
   if (!out) {
     group.items.forEach((r) => fixByComment.set(String(r.comment.id), { groupIndex }));
     continue;
   }
-  const offending = (out.filesChanged ?? []).filter((f) => !group.files.has(f));
+  const offending = (out.filesChanged ?? []).filter(
+    (f) => ![...group.files].some((allowed) => sameFile(f, allowed)),
+  );
   if (offending.length > 0) {
     log("fix group " + groupIndex + " edited files outside its allowlist: " + offending.join(", "));
     group.items.forEach((r) =>

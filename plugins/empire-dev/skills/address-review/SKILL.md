@@ -90,9 +90,9 @@ Everything before the gate is local. The ONE confirmation covers commits, push, 
 
 - Only when the Workflow tool is unavailable. Mirror the workflow stages with `Agent` calls; findings stay local.
 - Stage 1 — verify (parallel, one agent per comment, single message): adversarially try to REFUTE the comment against the current code. Invalid if the issue doesn't exist, is already handled, rests on a wrong assumption, or is out of the PR's scope. Invalid → draft a pushback reply per `reply-tone`.
-- Stage 2 — evaluate (parallel, valid comments only): decide best fix — reviewer's proposal as written, or a better alternative. Prefer the proposal unless the alternative clearly wins on correctness, simplicity, or consistency. Output plan + files touched.
+- Stage 2 — evaluate (parallel, valid comments only): decide best fix — reviewer's proposal as written, or a better alternative. Prefer the proposal unless the alternative clearly wins on correctness, simplicity, or consistency. Output plan + files touched as repo-relative paths, never absolute.
 - Stage 3 — recheck (parallel, alternatives only): adversarially try to refute each alternative plan. Refuted → revert to the reviewer's proposal.
-- Stage 4 — fix (parallel): group fixes whose file sets overlap into one agent each; disjoint groups run in parallel in a single message. Agents edit the working tree, never commit or push, and return a one-line summary + reply per comment.
+- Stage 4 — fix (parallel): group fixes whose file sets overlap (compare paths repo-relative) into one agent each; disjoint groups run in parallel in a single message. Agents edit the working tree, never commit or push, and return a one-line summary + reply per comment.
 - Same agent-availability rule as team-review: zero suitable agents → stop and tell the user; never inline-impersonate.
 
 </section>
