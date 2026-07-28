@@ -90,6 +90,15 @@ if (!pr || !owner || !repo || comments.length === 0) {
 
 const label = (c) => c.path + ":" + (c.line ?? "?");
 
+const sameFile = (a, b) =>
+  a === b ||
+  (a.startsWith("/") && a.endsWith("/" + b)) ||
+  (b.startsWith("/") && b.endsWith("/" + a));
+
+const addFile = (set, f) => {
+  if (![...set].some((h) => sameFile(f, h))) set.add(f);
+};
+
 const COMMENT_BLOCK = (c) =>
   "## Review comment\n" +
   "- PR: #" +
@@ -246,18 +255,20 @@ const fixable = settled.filter((r) => !r.action && r.plan);
 const groups = [];
 for (const r of fixable) {
   const files = new Set([r.comment.path, ...(r.plan.files || [])]);
-  const overlapping = groups.filter((g) => [...files].some((f) => g.files.has(f)));
+  const overlapping = groups.filter((g) =>
+    [...files].some((f) => [...g.files].some((h) => sameFile(f, h))),
+  );
   let target = overlapping[0];
   if (!target) {
     target = { files: new Set(), items: [] };
     groups.push(target);
   }
   for (const g of overlapping.slice(1)) {
-    g.files.forEach((f) => target.files.add(f));
+    g.files.forEach((f) => addFile(target.files, f));
     target.items.push(...g.items);
     groups.splice(groups.indexOf(g), 1);
   }
-  files.forEach((f) => target.files.add(f));
+  files.forEach((f) => addFile(target.files, f));
   target.items.push(r);
 }
 
@@ -275,7 +286,12 @@ const fixOutputs = await parallel(
   ),
 );
 
-const sameFile = (a, b) => a === b || a.endsWith("/" + b) || b.endsWith("/" + a);
+const missingGroups = groups
+  .map((g, i) => i)
+  .filter((i) => !fixOutputs.some((e) => e && e.groupIndex === i));
+if (missingGroups.length > 0) {
+  log("fix agents returned nothing for groups: " + missingGroups.join(", "));
+}
 
 const fixByComment = new Map();
 for (const entry of fixOutputs.filter(Boolean)) {
