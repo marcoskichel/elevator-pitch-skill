@@ -68,10 +68,19 @@ const REPLY_RULES =
   "No em or en dashes. Hyphens inside identifiers and filenames are fine. No semicolons. No trivia, no thanks, no filler. " +
   "State the outcome and nothing else.";
 
-const pr = args?.pr ?? "";
-const owner = args?.owner ?? "";
-const repo = args?.repo ?? "";
-const comments = args?.comments ?? [];
+let input = args;
+if (typeof input === "string") {
+  try {
+    input = JSON.parse(input);
+  } catch (e) {
+    return { error: "address-review args arrived as a non-JSON string: " + e.message };
+  }
+}
+
+const pr = input?.pr ?? "";
+const owner = input?.owner ?? "";
+const repo = input?.repo ?? "";
+const comments = input?.comments ?? [];
 
 if (!pr || !owner || !repo || comments.length === 0) {
   return {
