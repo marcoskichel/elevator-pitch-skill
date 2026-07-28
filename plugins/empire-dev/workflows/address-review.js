@@ -141,7 +141,7 @@ const EVAL_PROMPT = (c) =>
   "\n## Task\n" +
   "- approach: 'proposed' or 'alternative'.\n" +
   "- plan: concrete edit steps, minimal diff, no drive-by refactors.\n" +
-  "- files: every file the plan touches.\n" +
+  "- files: every file the plan touches, as repo-relative paths, never absolute.\n" +
   "- rationale: one sentence.\n" +
   "- Do NOT edit files. Do NOT post to GitHub. Structured output only.";
 
@@ -194,7 +194,7 @@ const FIX_PROMPT = (group) =>
   "- Per fix return: commentId, done (false if you could not apply it), one-line summary, " +
   "and reply (the text to post back to the reviewer). " +
   REPLY_RULES +
-  "\n- filesChanged: every file you edited.\n- Structured output only.";
+  "\n- filesChanged: every file you edited, as repo-relative paths, never absolute.\n- Structured output only.";
 
 log("Verifying " + comments.length + " review comments");
 
@@ -266,24 +266,28 @@ log("Fixing " + fixable.length + " comments in " + groups.length + " parallel gr
 
 const fixOutputs = await parallel(
   groups.map(
-    (g) => () =>
+    (g, index) => () =>
       agent(FIX_PROMPT(g), {
         label: "fix:" + [...g.files][0],
         phase: "Fix",
         schema: FIX_SCHEMA,
-      }).then((out) => ({ group: g, out })),
+      }).then((out) => ({ groupIndex: index, out })),
   ),
 );
 
+const sameFile = (a, b) => a === b || a.endsWith("/" + b) || b.endsWith("/" + a);
+
 const fixByComment = new Map();
 for (const entry of fixOutputs.filter(Boolean)) {
-  const { group, out } = entry;
-  const groupIndex = groups.indexOf(group);
+  const { groupIndex, out } = entry;
+  const group = groups[groupIndex];
   if (!out) {
     group.items.forEach((r) => fixByComment.set(String(r.comment.id), { groupIndex }));
     continue;
   }
-  const offending = (out.filesChanged ?? []).filter((f) => !group.files.has(f));
+  const offending = (out.filesChanged ?? []).filter(
+    (f) => ![...group.files].some((allowed) => sameFile(f, allowed)),
+  );
   if (offending.length > 0) {
     log("fix group " + groupIndex + " edited files outside its allowlist: " + offending.join(", "));
     group.items.forEach((r) =>
