@@ -18,12 +18,7 @@ Conventions:
 ### Pull requests
 
 - MUST invoke `/empire-git:pr-description` before any `gh pr create --body*` or `gh pr edit --body*` and use its output verbatim
+- Descriptions are direct and concise: no trivia, a few sentences; a `## TLDR` opens anything longer than a couple of lines
 - The skill preserves user-added content outside `<!-- pr-description:start -->` / `<!-- pr-description:end -->` markers when updating an existing body
 - Title format: Conventional Commits, lowercase, no period, ≤ 72 chars
-
-### Stacked PRs
-
-- MUST invoke `/empire-git:pr-stack` after creating, merging, or retargeting a PR in a chain — keeps the stack comment current
-- `pr-stack` posts nothing for a single PR against the default branch
-- SHOULD use `/empire-git:pr-merge` to merge a chained PR — gates CI/conflicts/review threads, retargets children to base first (GitHub closes dependents otherwise), merges, refreshes stack
-- Stack overview lives in a comment, not the PR body — keep the body clean
+- SHOULD use `/empire-git:pr-merge` to merge a PR — gates CI/conflicts/review threads before merging

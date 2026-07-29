@@ -18,6 +18,12 @@ allowed-tools: Bash Read Glob Grep
 
 IMPORTANT: Output the rendered description verbatim. Do not summarize, paraphrase, or describe this skill. The caller pipes your output to `gh pr create` or `gh pr edit` unchanged.
 
+CRITICAL:
+
+- No trivia. Include only what a reviewer needs to review the change.
+- Super direct and concise: a few sentences total.
+- When the description runs longer than a couple of lines, open with a `## TLDR` section (1–2 sentences) right after the start marker.
+
 ## Voice
 
 - Senior dev writing for peers. Direct. Active voice. Imperative mood.
@@ -44,6 +50,10 @@ Render between markers. Preserve everything outside markers when updating.
 
 ```
 <!-- pr-description:start -->
+## TLDR
+1–2 sentences. The whole change at a glance.
+Only when the rest of the description runs longer than a couple of lines; omit otherwise.
+
 ## Why
 1–2 sentences. Problem or goal. Link issue if a commit references one.
 
@@ -63,24 +73,12 @@ Never list CI steps (lint, typecheck, unit tests, CI pipelines).
 
 Default to Why / What changed / Test plan only. Add an extra `##` section **only when the change carries something a reviewer must not miss** and no existing section fits — e.g. a breaking change, a required migration, a new env var or dependency, a rollback step, or a security-relevant note. Never add one by default or to pad a thin PR. Prefix breaking changes with `BREAKING:`.
 
-## PR chains
-
-When the branch was cut from another feature branch (not from main/master), or when the user provides a parent PR URL, add before the opening marker:
-
-```
-Depends on: <PR URL or branch name>
-```
-
-Detect by running `git log --oneline <default-branch>..HEAD` and checking if the branch base differs from the repo default branch.
-
-For the visual stack overview (every PR in the chain, current one highlighted, merged ones struck-through), the `pr-stack` skill maintains a separate comment. Keep that out of the body — `Depends on:` is the only chain marker the body needs.
-
 ## Update mode
 
 If an existing body is provided:
 
 - Replace only content between `<!-- pr-description:start -->` and `<!-- pr-description:end -->`.
-- Preserve all content outside markers (screenshots, reviewer notes, `Fixes #N`, task lists, `Depends on:` lines).
+- Preserve all content outside markers (screenshots, reviewer notes, `Fixes #N`, task lists).
 - If markers are absent: wrap new body in markers, append after author-written content.
 
 ## Labels and assignee

@@ -1,6 +1,6 @@
 # empire-git
 
-Git workflow skills: parallel worktree lifecycle, PR description templating, and stacked-PR maintenance.
+Git workflow skills: parallel worktree lifecycle, PR description templating, and gated PR merging.
 
 Part of the [empire](../../README.md) marketplace.
 
@@ -172,7 +172,7 @@ wt=$(jq -r '.worktrees[].path' "$HOME/.claude/sessions/$sid/active-worktrees.jso
 
 ### `pr-description`
 
-Canonical PR description template. Senior-dev voice, ≤200 words. Default sections: Why, What changed (behavior only, most important only), Test plan (omit for simple/hard-to-test diffs; never CI steps) — plus an extra section only when the change carries something a reviewer must not miss (breaking change, migration, new env var/dep, rollback, security note). Sets the author as assignee (`--assignee @me`) and maps the change to the repo's existing labels via `gh label list` (never invents labels unless an issue-tracker agents file defines the allowed set). Adds `Depends on: <PR URL>` for PR chains. Idempotent `<!-- pr-description:start/end -->` markers so user-added content (screenshots, `Fixes #N`, task lists) survives updates. Uses `CONTEXT.md` vocabulary for domain terms if present. Output goes to stdout for the caller to pipe into `gh pr create --body-file -` or `gh pr edit --body-file -`.
+Canonical PR description template. Senior-dev voice, direct and concise: no trivia, a few sentences total, ≤200 words. A `## TLDR` (1–2 sentences) opens any description longer than a couple of lines. Default sections: Why, What changed (behavior only, most important only), Test plan (omit for simple/hard-to-test diffs; never CI steps) — plus an extra section only when the change carries something a reviewer must not miss (breaking change, migration, new env var/dep, rollback, security note). Sets the author as assignee (`--assignee @me`) and maps the change to the repo's existing labels via `gh label list` (never invents labels unless an issue-tracker agents file defines the allowed set). Idempotent `<!-- pr-description:start/end -->` markers so user-added content (screenshots, `Fixes #N`, task lists) survives updates. Uses `CONTEXT.md` vocabulary for domain terms if present. Output goes to stdout for the caller to pipe into `gh pr create --body-file -` or `gh pr edit --body-file -`.
 
 **Triggers:** "PR description", "PR body", "pull request description", "PR summary", "PR template", "GitHub PR body", "draft a PR", "write the PR", "summarize this branch for review", "regenerate PR body".
 
@@ -191,36 +191,18 @@ To make it impossible for the agent to bypass, add this one-line rule to your pr
 
 **Source:** [`skills/pr-description/SKILL.md`](skills/pr-description/SKILL.md)
 
-### `pr-stack`
-
-Maintains a "PR stack" comment across a chain of stacked PRs. Builds the chain from the live GitHub PR graph (linking each PR's base branch to another open PR's head branch), unions it with the membership stored in any existing stack comment (so merged PRs whose head branch was deleted stay listed), then upserts one idempotent marker comment on every open PR in the chain. Each comment shows the whole chain as a single-column table of `[title](url)` links, base → tip, with the current PR bolded and suffixed `← this PR` and merged PRs struck-through with ✅. A lone PR against the default branch gets no comment (a stale one is removed). The bundled `pr-stack.mjs` (dependency-free Node, `gh`-only) does the graph-building and comment upsert; its pure logic is unit-tested via `node --test`.
-
-**Triggers:** "PR stack", "stacked PRs", "PR chain", "PR chain header", "stack comment", "update the PR stack", "refresh the stack", "mark merged PRs sliced through".
-
-**Usage:** `/empire-git:pr-stack [--pr <number>] [--repo <owner/repo>] [--dry-run]`
-
-```mermaid
-flowchart LR
-  graph[gh PR graph] --> chain[Build chain + union stored]
-  chain --> render[Render per-PR comment]
-  render --> upsert[Upsert via marker]
-```
-
-**Source:** [`skills/pr-stack/SKILL.md`](skills/pr-stack/SKILL.md), [`scripts/pr-stack.mjs`](scripts/pr-stack.mjs), [`scripts/pr-stack.test.mjs`](scripts/pr-stack.test.mjs)
-
 ### `pr-merge`
 
-Gates then merges a single PR, then refreshes the stack. Verifies CI is green (investigates and attempts a fix when red), rebases and resolves conflicts when the branch is behind, triages unresolved review threads intelligently (resolve, fix, or ask — never blind-blocks), then retargets any stacked children onto the base branch before merging. This ordering matters: GitHub closes (does not retarget) dependent PRs when the head branch is deleted, so children are moved first, then the PR is merged and its branch deleted. Fast-forwards the local base checkout (e.g. updates `master`) when it's checked out in a worktree, then invokes `pr-stack` to mark the merged PR sliced-through and re-render the chain.
+Gates then merges a single PR. Verifies CI is green (investigates and attempts a fix when red), rebases and resolves conflicts when the branch is behind, triages unresolved review threads intelligently (resolve, fix, or ask — never blind-blocks), then merges and deletes the head branch. Fast-forwards the local base checkout (e.g. updates `master`) when it's checked out in a worktree.
 
-**Triggers:** "merge this PR", "merge the PR", "land this", "ship this PR", "merge when green", "merge the stack bottom".
+**Triggers:** "merge this PR", "merge the PR", "land this", "ship this PR", "merge when green".
 
 **Usage:** `/empire-git:pr-merge [--pr <number>] [--squash|--merge|--rebase] [--admin]`
 
 ```mermaid
 flowchart LR
-  gate[Gate CI + conflicts + threads] --> retarget[Retarget children to base]
-  retarget --> merge[Merge + delete branch]
-  merge --> stack[Refresh pr-stack]
+  gate[Gate CI + conflicts + threads] --> merge[Merge + delete branch]
+  merge --> ff[Fast-forward local base]
 ```
 
 **Source:** [`skills/pr-merge/SKILL.md`](skills/pr-merge/SKILL.md)
