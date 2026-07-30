@@ -1,7 +1,7 @@
 {
   "name": "empire-dev",
-  "version": "0.15.2",
-  "description": "Development collaboration: autonomous task-to-PR driver (handoff), parallel specialist code review (team-review), socratic PR review (socratic-pr-review), review-comment resolution (address-review), plus pre-implementation diagnostics — cognitive audit (probe), requirements (distill), system design (shape), architecture decisions (weigh), task decomposition (slice) — and 11 bundled dev subagents.",
+  "version": "0.16.0",
+  "description": "Development collaboration: autonomous task-to-PR driver (handoff), parallel specialist code review (team-review), socratic PR review (socratic-pr-review), review-comment resolution (address-review), plus pre-implementation diagnostics — cognitive audit (probe), requirements (distill), system design (shape), architecture decisions (weigh), task decomposition (slice) — and 12 bundled dev subagents.",
   "dependencies": ["empire-rules"],
   "author": {
     "name": "Marcos Kichel",

@@ -17,7 +17,7 @@ compatibility: Designed for Claude Code (or similar agents); dispatches review s
   - Weak: "review my changes", "review again", "look at this"
 - If user used a Strong phrase → proceed without confirmation
 - If user used only a Weak phrase → MUST confirm before dispatch:
-  - "Run a parallel team review (3–6 specialists), or a single-pass review?"
+  - "Run a parallel team review (3–4 specialists), or a single-pass review?"
   - Default to single-pass on ambiguity; dispatch a team review only when user explicitly opts in
 - MUST NOT silently dispatch a multi-agent review on weak phrasing alone
 
@@ -53,17 +53,23 @@ compatibility: Designed for Claude Code (or similar agents); dispatches review s
 
 </section>
 
-<section id="domain-awareness">
+<section id="context-prep">
 
-Before dispatch: read `CONTEXT.md` at repo root if present and include its vocabulary in each specialist brief — reviewers MUST use project terms verbatim.
-Read relevant ADRs from `docs/adr/` if present; include them in specialist briefs for architectural or design findings.
-If neither exists, proceed without them.
+- Prepare shared context ONCE in the main thread before dispatch; push it into every brief — subagents MUST NOT re-fetch what the main thread already holds (each re-fetch costs a serial tool turn inside the barrier)
+- Prepare:
+  - Diff text + changed-file list (`git diff` / `gh pr diff`)
+  - `CONTEXT.md` vocabulary from repo root if present — reviewers MUST use project terms verbatim
+  - Summaries of ADRs from `docs/adr/` touching changed paths, if present
+  - If `CONTEXT.md`/ADRs absent, proceed without them
+- Overlap prep with gates: when asking the user anything (target or roster confirmation), run this prep in the SAME turn as the question → dispatch is instant on confirmation
 
 </section>
 
 <section id="specialist-selection">
 
-- Inspect diff; pick 3–6 specialists matching change content
+- Inspect diff; pick 3–4 specialists matching the strongest change signals — hard cap 4
+- Rationale: the barrier waits on the slowest specialist (max-of-N grows with N) and each extra specialist adds singleton findings that each spawn a verifier; homogeneous same-model rosters show sharply diminishing recall gains past 3–4 (arxiv:2402.05120, arxiv:2602.03794)
+- More signals than roster slots → fold weaker signals into the closest specialist's brief (e.g. performance checklist into the generalist's brief), never grow the roster
 - Agent names vary by environment; do not assume a specific agent exists
 - Inspect available subagents via the `Agent` tool's `subagent_type` parameter
 - For each signal present in the diff, pick the available agent whose name/description best matches; if multiple candidates fit, prefer the most specific; if none fit, fall back to the most general code-reviewer-style agent available
@@ -85,7 +91,8 @@ If neither exists, proceed without them.
 
 - Send single message with multiple `Agent` tool calls (one per specialist)
 - Each specialist receives:
-  - Full diff or PR number
+  - Diff text INLINED in the brief — never a bare PR number; per-agent `gh pr diff`/file re-fetches are serial tool turns inside the barrier
+  - Exception: diff over ~1500 changed lines → inline changed-file list + one-line-per-file summary instead; specialists fetch details themselves
   - List of changed files
   - User's stated intent (if provided)
   - `CONTEXT.md` vocabulary (read from repo root before dispatch; include if file exists, omit if absent)
@@ -137,15 +144,15 @@ If neither exists, proceed without them.
 - Compute match key across all specialist findings: same file path AND overlapping line-range (within ±5 lines) AND identical category
 - Merge matched findings into one entry; preserve clearest suggestion wording; tally specialist count
 - Tiers (let `M` = roster size):
-  - `Consensus` — flagged by strict majority (> M/2)
-  - `Corroborated` — flagged by ≥ 2 specialists, below majority
+  - `Consensus` — flagged by strict majority (> M/2) AND ≥ 3 specialists; at M = 3 that means all three
+  - `Corroborated` — flagged by ≥ 2 specialists, below the Consensus threshold
   - `Single-source` — flagged by exactly 1 specialist
-- Consensus findings skip verification — majority agreement is sufficient signal; verifying every finding would scale cost with total finding count instead of contested-finding count
+- Consensus findings skip verification — ≥ 3 independent agreements is sufficient signal; the ≥ 3 floor exists because at small M a bare majority (2 of 3) is too weak to bypass adjudication
 - Dispatch verifiers in PARALLEL — one `Agent` call per Corroborated/Single-source finding — in a single message
 - Each verifier adjudicates exactly ONE finding in isolation; never one verifier judging multiple findings, never a serial single-verifier pass
-- Verifiers MUST use a different `subagent_type` than any roster specialist where an alternative exists; otherwise use the most general code-reviewer-style agent available
+- Prefer the bundled `finding-verifier` agent (fast model, tuned for single-finding adjudication); else any `subagent_type` different from every roster specialist; else the most general code-reviewer-style agent available
 - Each verifier receives:
-  - Full diff or PR number, list of changed files
+  - The diff hunk(s) covering its finding's `file:line-range` ± ~15 lines, INLINED — goal: adjudicate in one turn with zero tool calls; tools stay available for blast-radius checks beyond the hunk
   - Its one finding's `file:line-range`, `category`, and suggestion text ONLY — omit tier label and specialist count so severity isn't anchored to how many specialists agreed
   - The fixed severity rubric below
   - "Do NOT post to GitHub. Report findings in chat only."
@@ -177,7 +184,7 @@ If neither exists, proceed without them.
 - Required report structure:
 
   ```
-  ## Consensus  (> M/2 specialists agree)
+  ## Consensus  (> M/2 and ≥ 3 specialists agree)
   ### Must-fix
   <file:line-range> [`<category>`] — <merged suggestion>  ×N/M
 
