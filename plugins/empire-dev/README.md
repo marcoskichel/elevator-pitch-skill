@@ -21,7 +21,7 @@ Or install the full empire bundle (which includes this plugin):
 
 ### `team-review`
 
-Spawn parallel specialist subagents to review a diff or PR, then aggregate findings into a tiered, verified report (Consensus / Corroborated / Single-source). The skill detects signals in the diff (language, security surface, architectural change, perf hotspots, tests), picks 3–6 specialists from the available roster, dispatches them in parallel, then votes findings by `(file, line-range, category)` match. Corroborated and Single-source findings — anything below strict majority — each get their own independent verifier agent, dispatched in parallel (one per finding), ruling valid/invalid against a fixed severity rubric, blind to specialist count, so a real issue caught by only one specialist isn't buried just for being single-source. Reads `CONTEXT.md` and relevant `docs/adr/` entries before dispatch, passing project vocabulary to each specialist. Findings stay local — never posted to GitHub.
+Spawn parallel specialist subagents to review a diff or PR, then aggregate findings into a tiered, verified report (Consensus / Corroborated / Single-source). The skill detects signals in the diff (language, security surface, architectural change, perf hotspots, tests), picks 3–4 specialists from the available roster (weaker signals fold into broader briefs), dispatches them in parallel, then votes findings by `(file, line-range, category)` match. Findings below the consensus threshold (strict majority and at least 3 specialists) each get their own independent verifier agent — the bundled fast `finding-verifier` by default — dispatched in parallel (one per finding), ruling valid/invalid against a fixed severity rubric, blind to specialist count, so a real issue caught by only one specialist isn't buried just for being single-source. Built for speed: the diff, `CONTEXT.md` vocabulary, and relevant `docs/adr/` summaries are prepared once and inlined into every brief (verifiers get just their finding's hunk), so subagents skip redundant repo reads; prep overlaps any confirmation question. Findings stay local — never posted to GitHub.
 
 **Triggers (strong, dispatch immediately):** "team review", "specialist review", "have specialists review", "ask the team", "parallel review", "have the team look", "re-review", "another pass".
 
@@ -130,6 +130,7 @@ Code review:
 | `security-auditor`     | Auth, crypto, OWASP, threat modeling, compliance |
 | `architect-review`     | Clean architecture, microservices, DDD, SOLID    |
 | `performance-engineer` | Profiling, bottlenecks, caching, observability   |
+| `finding-verifier`     | Single-finding adjudication for team-review      |
 
 Paradigm specialists:
 
