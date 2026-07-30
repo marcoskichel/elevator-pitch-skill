@@ -33,10 +33,19 @@ const OPTION_SCHEMA = {
   },
 };
 
-const options = args?.options ?? [];
-const dimensions = args?.dimensions ?? [];
-const useCase = args?.useCase ?? "";
-const constraints = args?.constraints ?? "";
+let input = args;
+if (typeof input === "string") {
+  try {
+    input = JSON.parse(input);
+  } catch (e) {
+    return { error: "compare-score args arrived as a non-JSON string: " + e.message };
+  }
+}
+
+const options = input?.options ?? [];
+const dimensions = input?.dimensions ?? [];
+const useCase = input?.useCase ?? "";
+const constraints = input?.constraints ?? "";
 
 if (options.length < 2 || dimensions.length === 0) {
   return {
@@ -76,6 +85,8 @@ const results = await parallel(
       agent(SCORE_PROMPT(o), {
         label: "score:" + o.name,
         phase: "Score",
+        model: "sonnet",
+        effort: "medium",
         schema: OPTION_SCHEMA,
       }).then((r) => {
         if (!r) return null;

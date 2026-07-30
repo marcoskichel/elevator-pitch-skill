@@ -21,10 +21,19 @@ const APPROACH_SCHEMA = {
   },
 };
 
-const problem = args?.problem ?? "";
-const approaches = args?.approaches ?? [];
-const constraints = args?.constraints ?? "";
-const successCriteria = args?.successCriteria ?? "";
+let input = args;
+if (typeof input === "string") {
+  try {
+    input = JSON.parse(input);
+  } catch (e) {
+    return { error: "explore-deepdive args arrived as a non-JSON string: " + e.message };
+  }
+}
+
+const problem = input?.problem ?? "";
+const approaches = input?.approaches ?? [];
+const constraints = input?.constraints ?? "";
+const successCriteria = input?.successCriteria ?? "";
 
 if (!problem || approaches.length === 0) {
   return {
@@ -63,6 +72,8 @@ const results = await parallel(
       agent(DEEP_PROMPT(a), {
         label: "deep:" + a.name,
         phase: "Deep dive",
+        model: "sonnet",
+        effort: "medium",
         schema: APPROACH_SCHEMA,
       }).then((r) => {
         if (!r) return null;
