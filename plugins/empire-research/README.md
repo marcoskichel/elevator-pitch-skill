@@ -21,7 +21,7 @@ Or install the full empire bundle (which includes this plugin):
 
 ### `explore`
 
-Open-ended approach exploration. Use when the solution space is open: you know the problem, not the options. The skill confirms the problem, dispatches a shallow scan to enumerate 3–5 candidate approaches, lets you pick a subset to deep-dive, then fans out one researcher per approach via the `explore-deepdive` workflow (inline parallel agents when the Workflow tool is unavailable), and produces a consolidated report with a recommended direction. Findings stay local — never posted externally.
+Open-ended approach exploration. Use when the solution space is open: you know the problem, not the options. The skill confirms the problem, dispatches a shallow scan to enumerate 3–5 candidate approaches, lets you pick a subset to deep-dive, then fans out one researcher per approach via the `explore-deepdive` workflow (inline parallel agents when the Workflow tool is unavailable), and produces a consolidated report with a recommended direction. Workflow researchers run on a faster model at reduced effort; both workflows tolerate stringified args. Findings stay local — never posted externally.
 
 **Triggers:** "explore options", "what could we do for X", "research approaches", "investigate approaches", "spawn research team", "what are the options", "options analysis", "explore solutions", "have the team explore".
 

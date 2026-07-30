@@ -69,12 +69,14 @@ Everything before the gate is local. The ONE confirmation covers commits, push, 
 
 <section id="dispatch-mode">
 
+- Prefetch the PR diff ONCE before dispatch: `gh pr diff $PR -R $OWNER/$REPO` — each verify agent re-fetching it costs a serial tool turn
+  - Diff over ~1500 changed lines → omit `diff` from args; agents fall back to self-fetch (per-comment hunks are still inlined)
 - Preferred — Workflow tool available:
 
   ```
   Workflow({
     scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/address-review.js",
-    args: { pr, owner, repo, comments: [{ id, path, line, body, author, diffHunk, isOutdated, discussion }] },
+    args: { pr, owner, repo, diff, comments: [{ id, path, line, body, author, diffHunk, isOutdated, discussion }] },
   })
   ```
 
@@ -89,7 +91,7 @@ Everything before the gate is local. The ONE confirmation covers commits, push, 
 <section id="inline-fallback">
 
 - Only when the Workflow tool is unavailable. Mirror the workflow stages with `Agent` calls; findings stay local.
-- Stage 1 — verify (parallel, one agent per comment, single message): adversarially try to REFUTE the comment against the current code. Invalid if the issue doesn't exist, is already handled, rests on a wrong assumption, or is out of the PR's scope. Invalid → draft a pushback reply per `reply-tone`.
+- Stage 1 — verify (parallel, one agent per comment, single message): adversarially try to REFUTE the comment against the current code. Inline the prefetched diff in each brief (same ~1500-line cap as `dispatch-mode`). Invalid if the issue doesn't exist, is already handled, rests on a wrong assumption, or is out of the PR's scope. Invalid → draft a pushback reply per `reply-tone`.
 - Stage 2 — evaluate (parallel, valid comments only): decide best fix — reviewer's proposal as written, or a better alternative. Prefer the proposal unless the alternative clearly wins on correctness, simplicity, or consistency. Output plan + files touched as repo-relative paths, never absolute.
 - Stage 3 — recheck (parallel, alternatives only): adversarially try to refute each alternative plan. Refuted → revert to the reviewer's proposal.
 - Stage 4 — fix (parallel): group fixes whose file sets overlap (compare paths repo-relative) into one agent each; disjoint groups run in parallel in a single message. Agents edit the working tree, never commit or push, and return a one-line summary + reply per comment.

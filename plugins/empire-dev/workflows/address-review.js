@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Address PR review comments for /empire-dev:address-review — adversarial verification per comment, fix-approach evaluation, recheck of alternatives, parallel implementation grouped by file, direct-tone reply drafts.",
   whenToUse:
-    "Invoked by /empire-dev:address-review when the Workflow tool is available. Requires args {pr, owner, repo, comments:[{id, path, line, body, author, diffHunk, discussion, isOutdated}]}. Edits files in the working tree; never commits, pushes, or posts to GitHub.",
+    "Invoked by /empire-dev:address-review when the Workflow tool is available. Requires args {pr, owner, repo, comments:[{id, path, line, body, author, diffHunk, discussion, isOutdated}]}; optional {diff} with the prefetched PR diff text so verify agents skip re-fetching it. Edits files in the working tree; never commits, pushes, or posts to GitHub.",
   phases: [
     { title: "Verify", detail: "adversarial check per comment" },
     { title: "Evaluate", detail: "best fix per valid comment" },
@@ -81,6 +81,7 @@ const pr = input?.pr ?? "";
 const owner = input?.owner ?? "";
 const repo = input?.repo ?? "";
 const comments = input?.comments ?? [];
+const diff = input?.diff ?? "";
 
 if (!pr || !owner || !repo || comments.length === 0) {
   return {
@@ -118,20 +119,27 @@ const COMMENT_BLOCK = (c) =>
     ? "\nNOTE: GitHub marks this thread outdated. The diff hunk and line number may not match current code. Locate the current code before judging.\n"
     : "");
 
+const DIFF_BLOCK = diff ? "\n## Full PR diff\n```\n" + diff + "\n```\n" : "";
+
+const DIFF_HINT = diff
+  ? "The full PR diff is inlined below — do NOT re-fetch it. "
+  : "Read the actual file and surrounding code; run `gh pr diff " +
+    pr +
+    " -R " +
+    owner +
+    "/" +
+    repo +
+    "` if you need the full diff. ";
+
 const VERIFY_PROMPT = (c) =>
   "## Adversarial reviewer-of-the-reviewer\n\n" +
-  "Try to REFUTE this PR review comment. Read the actual file and surrounding code; " +
-  "run `gh pr diff " +
-  pr +
-  " -R " +
-  owner +
-  "/" +
-  repo +
-  "` if you need the full diff. " +
+  "Try to REFUTE this PR review comment. " +
+  DIFF_HINT +
   "The comment is invalid if the issue does not exist in the current code, is already handled, " +
   "rests on a wrong assumption, or asks for work unrelated to the code this PR changes. " +
   "When uncertain, default to valid=true; refute only with concrete evidence from the code.\n\n" +
   COMMENT_BLOCK(c) +
+  DIFF_BLOCK +
   "\n## Task\n" +
   "- valid=true only if the issue genuinely holds against the current code.\n" +
   "- rationale: one sentence.\n" +
@@ -213,6 +221,7 @@ const perComment = await pipeline(
     agent(VERIFY_PROMPT(c), {
       label: "verify:" + label(c),
       phase: "Verify",
+      effort: "medium",
       schema: VERDICT_SCHEMA,
     }).then((v) => (v ? { comment: c, verdict: v } : null)),
   (r) => {
@@ -224,6 +233,7 @@ const perComment = await pipeline(
     return agent(EVAL_PROMPT(r.comment), {
       label: "evaluate:" + label(r.comment),
       phase: "Evaluate",
+      model: "sonnet",
       schema: EVAL_SCHEMA,
     }).then((e) => (e ? { ...r, plan: e } : { ...r, action: "failed" }));
   },
@@ -232,6 +242,7 @@ const perComment = await pipeline(
     return agent(RECHECK_PROMPT(r.comment, r.plan), {
       label: "recheck:" + label(r.comment),
       phase: "Recheck",
+      effort: "medium",
       schema: RECHECK_SCHEMA,
     }).then((k) => {
       if (k && k.holds) return r;
