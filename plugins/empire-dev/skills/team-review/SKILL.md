@@ -87,8 +87,37 @@ compatibility: Designed for Claude Code (or similar agents); dispatches review s
 
 </section>
 
+<section id="dispatch-mode">
+
+- After roster selection, dispatch one of two ways
+- Preferred — Workflow tool available:
+
+  - Invoke the bundled workflow; it fans out specialists with structured output, dispatches one verifier per finding EAGERLY as each specialist returns (no cross-wave barrier), and computes consensus tiers deterministically in JS:
+
+    ```
+    Workflow({
+      scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/team-review.js",
+      args: {
+        diff, changedFiles, intent, vocabulary, adrs,
+        roster: [{ name, agentType, model?, effort? }],
+        rereviewNote?,
+      },
+    })
+    ```
+
+  - `diff` = the prepared diff text from `context-prep`; `vocabulary`/`adrs` = the prepared context blocks; `agentType` = each pick's actual `subagent_type` value
+  - Re-review: pass prior findings, user decisions, and the new diff as `rereviewNote`
+  - Surface the workflow's `log()` lines as progress
+  - Feed the returned tiers into `consolidated-report` — tier math is already done; render, don't recompute
+  - Skip `parallel-dispatch` and `verification-stage` — the workflow owns dispatch and tiering
+
+- Fallback — Workflow tool unavailable: use `parallel-dispatch` then `verification-stage` below
+
+</section>
+
 <section id="parallel-dispatch">
 
+- Inline fallback — only when the Workflow tool is unavailable (see `dispatch-mode`)
 - Send single message with multiple `Agent` tool calls (one per specialist)
 - Each specialist receives:
   - Diff text INLINED in the brief — never a bare PR number; per-agent `gh pr diff`/file re-fetches are serial tool turns inside the barrier
@@ -141,6 +170,7 @@ compatibility: Designed for Claude Code (or similar agents); dispatches review s
 
 <section id="verification-stage">
 
+- Inline fallback — only when the Workflow tool is unavailable; the workflow computes identical tiers itself
 - Compute match key across all specialist findings: same file path AND overlapping line-range (within ±5 lines) AND identical category
 - Merge matched findings into one entry; preserve clearest suggestion wording; tally specialist count
 - Tiers (let `M` = roster size):
@@ -173,7 +203,8 @@ compatibility: Designed for Claude Code (or similar agents); dispatches review s
 
 <section id="consolidated-report">
 
-- After specialists and all verifiers return, produce consolidated report
+- After the workflow returns (or, in inline fallback, after specialists and all verifiers return), produce consolidated report
+- Workflow mode: render the returned tiers directly; do NOT recompute merging or severity. List any `unverified` entries (verifier died) under their tier with an `(unverified)` marker, keeping specialist severity
 - Summary table:
   ```
   | Specialist | Must-fix | Should-fix | Nits |
