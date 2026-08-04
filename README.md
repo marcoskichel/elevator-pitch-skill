@@ -30,6 +30,11 @@ Or hire individual departments:
 
 <!-- prettier-ignore-start -->
 > [!NOTE]
+> Codex and other [Agent Skills](https://agentskills.io) runtimes: `npx skills add marcoskichel/empire -a codex`. `empire-dev` is verified for Codex today; the other plugins are being ported.
+<!-- prettier-ignore-end -->
+
+<!-- prettier-ignore-start -->
+> [!NOTE]
 > `/empire-rules:sync-rules` patches your global `CLAUDE.md` with opionated instructions on how to work with agents in parallel.
 <!-- prettier-ignore-end -->
 

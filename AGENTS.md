@@ -33,6 +33,14 @@ This file provides guidance for AI agents working with code in this repository.
 - Users invoke skills as `/<plugin>:<skill-name>` once installed. Plugin namespaces: `empire-git`, `empire-dev`, `empire-research`, `empire-product`, `empire-visual`. The meta `empire` plugin contributes no skills.
 - After editing a SKILL.md, also update the matching section in the plugin's `README.md` (`plugins/<plugin>/README.md`) if triggers, args, or behavior changed. Update root `README.md` only if the one-line plugin description in the plugins table needs to change.
 
+## Codex parity
+
+- Skills ship to both Claude Code (marketplace) and OpenAI Codex via [skills.sh](https://skills.sh) (`npx skills add marcoskichel/empire -a codex`), which reads `marketplace.json`. Keep SKILL.md bodies platform-neutral.
+- Reference skill-bundled resources with relative paths (`references/<file>.md`, `scripts/<file>`) — not `${CLAUDE_PLUGIN_ROOT}`. Relative refs resolve on both platforms and stay valid when skills.sh copies the skill dir verbatim. `${CLAUDE_PLUGIN_ROOT}` remains only for plugin-shared scripts not yet ported (empire-git).
+- Qualify Claude-only tools in bodies (e.g. "Claude Code: the `Agent` tool; other agents: their spawn mechanism"). Avoid bare `/plugin:skill` cross-refs in bodies; write "the `<skill>` skill".
+- `team-review` personas in `plugins/empire-dev/skills/team-review/references/personas/` are generated from `plugins/empire-dev/agents/*.md` by `scripts/sync-codex.sh`. Run it after changing an agent; CI enforces sync via `scripts/sync-codex.sh --check`.
+- `.agents/skills/` is a generated symlink mirror for project-local Codex discovery. Never hand-edit; run `scripts/sync-codex.sh`.
+
 ## Adding a new skill
 
 1. Use `/skill-creator` if available

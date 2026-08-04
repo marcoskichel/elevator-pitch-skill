@@ -16,7 +16,7 @@ compatibility: Designed for Claude Code (or similar agents).
 
 **Design emerges from constraints.** Every architectural decision is a trade-off against something else. Make trade-offs explicit before they become bugs.
 
-MUST NOT proceed with design until requirements exist — architecture serves requirements, so designing without them optimizes for the wrong target. If requirements are unclear, use `/empire-dev:distill` first.
+MUST NOT proceed with design until requirements exist — architecture serves requirements, so designing without them optimizes for the wrong target. If requirements are unclear, use the `distill` skill first.
 
 </section>
 
@@ -36,7 +36,7 @@ If neither exists, proceed without them. Do not create these files unprompted.
 
 **Key questions:** What problem does this system solve? What are the constraints? What must it accomplish vs. what would be nice?
 
-**Interventions:** Return to `/empire-dev:distill`. At minimum: write one paragraph describing the problem (no solutions); list 3-5 things the system must do; list real constraints (time, skills, integrations). MUST NOT proceed until you can explain what you're building and why.
+**Interventions:** Return to the `distill` skill. At minimum: write one paragraph describing the problem (no solutions); list 3-5 things the system must do; list real constraints (time, skills, integrations). MUST NOT proceed until you can explain what you're building and why.
 
 ---
 
@@ -76,7 +76,7 @@ If neither exists, proceed without them. Do not create these files unprompted.
 
 **Key questions:** Which decisions would be expensive to reverse? Why this approach instead of alternatives? What would make this decision wrong? Where are you relying on assumptions vs. knowledge?
 
-**Interventions:** ADR for significant decisions. Reversal cost assessment: easy / moderate / hard to change. Assumption log with validation approach. Use `/empire-dev:weigh` for decisions that would hurt to change.
+**Interventions:** ADR for significant decisions. Reversal cost assessment: easy / moderate / hard to change. Assumption log with validation approach. Use the `weigh` skill for decisions that would hurt to change.
 
 ---
 
@@ -101,7 +101,7 @@ If neither exists, proceed without them. Do not create these files unprompted.
 <section id="diagnostic-process">
 
 1. Read `CONTEXT.md` and relevant ADRs in `docs/adr/` if present — use domain vocabulary throughout
-2. Confirm requirements exist — if not, redirect to `/empire-dev:distill`
+2. Confirm requirements exist — if not, redirect to the `distill` skill
 3. Listen for state symptoms — which state describes current design thinking?
 4. Start at the earliest problem state — MUST NOT skip ahead; earlier states gate later ones, and an unaddressed foundation resurfaces downstream
 5. Ask key questions for that state
