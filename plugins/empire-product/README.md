@@ -17,6 +17,16 @@ Or install the full empire bundle (which includes this plugin):
 /plugin install empire@empire
 ```
 
+## Use with Codex
+
+These skills also run in OpenAI Codex (and other [Agent Skills](https://agentskills.io) runtimes). Install with [skills.sh](https://skills.sh):
+
+```sh
+npx skills add marcoskichel/empire -a codex
+```
+
+`vet` and `recon` bundle their specialist personas, so they fill a full roster even where no named subagents are installed. Invoke skills flat (`/vet`, `$recon`) or let Codex match them from their descriptions.
+
 ## Skills
 
 ### `pitch`
@@ -104,7 +114,7 @@ Diagnose thinking failures and audit whether reasoning serves inquiry or defense
 | `competitive-analyst`    | Vendor / competitor / option comparisons (anchor for `recon`) |
 | `market-researcher`      | Market sizing, audience research, trend analysis              |
 
-All three skills auto-discover whatever specialist subagents are installed. If your environment has more specialized subagents from another marketplace, the skills will use them.
+The `vet` and `recon` skills prefer whatever specialist subagents are installed — including specialists from another marketplace — and fall back to the bundled personas in [`skills/vet/references/personas/`](skills/vet/references/personas/) and [`skills/recon/references/personas/`](skills/recon/references/personas/) when none match (or when the platform has no subagent registry, as in Codex). Those personas are generated from the agents above by [`scripts/sync-codex.sh`](../../scripts/sync-codex.sh).
 
 ## Upstream attribution
 

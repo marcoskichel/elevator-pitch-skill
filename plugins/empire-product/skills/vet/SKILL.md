@@ -8,7 +8,7 @@ description: >
   product idea: web research for competitors and demand, fatal-flaw hypothesis,
   anti-sycophancy mode, structured go/no-go output with pivots.
   Findings stay local — never posted externally.
-compatibility: Requires network access (web research); dispatches research subagents.
+compatibility: Requires network access (web research); dispatches research subagents. Runs in Claude Code and OpenAI Codex; bundled personas fill the roster when no named subagents are installed.
 ---
 
 <section id="anti-sycophancy">
@@ -30,7 +30,7 @@ compatibility: Requires network access (web research); dispatches research subag
   - Why now (market timing, unlock, trigger)
   - Assumed differentiator / unfair advantage
   - Monetization model (if relevant)
-- Optional input: competitor list (2–6 names); if provided, `/empire-product:recon` runs before validator dispatch and its matrix pre-populates the Competitor Teardown section
+- Optional input: competitor list (2–6 names); if provided, the `recon` skill runs before validator dispatch and its matrix pre-populates the Competitor Teardown section
 - If any required input missing → ask one clarifying question at a time
 - MUST state the inferred pitch back to user before any dispatch
 - MUST get user confirmation on pitch and assumptions
@@ -40,12 +40,13 @@ compatibility: Requires network access (web research); dispatches research subag
 
 <section id="agent-selection">
 
-- Inspect available subagents via the `Agent` tool's `subagent_type` parameter
-- Pick the available agent whose name/description best matches idea validation, brutal pressure-testing, or go/no-go analysis. Bundled fallback: `project-idea-validator`. If a more specialized validator exists in the environment, use it.
+- Two ways to source the validator; prefer the first, always have the second:
+  - Named subagent — if the platform exposes a validator subagent, pick the best match for idea validation, brutal pressure-testing, or go/no-go analysis (Claude Code: the `Agent` tool's `subagent_type`; other agents: their own spawn mechanism)
+  - Bundled persona — brief a general-purpose subagent with `references/personas/project-idea-validator.md`; use when no named subagent fits or the platform has no subagent registry
 - Competitor research — choose one path, never both:
-  - Competitors provided → invoke `/empire-product:recon` now; wait for matrix output; it will pre-populate the Competitor Teardown section; do NOT ask the validator to research competitors
-  - No competitors provided → include `competitive-analyst` subagent (or equivalent) alongside validator; it handles ad-hoc competitor discovery during validation
-- MUST list chosen agents (`subagent_type`) and rationale BEFORE dispatch
+  - Competitors provided → invoke the `recon` skill now; wait for matrix output; it will pre-populate the Competitor Teardown section; do NOT ask the validator to research competitors
+  - No competitors provided → add a competitor scout alongside the validator (named subagent, or a general-purpose subagent briefed with `references/personas/competitive-analyst.md`); it handles ad-hoc competitor discovery during validation
+- MUST list chosen agents (named `subagent_type` or persona filename) and rationale BEFORE dispatch
 - If confident in pick → dispatch immediately
 - If uncertain (multiple validators equally fit, no clear-fit validator) → MUST confirm roster with user before dispatch; allow swaps
 
@@ -71,7 +72,7 @@ compatibility: Requires network access (web research); dispatches research subag
 
   ## Competitor Teardown
 
-  <pre-populated from `/empire-product:recon` matrix when competitors were provided; otherwise researched by validator agent>
+  <pre-populated from the `recon` skill's matrix when competitors were provided; otherwise researched by validator agent>
 
   | Competitor | Positioning | Strengths | Weaknesses | Threat Level |
   |---|---|---|---|---|
@@ -158,6 +159,6 @@ compatibility: Requires network access (web research); dispatches research subag
 - MUST NOT soften critique on user pushback unless user supplies new evidence — explicitly require evidence to update the recommendation
 - MUST distinguish confirmed evidence from inferred reasoning
 - MUST NOT begin implementation work — even if recommendation is PROCEED
-- If zero suitable validator/competitor agents exist in the environment → MUST stop and tell user; never inline-impersonate a validator
+- The bundled personas in `references/personas/` always provide a fallback roster — a missing named subagent is never a reason to stop; if the platform cannot spawn subagents at all → MUST stop and tell user; never inline-impersonate a validator in the main thread
 
 </section>
