@@ -9,15 +9,15 @@ description: >
   with confidence-tagged data and a positioning angle. Different from
   `/empire-research:compare`, which evaluates tools, libraries, vendors, or architectural
   choices — NOT competitors. Findings stay local — never posted externally.
-compatibility: Requires network access (web research); dispatches research subagents.
+compatibility: Requires network access (web research); dispatches research subagents. Runs in Claude Code and OpenAI Codex; bundled personas fill the roster when no named subagents are installed.
 ---
 
 <section id="purpose">
 
 - Map the competitive landscape across the dimensions that matter for a positioning or product decision
-- Different from `/empire-research:compare` — `compare` evaluates options for a known purpose; `recon` scouts competitors for positioning intelligence
-- Different from `/empire-product:vet` — `vet` pressure-tests an idea with go/no-go output; `recon` produces a structured matrix of competitor data without picking a winner
-- MAY be invoked automatically by `/empire-product:vet` when competitors are provided; its matrix pre-populates `vet`'s Competitor Teardown section
+- Different from the `compare` skill (empire-research) — `compare` evaluates options for a known purpose; `recon` scouts competitors for positioning intelligence
+- Different from the `vet` skill — `vet` pressure-tests an idea with go/no-go output; `recon` produces a structured matrix of competitor data without picking a winner
+- MAY be invoked automatically by the `vet` skill when competitors are provided; its matrix pre-populates `vet`'s Competitor Teardown section
 
 </section>
 
@@ -55,9 +55,10 @@ User can add, remove, or reweight dimensions before dispatch.
 <section id="agent-selection">
 
 - One agent per competitor for parallel scouting
-- Inspect available subagents via the `Agent` tool's `subagent_type` parameter
-- Pick the available agent whose name/description best matches competitor research, market analysis, or competitive intelligence. Bundled fallback: `competitive-analyst`. Optionally include `market-researcher` for market-sizing dimensions.
-- MUST list chosen agents (`subagent_type`) per competitor + rationale BEFORE dispatch
+- Two ways to source each scout; prefer the first, always have the second:
+  - Named subagent — if the platform exposes research subagents, pick the best match for competitor research, market analysis, or competitive intelligence (Claude Code: the `Agent` tool's `subagent_type`; other agents: their own spawn mechanism)
+  - Bundled persona — brief a general-purpose subagent with `references/personas/competitive-analyst.md` (or `references/personas/market-researcher.md` for market-sizing dimensions); use when no named subagent fits or the platform has no subagent registry
+- MUST list chosen scouts (named `subagent_type` or persona filename) per competitor + rationale BEFORE dispatch
 - If confident in every pick → dispatch immediately
 - If uncertain (multiple scouts equally fit, no clear-fit agent for a competitor) → MUST confirm roster with user before dispatch; allow swaps
 
@@ -65,7 +66,7 @@ User can add, remove, or reweight dimensions before dispatch.
 
 <section id="parallel-dispatch">
 
-- Send single message with multiple `Agent` tool calls (one per competitor)
+- Dispatch all scouts in parallel, one subagent per competitor (Claude Code: one message with multiple `Agent` tool calls; other agents: spawn them concurrently)
 - Each agent receives:
   - The specific competitor assigned to them (one competitor per agent)
   - The agreed-upon dimension list with descriptions
@@ -160,6 +161,6 @@ User can add, remove, or reweight dimensions before dispatch.
 - MUST tag every cell with confidence + as-of date
 - MUST refuse out-of-scope tactics (social engineering, unauthorized access)
 - MUST NOT begin implementation of any action item — recommendation only
-- If zero suitable competitive-research/market-research agents exist in environment → MUST stop and tell user; never inline-impersonate a scout
+- The bundled personas in `references/personas/` always provide a fallback scout — a missing named subagent is never a reason to stop; if the platform cannot spawn subagents at all → MUST stop and tell user; never inline-impersonate a scout in the main thread
 
 </section>

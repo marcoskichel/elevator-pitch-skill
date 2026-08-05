@@ -15,7 +15,7 @@ compatibility: Designed for Claude Code (or similar agents).
 
 **Requirements are hypotheses about what will solve a problem.** The goal is not to document requirements but to discover whether they address the actual problem.
 
-MUST NOT discuss architecture or implementation until requirements are validated. Use `/empire-dev:shape` only after reaching RA5.
+MUST NOT discuss architecture or implementation until requirements are validated. Use the `shape` skill only after reaching RA5.
 
 </section>
 
@@ -83,7 +83,7 @@ If neither exists, proceed without them. Do not create these files unprompted.
 
 **Indicators:** Problem articulated without mentioning solutions. Each requirement has acceptance criteria. Constraint inventory separates facts from assumptions. V1 boundary is explicit with deferred items listed. You know what would make the requirements wrong.
 
-**Next step:** Hand off to `/empire-dev:shape` with Validated Requirements Document.
+**Next step:** Hand off to the `shape` skill with Validated Requirements Document.
 
 </section>
 

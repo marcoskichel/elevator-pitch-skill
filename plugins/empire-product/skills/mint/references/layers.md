@@ -1,6 +1,6 @@
 # Naming Layers — Lookup Catalog
 
-Reference for `/empire-product:mint`. Read when doing brand/product naming or any deep layer analysis. Quick naming (character, place, skill names) can work from the diagnostic states alone.
+Reference for the `mint` skill. Read when doing brand/product naming or any deep layer analysis. Quick naming (character, place, skill names) can work from the diagnostic states alone.
 
 Names align across four layers — sound, meaning, cultural, functional. When they align, a name feels inevitable; when they conflict, it feels wrong even when no one can say why.
 

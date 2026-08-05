@@ -5,11 +5,13 @@
 # skills.sh ships each skill's own directory verbatim, and Codex reads skills from
 # .agents/skills. Two artifacts must therefore be generated from the canonical
 # source and kept in lockstep with it:
-#   1. Specialist personas — copies of plugins/empire-dev/agents/*.md placed in the
-#      team-review skill's references/personas/ so they travel with the skill (a
+#   1. Specialist personas — copies of a plugin's agents/*.md placed in the
+#      dispatching skill's references/personas/ so they travel with the skill (a
 #      skill referenced only relatively stays self-contained across agents).
 #   2. .agents/skills/<skill> symlinks — a project-local mirror so Codex discovers
 #      these skills when run inside this repo (skills.sh handles external installs).
+#
+# Add a plugin to the migration by extending PERSONA_BUNDLES and MIRROR_BUNDLES.
 #
 # Usage:
 #   sync-codex.sh           # write artifacts (idempotent)
@@ -47,30 +49,39 @@ cd "$REPO_ROOT"
 
 DRIFT=0
 
-# Personas: agent definitions bundled into the team-review skill.
-PERSONA_SRC="plugins/empire-dev/agents"
-PERSONA_DST="plugins/empire-dev/skills/team-review/references/personas"
+# Persona bundles: "SRC_AGENTS_DIR::DST_PERSONAS_DIR". The dispatching skill
+# bundles its plugin's full agent roster; the skill selects the right one.
+PERSONA_BUNDLES=(
+  "plugins/empire-dev/agents::plugins/empire-dev/skills/team-review/references/personas"
+  "plugins/empire-product/agents::plugins/empire-product/skills/vet/references/personas"
+  "plugins/empire-product/agents::plugins/empire-product/skills/recon/references/personas"
+)
 
-# Project-local Codex skill mirror.
+# Project-local Codex skill mirror: "PLUGIN::skill1 skill2 ...".
+MIRROR_BUNDLES=(
+  "empire-dev::team-review socratic-pr-review handoff shape weigh slice"
+  "empire-product::pitch vet recon mint distill probe"
+)
+
 MIRROR_DIR=".agents/skills"
-EMPIRE_DEV_SKILLS=(team-review socratic-pr-review handoff shape weigh slice)
 
-sync_personas() {
-  [[ -d "$PERSONA_SRC" ]] || die "missing persona source: $PERSONA_SRC"
+sync_persona_set() {
+  local src_dir="$1" dst_dir="$2"
+  local src dst base
+  [[ -d "$src_dir" ]] || die "missing persona source: $src_dir"
 
   if $CHECK; then
-    local src dst base
-    for src in "$PERSONA_SRC"/*.md; do
+    for src in "$src_dir"/*.md; do
       base="$(basename "$src")"
-      dst="$PERSONA_DST/$base"
+      dst="$dst_dir/$base"
       if [[ ! -f "$dst" ]] || ! cmp -s "$src" "$dst"; then
         warn "persona out of sync: $dst"
         DRIFT=1
       fi
     done
-    for dst in "$PERSONA_DST"/*.md; do
+    for dst in "$dst_dir"/*.md; do
       base="$(basename "$dst")"
-      if [[ ! -f "$PERSONA_SRC/$base" ]]; then
+      if [[ ! -f "$src_dir/$base" ]]; then
         warn "stale persona (no source): $dst"
         DRIFT=1
       fi
@@ -78,44 +89,53 @@ sync_personas() {
     return
   fi
 
-  mkdir -p "$PERSONA_DST"
-  local src dst base
-  for dst in "$PERSONA_DST"/*.md; do
+  mkdir -p "$dst_dir"
+  for dst in "$dst_dir"/*.md; do
     base="$(basename "$dst")"
-    [[ -f "$PERSONA_SRC/$base" ]] || rm -f "$dst"
+    [[ -f "$src_dir/$base" ]] || rm -f "$dst"
   done
-  for src in "$PERSONA_SRC"/*.md; do
-    cp "$src" "$PERSONA_DST/$(basename "$src")"
+  for src in "$src_dir"/*.md; do
+    cp "$src" "$dst_dir/$(basename "$src")"
   done
-  success "synced personas → $PERSONA_DST"
+}
+
+sync_personas() {
+  local bundle
+  for bundle in "${PERSONA_BUNDLES[@]}"; do
+    sync_persona_set "${bundle%%::*}" "${bundle##*::}"
+  done
+  $CHECK || success "synced personas (${#PERSONA_BUNDLES[@]} bundles)"
 }
 
 sync_mirror() {
-  local skill link target actual
+  local bundle plugin skill link target actual count=0
+  local -a skills
 
-  if $CHECK; then
-    for skill in "${EMPIRE_DEV_SKILLS[@]}"; do
+  $CHECK || mkdir -p "$MIRROR_DIR"
+  for bundle in "${MIRROR_BUNDLES[@]}"; do
+    plugin="${bundle%%::*}"
+    read -ra skills <<<"${bundle##*::}"
+    for skill in "${skills[@]}"; do
       link="$MIRROR_DIR/$skill"
-      target="../../plugins/empire-dev/skills/$skill"
-      if [[ ! -L "$link" ]]; then
-        warn "missing symlink: $link"
-        DRIFT=1
-        continue
-      fi
-      actual="$(readlink "$link")"
-      if [[ "$actual" != "$target" ]]; then
-        warn "symlink target wrong: $link -> $actual (want $target)"
-        DRIFT=1
+      target="../../plugins/$plugin/skills/$skill"
+      if $CHECK; then
+        if [[ ! -L "$link" ]]; then
+          warn "missing symlink: $link"
+          DRIFT=1
+          continue
+        fi
+        actual="$(readlink "$link")"
+        if [[ "$actual" != "$target" ]]; then
+          warn "symlink target wrong: $link -> $actual (want $target)"
+          DRIFT=1
+        fi
+      else
+        ln -sfn "$target" "$link"
+        count=$((count + 1))
       fi
     done
-    return
-  fi
-
-  mkdir -p "$MIRROR_DIR"
-  for skill in "${EMPIRE_DEV_SKILLS[@]}"; do
-    ln -sfn "../../plugins/empire-dev/skills/$skill" "$MIRROR_DIR/$skill"
   done
-  success "synced $MIRROR_DIR mirror (${#EMPIRE_DEV_SKILLS[@]} skills)"
+  $CHECK || success "synced $MIRROR_DIR mirror ($count skills)"
 }
 
 info "Syncing Codex artifacts (mode: $([[ $CHECK == true ]] && echo check || echo write))"
