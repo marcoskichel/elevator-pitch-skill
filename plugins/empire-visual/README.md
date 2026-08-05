@@ -46,6 +46,16 @@ the output targets GitHub or a markdown viewer.
 
 **Source:** [`output-styles/visual-first.md`](output-styles/visual-first.md)
 
+## Use with Codex
+
+The `visualize` skill runs in OpenAI Codex (and other [Agent Skills](https://agentskills.io) runtimes). Install with [skills.sh](https://skills.sh):
+
+```sh
+npx skills add marcoskichel/empire -a codex
+```
+
+The `visual-first` output style is Claude-only. Codex has no output-style concept, so only the on-demand `visualize` skill ports. Invoke it flat (`/visualize`, `$visualize`).
+
 ## Skills
 
 ### `visualize`

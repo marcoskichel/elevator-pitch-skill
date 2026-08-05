@@ -40,6 +40,7 @@ This file provides guidance for AI agents working with code in this repository.
 - Qualify Claude-only tools in bodies (e.g. "Claude Code: the `Agent` tool; other agents: their spawn mechanism"). Avoid bare `/plugin:skill` cross-refs in bodies; write "the `<skill>` skill".
 - Dispatching skills bundle their plugin's agent roster under `references/personas/`, generated from `plugins/<plugin>/agents/*.md` by `scripts/sync-codex.sh` (currently `team-review`, `vet`, `recon`, `explore`, `compare`). Run it after changing an agent; CI enforces sync via `scripts/sync-codex.sh --check`.
 - `.agents/skills/` is a generated symlink mirror for project-local Codex discovery. Never hand-edit; run `scripts/sync-codex.sh`.
+- Output styles (empire-visual `visual-first`) are Claude-only; Codex has no output-style concept, so only skills port.
 
 ## Adding a new skill
 

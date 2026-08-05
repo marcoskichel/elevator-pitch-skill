@@ -9,7 +9,7 @@ description: >
   me a diagram", "map this out", "flowchart", "architecture diagram", "sequence
   diagram", "state machine", "ascii diagram", "make this visual",
   "/empire-visual:visualize".
-compatibility: Designed for Claude Code (or similar agents).
+compatibility: Runs in any Agent Skills runtime (Claude Code, OpenAI Codex, and others). Self-contained: terminal-native ASCII, no subagents.
 allowed-tools: Read, Grep, Glob
 ---
 
@@ -57,8 +57,8 @@ answer has no structure — a single fact, a yes/no — do NOT force a diagram. 
 
 <section id="render-rules">
 
-- MUST default to ASCII / Unicode box-drawing + Markdown tables. They render in the
-  Claude Code terminal TUI, IDE panels, and GitHub.
+- MUST default to ASCII / Unicode box-drawing + Markdown tables. They render in
+  agent terminal TUIs, IDE panels, and GitHub.
 - MUST use a ` ```mermaid ` block ONLY when output targets GitHub, a PR, or a markdown
   viewer. The terminal TUI does NOT render mermaid — it prints the raw source. Never
   make mermaid the sole representation in a terminal reply. When both terminal and
