@@ -8,14 +8,14 @@ description: >
   exploration: shallow scan enumerates 3–5 candidate approaches, user picks
   subset to deep-dive, parallel research per approach, consolidated comparison
   with recommended direction. Findings stay local — never posted externally.
-compatibility: Requires network access (web search and fetch); dispatches research subagents.
+compatibility: Requires network access (web search and fetch); dispatches research subagents. Runs in Claude Code and OpenAI Codex; a bundled persona fills the roster when no named subagents are installed.
 ---
 
 <section id="purpose-vs-compare">
 
 - Use `explore` when the solution space is open: user knows the problem, not the options
-- Use `/empire-research:compare` instead when user already has a known set of options to evaluate head-to-head
-- If user input names specific options (A vs B vs C), suggest `/empire-research:compare` and confirm before proceeding here
+- Use the `compare` skill instead when user already has a known set of options to evaluate head-to-head
+- If user input names specific options (A vs B vs C), suggest the `compare` skill and confirm before proceeding here
 
 </section>
 
@@ -39,9 +39,10 @@ compatibility: Requires network access (web search and fetch); dispatches resear
 <section id="shallow-scan">
 
 - After problem confirmed, dispatch ONE research agent for broad enumeration
-- Agent names vary by environment; do not assume a specific agent exists
-- Inspect available subagents via the `Agent` tool's `subagent_type` parameter
-- Pick the available agent whose name/description best matches general research synthesis or broad information retrieval; if multiple candidates fit, prefer the most specific; if none fit, use the most general research-oriented agent available
+- Agent names vary by environment; never assume a specific named agent exists — the bundled persona guarantees the scan can always run
+- Two ways to source the scanning agent; prefer the first, always have the second:
+  - Named subagent — if the platform exposes a research subagent, pick the best match for general research synthesis or broad information retrieval (Claude Code: the `Agent` tool's `subagent_type`; other agents: their own spawn mechanism)
+  - Bundled persona — brief a general-purpose subagent with `references/personas/research-analyst.md`; use when no named subagent fits or the platform has no subagent registry
 - Shallow agent instructions:
 
   - Enumerate 3–5 candidate approaches only
@@ -100,8 +101,10 @@ compatibility: Requires network access (web search and fetch); dispatches resear
 
 - Fallback path — only when the Workflow tool is unavailable (see `dispatch-mode`)
 - Pick one deep agent per selected approach
-- Agent names vary by environment; do not assume a specific agent exists
-- Inspect available subagents via the `Agent` tool's `subagent_type` parameter
+- Agent names vary by environment; never assume a specific named agent exists — the bundled persona guarantees the roster can always be filled
+- Source each deep researcher two ways; prefer the first, always have the second:
+  - Named subagent — if the platform exposes research subagents, inspect what is available (Claude Code: the `Agent` tool's `subagent_type`; other agents: their own spawn mechanism)
+  - Bundled persona — brief a general-purpose subagent with `references/personas/research-analyst.md`; use when no named subagent fits or the platform has no subagent registry
 - For each selected approach, identify its dominant signal from these categories:
   - General synthesis, multi-source aggregation
   - Fast targeted retrieval, known-solution space
@@ -110,7 +113,7 @@ compatibility: Requires network access (web search and fetch); dispatches resear
   - Emerging-tech trajectory, trend analysis
 - For each signal that applies, pick the available agent whose name/description best matches; if multiple candidates fit, prefer the most specific; if none fit, use the most general research-synthesis agent available
 - MUST always include at least one general research-synthesis agent to anchor the roster
-- List chosen agent per approach (using its actual `subagent_type` value) + one-line rationale BEFORE dispatch
+- List chosen researcher per approach (named `subagent_type` or persona filename) + one-line rationale BEFORE dispatch
 - If confident in every pick → dispatch immediately
 - If uncertain about any pick → confirm roster with user before dispatch; allow swaps
 
@@ -118,7 +121,7 @@ compatibility: Requires network access (web search and fetch); dispatches resear
 
 <section id="parallel-deep-dispatch">
 
-- Send single message with multiple `Agent` tool calls (one per approach)
+- Dispatch all researchers in parallel, one subagent per approach (Claude Code: one message with multiple `Agent` tool calls; other agents: spawn them concurrently)
 - Each agent receives:
   - Original confirmed problem statement
   - The specific approach assigned to them
@@ -175,6 +178,6 @@ compatibility: Requires network access (web search and fetch); dispatches resear
 - MUST NOT post to Slack, GitHub, Jira, or any external system unless user explicitly authorizes
 - MUST NOT implement chosen approach — recommendation only
 - MUST NOT proceed through any gate without explicit user confirmation
-- If zero suitable research-synthesis agents exist in environment → MUST stop and tell user; never inline-impersonate a researcher
+- The bundled persona in `references/personas/` always provides a fallback researcher — a missing named subagent is never a reason to stop; if the platform cannot spawn subagents at all → MUST stop and tell user; never inline-impersonate a researcher in the main thread
 
 </section>
