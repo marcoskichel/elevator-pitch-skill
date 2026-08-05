@@ -55,12 +55,15 @@ PERSONA_BUNDLES=(
   "plugins/empire-dev/agents::plugins/empire-dev/skills/team-review/references/personas"
   "plugins/empire-product/agents::plugins/empire-product/skills/vet/references/personas"
   "plugins/empire-product/agents::plugins/empire-product/skills/recon/references/personas"
+  "plugins/empire-research/agents::plugins/empire-research/skills/explore/references/personas"
+  "plugins/empire-research/agents::plugins/empire-research/skills/compare/references/personas"
 )
 
 # Project-local Codex skill mirror: "PLUGIN::skill1 skill2 ...".
 MIRROR_BUNDLES=(
   "empire-dev::team-review socratic-pr-review handoff shape weigh slice"
   "empire-product::pitch vet recon mint distill probe"
+  "empire-research::explore compare dissect"
 )
 
 MIRROR_DIR=".agents/skills"

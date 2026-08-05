@@ -9,14 +9,14 @@ description: >
   `/empire-product:recon`). User has a known option set; produces a
   side-by-side matrix on user-defined dimensions and recommends a winner.
   Findings stay local — never posted externally.
-compatibility: Requires network access (web search and fetch); dispatches research subagents.
+compatibility: Requires network access (web search and fetch); dispatches research subagents. Runs in Claude Code and OpenAI Codex; a bundled persona fills the roster when no named subagents are installed.
 ---
 
 <section id="purpose-vs-explore">
 
 - Use `compare` when the user already has a known finite set of options to evaluate
-- Use `/empire-research:explore` instead when the solution space is open and options need to be enumerated first
-- If user input describes a problem without specific options, suggest `/empire-research:explore` and confirm before proceeding here
+- Use the `explore` skill instead when the solution space is open and options need to be enumerated first
+- If user input describes a problem without specific options, suggest the `explore` skill and confirm before proceeding here
 
 </section>
 
@@ -31,7 +31,7 @@ compatibility: Requires network access (web search and fetch); dispatches resear
 - If any required input is missing → ask one clarifying question at a time
 - For decision dimensions, suggest a sensible default set if user has no preference (see `default-dimensions`)
 - MUST confirm option list AND dimension list with user before dispatch
-- MUST NOT proceed if option list has < 2 options — redirect to `/empire-research:explore`
+- MUST NOT proceed if option list has < 2 options — redirect to the `explore` skill
 
 </section>
 
@@ -73,14 +73,16 @@ User can add, remove, or reweight dimensions before dispatch.
 
 - Fallback path — only when the Workflow tool is unavailable (see `dispatch-mode`)
 - One agent per option for parallel deep evaluation
-- Agent names vary by environment; do not assume a specific agent exists
-- Inspect available subagents via the `Agent` tool's `subagent_type` parameter
+- Agent names vary by environment; never assume a specific named agent exists — the bundled persona guarantees the roster can always be filled
+- Two ways to source each evaluator; prefer the first, always have the second:
+  - Named subagent — if the platform exposes research subagents, inspect what is available (Claude Code: the `Agent` tool's `subagent_type`; other agents: their own spawn mechanism)
+  - Bundled persona — brief a general-purpose subagent with `references/personas/research-analyst.md`; use when no named subagent fits or the platform has no subagent registry
 - For each option, identify its dominant signal:
   - Library / framework / language → pick the most specific language or framework expert available; fall back to a general code or research agent
   - Vendor / SaaS / commercial product → pick a comparative-analysis or research-synthesis agent
   - Architectural choice → pick an architecture-review or systems-design agent
 - MUST include at least one general research-synthesis agent in the roster to anchor cross-option consistency
-- List chosen agent per option (using its actual `subagent_type` value) + one-line rationale BEFORE dispatch
+- List chosen evaluator per option (named `subagent_type` or persona filename) + one-line rationale BEFORE dispatch
 - If confident in every pick → dispatch immediately
 - If uncertain about any pick → confirm roster with user before dispatch; allow swaps
 - Skip the shallow-scan phase — options are already known
@@ -89,7 +91,7 @@ User can add, remove, or reweight dimensions before dispatch.
 
 <section id="parallel-dispatch">
 
-- Send single message with multiple `Agent` tool calls (one per option)
+- Dispatch all evaluators in parallel, one subagent per option (Claude Code: one message with multiple `Agent` tool calls; other agents: spawn them concurrently)
 - Each agent receives:
   - The specific option assigned to them (one option per agent)
   - The agreed-upon dimension list with descriptions
@@ -168,6 +170,6 @@ User can add, remove, or reweight dimensions before dispatch.
 - MUST NOT pick a winner without showing the matrix
 - MUST NOT begin implementation
 - MUST mark inferred data as such — never present speculation as fact
-- If zero suitable research/code/architecture agents exist in environment → MUST stop and tell user; never inline-impersonate an evaluator
+- The bundled persona in `references/personas/` always provides a fallback evaluator — a missing named subagent is never a reason to stop; if the platform cannot spawn subagents at all → MUST stop and tell user; never inline-impersonate an evaluator in the main thread
 
 </section>
