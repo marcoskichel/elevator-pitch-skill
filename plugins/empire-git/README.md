@@ -17,6 +17,16 @@ Or install the full empire bundle (which includes this plugin):
 /plugin install empire@empire
 ```
 
+## Use with Codex
+
+These skills run in OpenAI Codex (and other [Agent Skills](https://agentskills.io) runtimes). Install with [skills.sh](https://skills.sh):
+
+```sh
+npx skills add marcoskichel/empire -a codex
+```
+
+Codex invokes skills flat (`/worktree-open`, `$worktree-close`), so the `/empire-git:` command examples below are the Claude Code form. The bundled `worktree-setup.sh` and `worktree-registry.sh` ship inside each skill; Claude Code resolves them via `${CLAUDE_PLUGIN_ROOT}`, other agents via the skill's own `scripts/` directory. Worktrees still live under `.claude/worktrees/`.
+
 ## Skills
 
 ### `worktree-open`

@@ -65,6 +65,17 @@ MIRROR_BUNDLES=(
   "empire-product::pitch vet recon mint distill probe"
   "empire-research::explore compare dissect"
   "empire-visual::visualize"
+  "empire-git::worktree-open worktree-close worktree-list worktree-cleanup worktree-merge worktree-help pr-description pr-merge"
+)
+
+# Script bundles: "SRC_SCRIPT::DST_SKILL_SCRIPTS_DIR". Copied so skills.sh ships
+# the script inside the skill (Codex); Claude keeps using ${CLAUDE_PLUGIN_ROOT}/scripts.
+SCRIPT_BUNDLES=(
+  "plugins/empire-git/scripts/worktree-setup.sh::plugins/empire-git/skills/worktree-open/scripts"
+  "plugins/empire-git/scripts/worktree-registry.sh::plugins/empire-git/skills/worktree-open/scripts"
+  "plugins/empire-git/scripts/worktree-registry.sh::plugins/empire-git/skills/worktree-close/scripts"
+  "plugins/empire-git/scripts/worktree-registry.sh::plugins/empire-git/skills/worktree-cleanup/scripts"
+  "plugins/empire-git/scripts/worktree-registry.sh::plugins/empire-git/skills/worktree-merge/scripts"
 )
 
 MIRROR_DIR=".agents/skills"
@@ -142,8 +153,32 @@ sync_mirror() {
   $CHECK || success "synced $MIRROR_DIR mirror ($count skills)"
 }
 
+sync_scripts() {
+  local bundle src dst_dir dst base count=0
+  for bundle in "${SCRIPT_BUNDLES[@]}"; do
+    src="${bundle%%::*}"
+    dst_dir="${bundle##*::}"
+    base="$(basename "$src")"
+    dst="$dst_dir/$base"
+    [[ -f "$src" ]] || die "missing script source: $src"
+    if $CHECK; then
+      if [[ ! -f "$dst" ]] || ! cmp -s "$src" "$dst"; then
+        warn "script out of sync: $dst"
+        DRIFT=1
+      fi
+    else
+      mkdir -p "$dst_dir"
+      cp "$src" "$dst"
+      chmod +x "$dst"
+      count=$((count + 1))
+    fi
+  done
+  $CHECK || success "synced scripts ($count copies)"
+}
+
 info "Syncing Codex artifacts (mode: $([[ $CHECK == true ]] && echo check || echo write))"
 sync_personas
+sync_scripts
 sync_mirror
 
 if $CHECK; then

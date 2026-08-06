@@ -7,7 +7,7 @@ description: >
   copied", "what about port collisions", "how do worktrees affect main repo",
   "worktree workflow", "show me the worktree FAQ", or any question about the
   setup. Also triggers for `/empire-git:worktree-help [question]`.
-compatibility: Requires git. Designed for Claude Code (or similar agents).
+compatibility: Requires git. Runs in Claude Code and OpenAI Codex.
 model: haiku
 allowed-tools: Bash Read Glob Grep
 argument-hint: "[question]"
@@ -27,7 +27,7 @@ The empire worktree skills are a toolkit for running multiple branches of the sa
 
 **Why it exists.** Switching branches mid-task is disruptive: you stash, rebuild, lose dev server state, and risk polluting one branch's `.env` with another's. Worktrees give each branch its own directory, dependencies, ports, and env — so you (or a Claude agent) can spin up a parallel task without touching what you're already working on. This plugin automates the boring parts: derived ports, copied env files, dependency installs, cleanup, and merge/close flows.
 
-**Zero per-repo setup.** The plugin ships with `worktree-setup.sh` and the skills invoke it via `${CLAUDE_PLUGIN_ROOT}`. Lockfiles are auto-detected (pnpm, npm, yarn, bun, uv, poetry, pipenv, bundler, cargo, go modules). The `.claude/worktrees` ignore entry is written to `.git/info/exclude`, never the repo's tracked `.gitignore`.
+**Zero per-repo setup.** The plugin ships with `worktree-setup.sh`; skills invoke it via `${CLAUDE_PLUGIN_ROOT}/scripts/` on Claude Code and a bundled `scripts/` copy on other agents (e.g. Codex). Lockfiles are auto-detected (pnpm, npm, yarn, bun, uv, poetry, pipenv, bundler, cargo, go modules). The `.claude/worktrees` ignore entry is written to `.git/info/exclude`, never the repo's tracked `.gitignore`.
 
 ### Available skills
 

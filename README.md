@@ -30,7 +30,7 @@ Or hire individual departments:
 
 <!-- prettier-ignore-start -->
 > [!NOTE]
-> Codex and other [Agent Skills](https://agentskills.io) runtimes: `npx skills add marcoskichel/empire -a codex`. `empire-dev`, `empire-product`, `empire-research`, and `empire-visual` are Codex-ready today; `empire-git` is next.
+> Codex and other [Agent Skills](https://agentskills.io) runtimes: `npx skills add marcoskichel/empire -a codex`. All empire plugins now install into Codex; empire-git bundles its worktree scripts per-skill.
 <!-- prettier-ignore-end -->
 
 <!-- prettier-ignore-start -->

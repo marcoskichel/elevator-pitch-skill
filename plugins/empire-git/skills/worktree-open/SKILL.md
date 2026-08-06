@@ -7,7 +7,7 @@ description: >
   for an agent", "side branch without switching", or mentions worktrees,
   parallel branches, or stacked work. Also triggers for
   `/empire-git:worktree-open [branch | task description] [--base <branch>]`.
-compatibility: Requires git. Designed for Claude Code (or similar agents).
+compatibility: Requires git. Runs in Claude Code and OpenAI Codex; the bundled setup/registry scripts ship with the skill.
 model: sonnet
 allowed-tools: Bash Read Glob Grep
 argument-hint: "[branch | task description] [--base <branch>]"
@@ -15,7 +15,7 @@ argument-hint: "[branch | task description] [--base <branch>]"
 
 # Worktree Open
 
-Create or reopen a git worktree for parallel development, then guide the user to launch a Claude Code session in it.
+Create or reopen a git worktree for parallel development, then guide the user to launch an agent session in it.
 
 **User input:** $ARGUMENTS
 
@@ -89,7 +89,7 @@ WORKTREE_DIR="${REPO_ROOT}/.claude/worktrees/${SAFE_BRANCH}-${BRANCH_HASH}"
 
 ## Step 4 — Run the setup script
 
-The setup script ships with this plugin and is always available at `${CLAUDE_PLUGIN_ROOT}/scripts/worktree-setup.sh`.
+The setup script ships with this skill. On Claude Code it is at `${CLAUDE_PLUGIN_ROOT}/scripts/worktree-setup.sh`; on other agents (e.g. Codex) it is `scripts/worktree-setup.sh` inside this skill's directory. Substitute the right path in the commands below.
 
 **New worktree:**
 
@@ -107,7 +107,7 @@ The script auto-detects the package manager from lockfiles (pnpm, npm, yarn, bun
 
 ## Step 4.5 — Register the worktree
 
-After the setup script succeeds, record the worktree in the per-session registry so external tooling can discover it:
+After the setup script succeeds, record the worktree in the per-session registry so external tooling can discover it (same path convention as Step 4: `${CLAUDE_PLUGIN_ROOT}/scripts/worktree-registry.sh` on Claude Code, `scripts/worktree-registry.sh` on other agents):
 
 ```bash
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/worktree-registry.sh" add \
@@ -117,7 +117,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/worktree-registry.sh" add \
   --repo-root "<repo-root>"
 ```
 
-The registry lives at `~/.claude/sessions/$CLAUDE_CODE_SESSION_ID/active-worktrees.json`. Re-opening an existing worktree refreshes its `opened_at` without duplicating the entry.
+The registry lives at `~/.claude/sessions/<session-id>/active-worktrees.json` (session id from `$CLAUDE_CODE_SESSION_ID` or `$AGENT_SESSION_ID`). Re-opening an existing worktree refreshes its `opened_at` without duplicating the entry.
 
 If the registry call fails (e.g., `jq` missing), print a warning and continue — the worktree itself is still usable.
 
@@ -132,9 +132,9 @@ Worktree ready!
   Path:    <worktree-path>
   Status:  new | reopened
 
-To start working in this worktree, navigate to it and launch a Claude Code session or open in VSCode:
+To start working in this worktree, navigate to it and launch your agent session or open in VSCode:
   cd <worktree-path>
-  claude  # Starts a Claude Code session in this worktree
+  claude  # or `codex`, etc. — start your agent in this worktree
   code .  # Opens the worktree in a new VSCode window
 ```
 
