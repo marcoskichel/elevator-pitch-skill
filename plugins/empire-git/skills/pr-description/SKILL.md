@@ -10,7 +10,7 @@ description: >
   for review", "regenerate PR body". MUST be invoked before any `gh pr create
   --body*` or `gh pr edit --body*` per empire-git rules. Outputs markdown for
   stdin.
-compatibility: Requires the gh CLI and git. Designed for Claude Code (or similar agents).
+compatibility: Requires the gh CLI and git. Runs in Claude Code and OpenAI Codex.
 allowed-tools: Bash Read Glob Grep
 ---
 
