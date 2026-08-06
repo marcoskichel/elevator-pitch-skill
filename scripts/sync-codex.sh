@@ -64,6 +64,7 @@ MIRROR_BUNDLES=(
   "empire-dev::team-review socratic-pr-review handoff shape weigh slice"
   "empire-product::pitch vet recon mint distill probe"
   "empire-research::explore compare dissect"
+  "empire-visual::visualize"
 )
 
 MIRROR_DIR=".agents/skills"

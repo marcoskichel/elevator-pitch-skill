@@ -30,7 +30,7 @@ Or hire individual departments:
 
 <!-- prettier-ignore-start -->
 > [!NOTE]
-> Codex and other [Agent Skills](https://agentskills.io) runtimes: `npx skills add marcoskichel/empire -a codex`. `empire-dev`, `empire-product`, and `empire-research` are Codex-ready today; the rest are being ported.
+> Codex and other [Agent Skills](https://agentskills.io) runtimes: `npx skills add marcoskichel/empire -a codex`. `empire-dev`, `empire-product`, `empire-research`, and `empire-visual` are Codex-ready today; `empire-git` is next.
 <!-- prettier-ignore-end -->
 
 <!-- prettier-ignore-start -->
