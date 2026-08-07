@@ -21,10 +21,13 @@ const APPROACH_SCHEMA = {
   },
 };
 
-const problem = args?.problem ?? "";
-const approaches = args?.approaches ?? [];
-const constraints = args?.constraints ?? "";
-const successCriteria = args?.successCriteria ?? "";
+// args can arrive as a JSON string; parse once so field access always works.
+const input = typeof args === "string" ? JSON.parse(args) : args;
+
+const problem = input?.problem ?? "";
+const approaches = input?.approaches ?? [];
+const constraints = input?.constraints ?? "";
+const successCriteria = input?.successCriteria ?? "";
 
 if (!problem || approaches.length === 0) {
   return {
