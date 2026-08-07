@@ -54,14 +54,8 @@ const VERDICT_SCHEMA = {
   },
 };
 
-let input = args;
-if (typeof input === "string") {
-  try {
-    input = JSON.parse(input);
-  } catch (e) {
-    return { error: "team-review args arrived as a non-JSON string: " + e.message };
-  }
-}
+// args can arrive as a JSON string; parse once so field access always works.
+const input = typeof args === "string" ? JSON.parse(args) : args;
 
 const diff = input?.diff ?? "";
 const changedFiles = input?.changedFiles ?? [];

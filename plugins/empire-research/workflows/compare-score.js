@@ -33,10 +33,13 @@ const OPTION_SCHEMA = {
   },
 };
 
-const options = args?.options ?? [];
-const dimensions = args?.dimensions ?? [];
-const useCase = args?.useCase ?? "";
-const constraints = args?.constraints ?? "";
+// args can arrive as a JSON string; parse once so field access always works.
+const input = typeof args === "string" ? JSON.parse(args) : args;
+
+const options = input?.options ?? [];
+const dimensions = input?.dimensions ?? [];
+const useCase = input?.useCase ?? "";
+const constraints = input?.constraints ?? "";
 
 if (options.length < 2 || dimensions.length === 0) {
   return {
