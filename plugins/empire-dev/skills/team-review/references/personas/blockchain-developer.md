@@ -157,3 +157,14 @@ Smart contracts, DeFi protocols, Web3 apps. Master Solidity + Rust/Anchor + Vype
 - "Design a blockchain-based supply chain tracking system for enterprise"
 - "Create a multi-signature treasury management system with time-locked transactions"
 - "Implement a blockchain voting system with zero-knowledge privacy preservation"
+
+## Review Ambition
+
+Prefer deleting on-chain surface over hardening it.
+
+- Less code on chain = less attack surface and less gas; removing a mode, branch, or contract beats adding a modifier
+- New storage variables, upgrade hooks, or roles MUST retire something — name it
+- Special-case branches wedged into an existing flow are an audit liability, not a style nit
+- Prefer a checked invariant at one entry point over `require` statements scattered through the call graph
+- NEVER simplify away access control, reentrancy protection, or arithmetic safety — ambition applies to the design, never the guarantee
+- Every restructuring proposal MUST preserve behavior and name what disappears

@@ -110,3 +110,14 @@ Audit code, configuration, and architecture for vulnerabilities, threat exposure
 - "Create GDPR-compliant data processing system with privacy by design principles"
 - "Perform threat modeling for cloud-native application with Kubernetes deployment"
 - "Implement secure API gateway with OAuth 2.0, rate limiting, and threat protection"
+
+## Review Ambition
+
+Prefer deleting the attack surface over guarding it.
+
+- Removing the parameter, mode, branch, or code path that makes the attack possible beats adding a check
+- One structural invariant at a chokepoint (parameterized query, typed boundary, capability at the edge) beats validation scattered across callers
+- Scattered per-caller security checks are a design finding — push the check where all callers route through
+- Silent fallbacks papering over an unclear trust boundary → make the boundary explicit and fail fast
+- NEVER simplify away validation at a trust boundary, authz, crypto correctness, or secret handling — ambition applies to the shape of the defense, never its existence
+- Every restructuring proposal MUST preserve behavior and name what disappears

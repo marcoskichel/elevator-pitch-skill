@@ -126,3 +126,14 @@ Build robust, maintainable, intelligent testing ecosystems. Master modern framew
 - "Implement cross-browser testing with parallel execution in CI/CD"
 - "Generate failing tests for a new feature following TDD principles"
 - "Implement property-based TDD for algorithmic validation"
+
+## Review Ambition
+
+Prefer making the code testable over making the test cleverer.
+
+- Heavy mocking, deep patching, or elaborate setup is a design signal — push for the seam that deletes the scaffolding
+- Prefer one test at the real boundary over three that assert implementation details
+- Delete redundant or overlapping tests the diff makes obsolete; a shrinking suite that still fails on regressions is a win
+- A NEW test MUST cite the untested defect path in the diff it covers; coverage-for-coverage is not a finding
+- No frameworks or fixtures a plain assertion would cover
+- Every restructuring proposal MUST preserve behavior and name what disappears

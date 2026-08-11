@@ -82,6 +82,7 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
   - Test changes — test files added or modified
   - Performance hotspot — hot paths, DB queries, batching, caching, resource allocation
   - Debugging need — complex logic, non-obvious control flow, subtle state mutations
+  - Structural growth — file sprawl, new branching bolted into existing flows, wrapper/indirection layers, duplicated helpers (→ `simplifier`)
   - Generalist coverage — always include at least one general code-reviewer agent to anchor the roster
 - MUST list chosen specialists (named `subagent_type` or persona filename) + one-line rationale per pick BEFORE dispatch
 - If confident in every pick (clear signal-to-agent fit, no ambiguity) → dispatch immediately; user may interrupt mid-flight
@@ -131,9 +132,11 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
   - Relevant ADRs from `docs/adr/` (include summaries of ADRs touching changed paths; omit if folder absent)
   - Output format instruction (see below)
   - "Do NOT post to GitHub. Report findings in chat only."
-  - "Scope: review what the diff DOES; flag defects in changed lines + their direct blast radius."
-  - "Propose new abstractions, tests, or docs ONLY when the diff has a concrete defect best fixed that way; speculative 'would be cleaner' suggestions → demote to Nits or omit."
-  - "Net-new additions (file, abstraction, test, doc) MUST cite the specific defect in the diff they resolve; no defect cited → drop the finding."
+  - "Scope: review what the diff DOES and how it is structured; flag defects AND structural regressions in changed lines + their direct blast radius."
+  - "Be ambitious. Do not stop at local cleanup — look for the reframing that makes whole branches, helpers, modes, or layers disappear. Prefer deleting complexity over rearranging it."
+  - "A RESTRUCTURING proposal needs no cited defect IF it removes more code and concepts than it adds; name what disappears."
+  - "An ADDITIVE suggestion (new file, abstraction, test, doc) MUST cite the specific defect in the diff it resolves; no defect cited → drop the finding."
+  - "Do not rubber-stamp working code that leaves the codebase messier. Do not flood with nits — omit the Nits section entirely when you have Must-fix findings."
 - Required specialist output format:
 
   ```
@@ -191,9 +194,9 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
   - "Do NOT post to GitHub. Report findings in chat only."
 - Fixed severity rubric — each verifier MUST classify its finding as exactly one of:
   - `valid: must-fix` — confirmed defect breaking functionality, security, data integrity, or correctness in the changed lines or their direct blast radius
-  - `valid: should-fix` — confirmed real improvement, not urgent
+  - `valid: should-fix` — confirmed real improvement, not urgent; includes a behavior-preserving restructuring that provably removes more code and concepts than it adds
   - `valid: nit` — confirmed but cosmetic/style only
-  - `invalid` — claim does not hold up against the diff
+  - `invalid` — claim does not hold up against the diff, OR the proposed restructuring adds more than it removes, OR it changes behavior while claiming not to
 - Required output format — each verifier returns exactly one line:
 
   ```
@@ -209,10 +212,12 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
 - After the workflow returns (or, in inline fallback, after specialists and all verifiers return), produce consolidated report
 - Workflow mode: render the returned tiers directly; do NOT recompute merging or severity. List any `unverified` entries (verifier died) under their tier with an `(unverified)` marker, keeping specialist severity
 - Summary table:
+
   ```
   | Specialist | Must-fix | Should-fix | Nits |
   |---|---|---|---|
   ```
+
 - Drop any finding its verifier ruled `invalid` from every section except `Rejected by verification`
 - For surviving findings, use the verifier's severity (`must-fix`/`should-fix`/`nit`) for Corroborated and Single-source entries; Consensus entries keep each specialist's original severity (skipped verification per `verification-stage`)
 - Required report structure:
