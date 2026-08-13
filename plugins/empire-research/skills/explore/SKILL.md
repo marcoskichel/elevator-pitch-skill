@@ -78,28 +78,25 @@ compatibility: Requires network access (web search and fetch); dispatches resear
 <section id="dispatch-mode">
 
 - After approaches selected, dispatch the deep research one of two ways
-- Preferred — Workflow tool available:
+- Preferred — a workflow runner is available; the same script runs on every runner, only the call shape differs:
 
-  - Invoke the bundled deep-dive workflow; it fans out one researcher per approach with structured pros/cons/fit:
-
-    ```
-    Workflow({
-      scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/explore-deepdive.js",
-      args: { problem, constraints, successCriteria, approaches: [{ name, description }] },
-    })
-    ```
+  - Claude Code: `Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/explore-deepdive.js", args })`
+  - pi (`pi-dynamic-workflow`): `workflow({ name: "explore-deepdive", description, scriptPath: <this skill dir>/workflows/explore-deepdive.js, args })` — `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy
+  - Any other host exposing a JS workflow runner with `agent()`/`parallel()`: same script, its own call shape
+  - The script fans out one researcher per approach with structured pros/cons/fit
+  - `args`: `{ problem, constraints, successCriteria, approaches: [{ name, description }] }`
 
   - Surface the workflow's `log()` lines as progress
   - Feed the returned `approaches[]` into `consolidated-report`
   - Skip `agent-selection` and `parallel-deep-dispatch` — the workflow owns dispatch
 
-- Fallback — Workflow tool unavailable: use `agent-selection` then `parallel-deep-dispatch` below
+- Fallback — no workflow runner (e.g. OpenAI Codex): use `agent-selection` then `parallel-deep-dispatch` below
 
 </section>
 
 <section id="agent-selection">
 
-- Fallback path — only when the Workflow tool is unavailable (see `dispatch-mode`)
+- Fallback path — only when no workflow runner is available (see `dispatch-mode`)
 - Pick one deep agent per selected approach
 - Agent names vary by environment; never assume a specific named agent exists — the bundled persona guarantees the roster can always be filled
 - Source each deep researcher two ways; prefer the first, always have the second:
@@ -173,7 +170,7 @@ compatibility: Requires network access (web search and fetch); dispatches resear
 - MUST gather and confirm problem context before any agent dispatch
 - MUST clarify ambiguity before shallow scan
 - MUST confirm shallow results with user before deep dispatch
-- MUST dispatch deep research via the `explore-deepdive` workflow when the Workflow tool is available; else dispatch deep agents in parallel (single message, multiple tool uses)
+- MUST dispatch deep research via the `explore-deepdive` workflow when a workflow runner is available; else dispatch deep agents in parallel (single message, multiple tool uses)
 - MUST keep all findings local in chat only
 - MUST NOT post to Slack, GitHub, Jira, or any external system unless user explicitly authorizes
 - MUST NOT implement chosen approach — recommendation only

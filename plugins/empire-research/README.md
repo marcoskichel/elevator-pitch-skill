@@ -25,13 +25,13 @@ These skills also run in OpenAI Codex (and other [Agent Skills](https://agentski
 npx skills add marcoskichel/empire -a codex
 ```
 
-Codex has no Workflow tool, so `explore` and `compare` use their inline fallback path and dispatch subagents from the bundled `research-analyst` persona, filling the roster even where no named subagents exist. Invoke skills flat (`/explore`, `$compare`) or let Codex match them from their descriptions.
+Codex has no workflow runner, so `explore` and `compare` use their inline fallback path and dispatch subagents from the bundled `research-analyst` persona, filling the roster even where no named subagents exist. Invoke skills flat (`/explore`, `$compare`) or let Codex match them from their descriptions.
 
 ## Skills
 
 ### `explore`
 
-Open-ended approach exploration. Use when the solution space is open: you know the problem, not the options. The skill confirms the problem, dispatches a shallow scan to enumerate 3–5 candidate approaches, lets you pick a subset to deep-dive, then fans out one researcher per approach via the `explore-deepdive` workflow (inline parallel agents when the Workflow tool is unavailable), and produces a consolidated report with a recommended direction. Findings stay local — never posted externally.
+Open-ended approach exploration. Use when the solution space is open: you know the problem, not the options. The skill confirms the problem, dispatches a shallow scan to enumerate 3–5 candidate approaches, lets you pick a subset to deep-dive, then fans out one researcher per approach via the `explore-deepdive` workflow (inline parallel agents when no workflow runner is available), and produces a consolidated report with a recommended direction. Findings stay local — never posted externally.
 
 **Triggers:** "explore options", "what could we do for X", "research approaches", "investigate approaches", "spawn research team", "what are the options", "options analysis", "explore solutions", "have the team explore".
 
@@ -46,7 +46,7 @@ flowchart LR
 
 ### `compare`
 
-Closed comparison of a known set of options head-to-head. Use when you already have options A, B, C and want a side-by-side matrix. The skill confirms the option list and decision dimensions, scores each option in isolation via the `compare-score` workflow (inline parallel agents when the Workflow tool is unavailable), and consolidates a weighted matrix with a winner, runner-up criteria, and caveats. Confidence-tagged data. Findings stay local.
+Closed comparison of a known set of options head-to-head. Use when you already have options A, B, C and want a side-by-side matrix. The skill confirms the option list and decision dimensions, scores each option in isolation via the `compare-score` workflow (inline parallel agents when no workflow runner is available), and consolidates a weighted matrix with a winner, runner-up criteria, and caveats. Confidence-tagged data. Findings stay local.
 
 **Triggers:** "compare libs", "compare frameworks", "evaluate options", "side by side", "head to head", "X vs Y", "which is better", "tooling comparison", "weigh these options", "decide between these".
 
@@ -69,7 +69,7 @@ Systematically investigate complex claims by decomposing them into atomic verifi
 
 ## Workflows
 
-`explore` and `compare` drive their parallel fan-out through bundled [dynamic workflows](https://code.claude.com/docs/en/workflows) when the Workflow tool is available, invoked via `Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/<name>.js" })`. When the tool is unavailable, both skills fall back to inline parallel agent dispatch.
+`explore` and `compare` drive their parallel fan-out through bundled [dynamic workflows](https://code.claude.com/docs/en/workflows) on any host with a JS workflow runner: Claude Code via `Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/<name>.js" })`, pi via `workflow({ scriptPath: <skill dir>/workflows/<name>.js })` against the copy bundled in the skill dir. With no runner, both skills fall back to inline parallel agent dispatch.
 
 | Workflow              | Driven by | Does                                                            |
 | --------------------- | --------- | --------------------------------------------------------------- |

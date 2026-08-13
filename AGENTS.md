@@ -19,7 +19,7 @@ This file provides guidance for AI agents working with code in this repository.
 - `plugins/empire-product/` — product skills (`pitch`, `vet`, `recon`, `mint`, `distill`, `probe`), plus three bundled subagents (`project-idea-validator`, `competitive-analyst`, `market-researcher`).
 - `plugins/empire-visual/` — `visual-first` output style (in `output-styles/`) + on-demand `visualize` skill for terminal-native ASCII diagrams. No subagents.
 - `plugins/empire-*/skills/<skill-name>/SKILL.md` — one dir per skill. Skill name in frontmatter MUST match dir name.
-- `plugins/empire-*/workflows/<name>.js` — dynamic-workflow scripts a skill drives via `Workflow({scriptPath})`. Plain JS run by the Claude Code workflow runtime; no `package.json`, no build. The runtime sometimes hands `args` over as a JSON string, so every script MUST start its arg reads with `const input = typeof args === "string" ? JSON.parse(args) : args;` and read fields off `input`, never off `args` (a raw `args.foo` throws before any agent launches, giving a `0/0 agents` run). Scripts run in a `vm` context with no imports, so this line is copied per file by necessity.
+- `plugins/empire-*/workflows/<name>.js` — dynamic-workflow scripts a skill drives through whatever JS workflow runner the host exposes (Claude Code `Workflow({scriptPath})`, pi `workflow({scriptPath})`); a copy is bundled into the skill dir via `SCRIPT_BUNDLES` so non-Claude hosts can resolve it. Plain JS run by the Claude Code workflow runtime; no `package.json`, no build. The runtime sometimes hands `args` over as a JSON string, so every script MUST start its arg reads with `const input = typeof args === "string" ? JSON.parse(args) : args;` and read fields off `input`, never off `args` (a raw `args.foo` throws before any agent launches, giving a `0/0 agents` run). Scripts run in a `vm` context with no imports, so this line is copied per file by necessity.
 - `plugins/empire-*/README.md` — one per plugin. Plugin-specific docs (skills list, triggers, source links). Root `README.md` is the project intro and links to these.
 - `docs/superpowers/{specs,plans}/` — gitignored. Local-only design notes. Never commit.
 
@@ -29,7 +29,7 @@ This file provides guidance for AI agents working with code in this repository.
 - Frontmatter required: `name`, `description`. Optional: `model`, `allowed-tools`, `argument-hint`, `disable-model-invocation`.
 - `description` MUST list trigger phrases verbatim — Claude auto-route uses them.
 - Reference bundled scripts via `${CLAUDE_PLUGIN_ROOT}/scripts/<file>.sh`. Never hardcode repo paths.
-- Reference bundled workflows via `${CLAUDE_PLUGIN_ROOT}/workflows/<file>.js` with the `Workflow` tool. A skill that drives a workflow MUST document an inline-Agent fallback for when the Workflow tool is unavailable.
+- Reference bundled workflows via `${CLAUDE_PLUGIN_ROOT}/workflows/<file>.js` for Claude Code's `Workflow` tool, and via the skill-dir copy for other hosts' runners (pi's `workflow`). A skill that drives a workflow MUST document an inline-Agent fallback for hosts with no runner.
 - Users invoke skills as `/<plugin>:<skill-name>` once installed. Plugin namespaces: `empire-git`, `empire-dev`, `empire-research`, `empire-product`, `empire-visual`. The meta `empire` plugin contributes no skills.
 - After editing a SKILL.md, also update the matching section in the plugin's `README.md` (`plugins/<plugin>/README.md`) if triggers, args, or behavior changed. Update root `README.md` only if the one-line plugin description in the plugins table needs to change.
 

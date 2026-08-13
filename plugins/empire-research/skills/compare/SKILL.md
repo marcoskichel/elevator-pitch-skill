@@ -50,28 +50,25 @@ User can add, remove, or reweight dimensions before dispatch.
 <section id="dispatch-mode">
 
 - After the option list and dimensions are confirmed, dispatch scoring one of two ways
-- Preferred — Workflow tool available:
+- Preferred — a workflow runner is available; the same script runs on every runner, only the call shape differs:
 
-  - Invoke the bundled scoring workflow; it scores each option in isolation (blind to rivals) with structured per-dimension output:
-
-    ```
-    Workflow({
-      scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/compare-score.js",
-      args: { useCase, constraints, dimensions: [{ name, description }], options: [{ name, description }] },
-    })
-    ```
+  - Claude Code: `Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/compare-score.js", args })`
+  - pi (`pi-dynamic-workflow`): `workflow({ name: "compare-score", description, scriptPath: <this skill dir>/workflows/compare-score.js, args })` — `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy
+  - Any other host exposing a JS workflow runner with `agent()`/`parallel()`: same script, its own call shape
+  - The script scores each option in isolation (blind to rivals) with structured per-dimension output
+  - `args`: `{ useCase, constraints, dimensions: [{ name, description }], options: [{ name, description }] }`
 
   - Surface the workflow's `log()` lines as progress
   - Feed the returned `options[]` into `consolidated-matrix`; apply dimension weights in the skill so the user can reweight without re-running
   - Skip `agent-selection` and `parallel-dispatch` — the workflow owns dispatch
 
-- Fallback — Workflow tool unavailable: use `agent-selection` then `parallel-dispatch` below
+- Fallback — no workflow runner (e.g. OpenAI Codex): use `agent-selection` then `parallel-dispatch` below
 
 </section>
 
 <section id="agent-selection">
 
-- Fallback path — only when the Workflow tool is unavailable (see `dispatch-mode`)
+- Fallback path — only when no workflow runner is available (see `dispatch-mode`)
 - One agent per option for parallel deep evaluation
 - Agent names vary by environment; never assume a specific named agent exists — the bundled persona guarantees the roster can always be filled
 - Two ways to source each evaluator; prefer the first, always have the second:
@@ -164,7 +161,7 @@ User can add, remove, or reweight dimensions before dispatch.
 
 - MUST gather option list AND dimension list before any dispatch
 - MUST confirm both with user before dispatch
-- MUST dispatch scoring via the `compare-score` workflow when the Workflow tool is available; else dispatch in parallel (single message, multiple tool uses), one agent per option
+- MUST dispatch scoring via the `compare-score` workflow when a workflow runner is available; else dispatch in parallel (single message, multiple tool uses), one agent per option
 - MUST keep findings local in chat only
 - MUST NOT post to Slack, GitHub, Jira, or any external system unless user explicitly authorizes
 - MUST NOT pick a winner without showing the matrix
