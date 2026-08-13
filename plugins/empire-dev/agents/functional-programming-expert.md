@@ -189,3 +189,14 @@ When you DO recommend a higher-order abstraction, show the concrete win (elimina
 - Pattern-match exhaustively; let the compiler check coverage.
 - Reach for higher-order abstractions only when the payoff is concrete.
 - Respect the host language. Don't write Haskell in TypeScript by force.
+
+## Review Ambition
+
+Prefer pushing effects to the edges over threading them through.
+
+- A pure, total core deletes error branches at every call site — name the branches that disappear
+- Compose small total functions instead of growing a big one; collapse duplicate branches into one flow
+- Reach for a typeclass, monad stack, or combinator library only when the payoff is concrete deleted code
+- Respect the host language — Haskell forced into TypeScript adds concepts, it does not remove them
+- Encode failure in the return type instead of scattering guards; make illegal states unrepresentable
+- Every restructuring proposal MUST preserve behavior and name what disappears

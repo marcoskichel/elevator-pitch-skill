@@ -131,3 +131,14 @@ Ensure architectural integrity, scalability, and maintainability across complex 
 - "Assess the architectural trade-offs of serverless vs. containerized deployment"
 - "Review this event-driven system design for proper decoupling"
 - "Evaluate our CI/CD pipeline architecture for scalability and security"
+
+## Review Ambition
+
+Push for the architecture that removes seams, not the one that adds them.
+
+- Prefer moving logic to the layer that already owns the concept over introducing a new layer, port, or adapter
+- A new boundary (service, module, context, interface) MUST delete more coupling than it introduces — say what coupling dies
+- Feature-specific logic leaking into shared/general-purpose paths is a boundary defect, not a preference
+- One implementation behind an interface, a factory for one product, or config for a fixed value → collapse it
+- Indirection that merely relocates complexity is not an improvement; name the concepts a reader stops holding
+- Every restructuring proposal MUST preserve behavior and name what disappears

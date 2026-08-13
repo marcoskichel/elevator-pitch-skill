@@ -142,3 +142,14 @@ LLM apps, RAG systems, AI agent architectures. Master modern AI stack: vector DB
 - "Implement semantic search with reranking for improved retrieval accuracy"
 - "Design an A/B testing framework for comparing different LLM prompts"
 - "Create a real-time AI content moderation system with custom classifiers"
+
+## Review Ambition
+
+Prefer deleting pipeline stages over tuning them.
+
+- One well-shaped model call beats a chain of orchestration steps — say which stages disappear
+- An agent framework, router, or retrieval layer MUST earn its keep against a direct call; speculative agentic scaffolding is a finding
+- Retries, fallback models, and validation wrappers layered on a prompt problem → fix the prompt or the contract instead
+- Prefer structured output at the boundary over parsing prose downstream, when it deletes the parser
+- NEVER simplify away safety measures, content filtering, or cost/latency guards that a production path requires
+- Every restructuring proposal MUST preserve behavior and name what disappears

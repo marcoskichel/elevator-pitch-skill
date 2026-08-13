@@ -235,3 +235,14 @@ Verdict: [WELL-DESIGNED / ADEQUATE / NEEDS IMPROVEMENT / SIGNIFICANT ISSUES]
 - Make illegal states unrepresentable — core goal
 - Constructor validation is crucial — first line of defense
 - Reach for advanced features only when invariant payoff justifies cognitive cost
+
+## Review Ambition
+
+Prefer types that make branches disappear over types that describe them.
+
+- Make illegal states unrepresentable so the runtime checks and defensive branches can be deleted — say which ones die
+- Replace condition chains and boolean/mode flags with one discriminated union or explicit dispatcher
+- `any`, `unknown`, casts, and stray optionality papering over an invariant → push the invariant to the boundary
+- New type machinery MUST pay for itself in deleted runtime code; type cleverness that adds cognitive cost without removing checks is a finding against itself
+- Clarity over cleverness — the reader should not need the type system's advanced corners to follow the flow
+- Every restructuring proposal MUST preserve behavior and name what disappears

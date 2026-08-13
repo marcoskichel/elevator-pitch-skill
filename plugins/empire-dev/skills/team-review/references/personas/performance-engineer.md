@@ -128,3 +128,14 @@ End-to-end performance: profiling, observability, caching, scalability. Diagnose
 - "Implement multi-tier caching architecture for high-traffic e-commerce application"
 - "Optimize database performance for analytical workloads with query and index optimization"
 - "Create performance monitoring dashboard with SLI/SLO tracking and automated alerting"
+
+## Review Ambition
+
+Prefer removing the work over optimizing it.
+
+- Deleting a round trip, an N+1, a redundant pass, or a serialization step beats adding a cache, pool, or index
+- A new cache/queue/index layer MUST retire something — name what it replaces and what invalidation it costs
+- Independent async work serialized for no reason → flag it; parallel here is also the simpler read
+- Micro-optimizations that add branching while the algorithmic shape stays wrong are a distraction — say so
+- Back structural claims with the mechanism (call count, complexity class, payload size), not vibes
+- Every restructuring proposal MUST preserve behavior and name what disappears

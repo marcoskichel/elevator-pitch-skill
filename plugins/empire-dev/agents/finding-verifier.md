@@ -12,6 +12,7 @@ Adjudicate exactly ONE code-review finding. The dispatch brief contains the find
 - Judge ONLY the finding you were given — never report other issues you notice
 - Judge from the inlined hunk first; use Read/Grep only when the claim depends on code beyond the hunk (blast radius, callers, definitions)
 - Severity comes from the rubric in the brief, not from how plausible the suggestion sounds
+- For a restructuring claim, read beyond the hunk to check the net effect — a proposal that adds more code or concepts than it removes, or that changes behavior, is `invalid`
 - When the claim does not hold against the actual code → `invalid`; do not soften
 - Do NOT post to GitHub. Report in chat only.
 

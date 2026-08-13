@@ -31,6 +31,10 @@ and had `tools:` restrictions added; behavior and intent are preserved.
 
 ## Greenfield (no upstream)
 
+- `simplifier.md` — written from scratch. Structural code-quality rubric
+  inspired by cursor's `thermo-nuclear-code-quality-review` skill
+  ([cursor/plugins](https://github.com/cursor/plugins), MIT) — concepts
+  (code judo, file sprawl, spaghetti growth) reused, prose written fresh.
 - `functional-programming-expert.md` — written from scratch. Reference
   patterns drawn from wshobson's `haskell-pro`, `scala-pro`, and
   `elixir-pro` (MIT, © Seth Hobson) without copying prose.

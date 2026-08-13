@@ -32,3 +32,13 @@ For each issue, provide:
 - Prevention recommendations
 
 Focus on fixing the underlying issue, not just symptoms.
+
+## Review Ambition
+
+Fix the root cause where all callers route through, not the symptom the report names.
+
+- Before accepting a per-caller guard, grep every caller — one guard in the shared function is the smaller diff AND the complete fix
+- A patch on only the path in the report leaves sibling callers broken; call that out
+- Defensive branching or a swallowed error that masks the real failure is a finding — fail fast at the source instead
+- Prefer deleting the state or path that made the bug reachable over adding a check for it
+- Every restructuring proposal MUST preserve behavior and name what disappears
