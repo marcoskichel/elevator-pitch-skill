@@ -92,19 +92,20 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
 <section id="dispatch-mode">
 
 - After roster selection, dispatch one of two ways
-- Preferred — Workflow tool available:
+- Preferred — a workflow runner is available; the same script runs on every runner, only the call shape differs:
 
-  - Invoke the bundled workflow; it fans out specialists with structured output, dispatches one verifier per non-nit finding EAGERLY as each specialist returns (no cross-wave barrier), and computes consensus tiers deterministically in JS:
+  - Claude Code: `Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/team-review.js", args })`
+  - pi (`pi-dynamic-workflow`): `workflow({ name: "team-review", description, scriptPath: <this skill dir>/workflows/team-review.js, args })` — `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy
+  - Any other host exposing a JS workflow runner with `agent()`/`parallel()`: same script, its own call shape
+  - The script fans out specialists with structured output, dispatches one verifier per non-nit finding EAGERLY as each specialist returns (no cross-wave barrier), and computes consensus tiers deterministically in JS
+  - `args` in every case:
 
     ```
-    Workflow({
-      scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/team-review.js",
-      args: {
-        diff, changedFiles, intent, vocabulary, adrs,
-        roster: [{ name, persona?, agentType?, model? }],
-        rereviewNote?,
-      },
-    })
+    {
+      diff, changedFiles, intent, vocabulary, adrs,
+      roster: [{ name, persona?, agentType?, model? }],
+      rereviewNote?,
+    }
     ```
 
   - `diff` = the prepared diff text from `context-prep`; `vocabulary`/`adrs` = the prepared context blocks
@@ -116,23 +117,9 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
   - Feed the returned tiers into `consolidated-report` — tier math is already done; render, don't recompute
   - Skip `parallel-dispatch` and `verification-stage` — the workflow owns dispatch and tiering
 
-- Also preferred — a `workflow` tool that takes an inline script (Pi with
-  `pi-dynamic-workflow`): its `agent(prompt, opts)` accepts `schema`, `tools`,
-  `timeout`, `model` and `agentType`, and `parallel()` turns a failed child into
-  `null` instead of losing the batch. Author the script inline, mirroring the
-  bundled workflow:
-
-  - One `agent()` per roster entry inside `parallel()`, each with `schema` set to
-    the finding format, `tools` limited to reads, and a `timeout`
-  - One verifier `agent()` per non-consensus finding, `model` fast, `schema` set to
-    the verdict format
-  - Compute the tiers in the script, then feed them to `consolidated-report`
-  - Skip `parallel-dispatch` and `verification-stage`
-
-- Fallback — no workflow tool of either kind (e.g. OpenAI Codex): use
-  `parallel-dispatch` then `verification-stage` below
-- MUST check for a workflow tool before falling back; the fallback exists because
-  some hosts lack one, not as a default
+- Fallback — no workflow runner (e.g. OpenAI Codex): use `parallel-dispatch` then `verification-stage` below; it is the slower path (specialists and verifiers run as two hard barriers), so prefer a runner whenever one exists
+- A runner that only accepts an inline script (no `scriptPath`): author the fan-out inline, mirroring the bundled script — one `agent()` per roster entry inside `parallel()` with the finding `schema`, one verifier `agent()` per non-consensus non-nit finding on a fast `model` with the verdict `schema`, tiers computed in the script
+- MUST check for a workflow runner before falling back; the fallback exists because some hosts lack one, not as a default
 
 </section>
 

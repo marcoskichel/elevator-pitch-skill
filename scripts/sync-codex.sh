@@ -71,6 +71,7 @@ MIRROR_BUNDLES=(
 # Script bundles: "SRC_SCRIPT::DST_SKILL_SCRIPTS_DIR". Copied so skills.sh ships
 # the script inside the skill (Codex); Claude keeps using ${CLAUDE_PLUGIN_ROOT}/scripts.
 SCRIPT_BUNDLES=(
+  "plugins/empire-dev/workflows/team-review.js::plugins/empire-dev/skills/team-review/workflows"
   "plugins/empire-git/scripts/worktree-setup.sh::plugins/empire-git/skills/worktree-open/scripts"
   "plugins/empire-git/scripts/worktree-registry.sh::plugins/empire-git/skills/worktree-open/scripts"
   "plugins/empire-git/scripts/worktree-registry.sh::plugins/empire-git/skills/worktree-close/scripts"
