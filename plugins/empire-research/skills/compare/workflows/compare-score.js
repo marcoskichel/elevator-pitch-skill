@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Parallel blind per-option scoring for /empire-research:compare — each option scored against the agreed dimensions in isolation, no cross-option anchoring; the skill builds the weighted matrix.",
   whenToUse:
-    "Invoked by /empire-research:compare after the option list and dimensions are confirmed, when the Workflow tool is available. Requires args {options:[{name}], dimensions:[{name,description}]}. Recommendation-only: never edits or posts externally.",
+    "Invoked by /empire-research:compare after the option list and dimensions are confirmed, when a JS workflow runner is available. Requires args {options:[{name}], dimensions:[{name,description}]}. Recommendation-only: never edits or posts externally.",
   phases: [{ title: "Score", detail: "one scorer per option, blind to rivals" }],
 };
 

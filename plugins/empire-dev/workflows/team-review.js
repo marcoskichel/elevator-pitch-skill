@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Parallel specialist diff review for /empire-dev:team-review — schema-driven specialist fan-out, eager per-finding verification (verifiers dispatch as each specialist returns, no cross-wave barrier), deterministic consensus tiering in JS.",
   whenToUse:
-    "Invoked by /empire-dev:team-review when the Workflow tool is available. Requires args {diff, changedFiles, roster:[{name, persona?, agentType?, model?}]}; optional {intent, vocabulary, adrs, rereviewNote}. Recommendation-only: never edits files, never posts to GitHub.",
+    "Invoked by /empire-dev:team-review when a JS workflow runner is available. Requires args {diff, changedFiles, roster:[{name, persona?, agentType?, model?}]}; optional {intent, vocabulary, adrs, rereviewNote}. Recommendation-only: never edits files, never posts to GitHub.",
   phases: [
     { title: "Review", detail: "one specialist per roster entry" },
     { title: "Verify", detail: "one verifier per non-consensus non-nit finding, eager" },

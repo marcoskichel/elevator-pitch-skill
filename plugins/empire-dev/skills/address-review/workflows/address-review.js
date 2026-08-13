@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Address PR review comments for /empire-dev:address-review — adversarial verification per comment, fix-approach evaluation, recheck of alternatives, parallel implementation grouped by file, direct-tone reply drafts.",
   whenToUse:
-    "Invoked by /empire-dev:address-review when the Workflow tool is available. Requires args {pr, owner, repo, comments:[{id, path, line, body, author, diffHunk, discussion, isOutdated}]}. Edits files in the working tree; never commits, pushes, or posts to GitHub.",
+    "Invoked by /empire-dev:address-review when a JS workflow runner is available. Requires args {pr, owner, repo, comments:[{id, path, line, body, author, diffHunk, discussion, isOutdated}]}. Edits files in the working tree; never commits, pushes, or posts to GitHub.",
   phases: [
     { title: "Verify", detail: "adversarial check per comment" },
     { title: "Evaluate", detail: "best fix per valid comment" },

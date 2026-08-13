@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Parallel specialist diff review for /empire-dev:team-review — schema-driven specialist fan-out, eager per-finding verification (verifiers dispatch as each specialist returns, no cross-wave barrier), deterministic consensus tiering in JS.",
   whenToUse:
-    "Invoked by /empire-dev:team-review when the Workflow tool is available. Requires args {diff, changedFiles, roster:[{name, persona?, agentType?, model?}]}; optional {intent, vocabulary, adrs, rereviewNote}. Recommendation-only: never edits files, never posts to GitHub.",
+    "Invoked by /empire-dev:team-review when a JS workflow runner is available. Requires args {diff, changedFiles, roster:[{name, persona?, agentType?, model?}]}; optional {intent, vocabulary, adrs, rereviewNote}. Recommendation-only: never edits files, never posts to GitHub.",
   phases: [
     { title: "Review", detail: "one specialist per roster entry" },
     { title: "Verify", detail: "one verifier per non-consensus non-nit finding, eager" },
@@ -120,9 +120,15 @@ const SPEC_PROMPT = (s) =>
   (s.persona ? s.persona + "\n\n" : "") +
   "You are one specialist in a parallel team review. The full diff is inlined below — do NOT re-fetch it; " +
   "use Read/Grep only when a finding depends on code beyond the diff (blast radius).\n\n" +
-  "Scope: review what the diff DOES; flag defects in changed lines + their direct blast radius. " +
-  "Net-new suggestions (file, abstraction, test, doc) MUST cite the specific defect in the diff they resolve; " +
-  "no defect cited → drop the finding. Speculative 'would be cleaner' suggestions → severity nit or omit.\n\n" +
+  "Scope: review what the diff DOES and how it is structured; flag defects AND structural regressions in " +
+  "changed lines + their direct blast radius.\n" +
+  "Be ambitious. Do not stop at local cleanup — look for the reframing that makes whole branches, helpers, " +
+  "modes, or layers disappear. Prefer deleting complexity over rearranging it.\n" +
+  "A RESTRUCTURING suggestion needs no cited defect IF it removes more code and concepts than it adds; " +
+  "name what disappears. An ADDITIVE suggestion (new file, abstraction, test, doc) MUST cite the specific " +
+  "defect in the diff it resolves; no defect cited → drop the finding.\n" +
+  "Do not rubber-stamp working code that leaves the codebase messier. Do not flood with nits — omit nit-severity " +
+  "findings entirely when you have must-fix findings.\n\n" +
   CONTEXT_BLOCK +
   "## Changed files\n" +
   changedFiles.join("\n") +
@@ -147,9 +153,9 @@ const VERIFY_PROMPT = (f, hunk) =>
   (hunk || "(hunk not resolvable from diff — read the file)") +
   "\n```\n\n## Rubric\n" +
   "- must-fix: confirmed defect breaking functionality, security, data integrity, or correctness in the changed lines or their direct blast radius\n" +
-  "- should-fix: confirmed real improvement, not urgent\n" +
+  "- should-fix: confirmed real improvement, not urgent; includes a behavior-preserving restructuring that provably removes more code and concepts than it adds\n" +
   "- nit: confirmed but cosmetic/style only\n" +
-  "- invalid: claim does not hold up against the diff\n\n" +
+  "- invalid: claim does not hold up against the diff, OR the proposed restructuring adds more than it removes, OR it changes behavior while claiming not to\n\n" +
   "## Task\n" +
   "- verdict: exactly one rubric value.\n- rationale: one sentence.\n" +
   "- Do NOT edit files. Do NOT post to GitHub. Structured output only.";

@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Parallel per-approach deep research for /empire-research:explore — one researcher per selected approach returns structured pros/cons/fit for the skill to consolidate.",
   whenToUse:
-    "Invoked by /empire-research:explore after the user picks which approaches to deep-dive, when the Workflow tool is available. Requires args {problem, approaches:[{name,description}]}. Recommendation-only: produces evidence, never edits or posts externally.",
+    "Invoked by /empire-research:explore after the user picks which approaches to deep-dive, when a JS workflow runner is available. Requires args {problem, approaches:[{name,description}]}. Recommendation-only: produces evidence, never edits or posts externally.",
   phases: [{ title: "Deep dive", detail: "one researcher per selected approach" }],
 };
 
