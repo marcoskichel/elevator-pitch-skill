@@ -55,7 +55,7 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
 
 <section id="context-prep">
 
-- Prepare shared context ONCE in the main thread before dispatch; push it into every brief — subagents MUST NOT re-fetch what the main thread already holds (each re-fetch costs a serial tool turn inside the barrier)
+- Prepare shared context ONCE in the main thread before dispatch; push it into every brief — subagents MUST NOT re-fetch what the main thread already holds
 - Prepare:
   - Diff text + changed-file list (`git diff` / `gh pr diff`)
   - `CONTEXT.md` vocabulary from repo root if present — reviewers MUST use project terms verbatim
@@ -68,7 +68,6 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
 <section id="specialist-selection">
 
 - Inspect diff; pick 3–4 specialists matching the strongest change signals — hard cap 4
-- Rationale: the barrier waits on the slowest specialist (max-of-N grows with N) and each extra specialist adds singleton findings that each spawn a verifier; homogeneous same-model rosters show sharply diminishing recall gains past 3–4 (arxiv:2402.05120, arxiv:2602.03794)
 - More signals than roster slots → fold weaker signals into the closest specialist's brief (e.g. performance checklist into the generalist's brief), never grow the roster
 - Two ways to source each specialist; prefer the first, always have the second:
   - Named subagent — if the platform exposes specialist subagents, inspect what is available and pick the best match (Claude Code: the `Agent` tool's `subagent_type`; other agents: their own spawn mechanism)
@@ -113,7 +112,23 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
   - Feed the returned tiers into `consolidated-report` — tier math is already done; render, don't recompute
   - Skip `parallel-dispatch` and `verification-stage` — the workflow owns dispatch and tiering
 
-- Fallback — Workflow tool unavailable (e.g. OpenAI Codex): use `parallel-dispatch` then `verification-stage` below
+- Also preferred — a `workflow` tool that takes an inline script (Pi with
+  `pi-dynamic-workflow`): its `agent(prompt, opts)` accepts `schema`, `tools`,
+  `timeout`, `model` and `agentType`, and `parallel()` turns a failed child into
+  `null` instead of losing the batch. Author the script inline, mirroring the
+  bundled workflow:
+
+  - One `agent()` per roster entry inside `parallel()`, each with `schema` set to
+    the finding format, `tools` limited to reads, and a `timeout`
+  - One verifier `agent()` per non-consensus finding, `model` fast, `schema` set to
+    the verdict format
+  - Compute the tiers in the script, then feed them to `consolidated-report`
+  - Skip `parallel-dispatch` and `verification-stage`
+
+- Fallback — no workflow tool of either kind (e.g. OpenAI Codex): use
+  `parallel-dispatch` then `verification-stage` below
+- MUST check for a workflow tool before falling back; the fallback exists because
+  some hosts lack one, not as a default
 
 </section>
 
@@ -122,7 +137,7 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
 - Inline fallback — only when the Workflow tool is unavailable (see `dispatch-mode`)
 - Dispatch all specialists in parallel, one subagent per specialist (Claude Code: one message with multiple `Agent` tool calls; other agents: spawn them concurrently)
 - Each specialist receives:
-  - Diff text INLINED in the brief — never a bare PR number; per-agent `gh pr diff`/file re-fetches are serial tool turns inside the barrier
+  - Diff text INLINED in the brief — never a bare PR number
   - Exception: diff over ~1500 changed lines → inline changed-file list + one-line-per-file summary instead; specialists fetch details themselves
   - List of changed files
   - For a persona-sourced specialist: the role and expertise from `references/personas/<name>.md`, as its instructions
@@ -155,6 +170,23 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
 - One finding per line; no prose paragraphs between findings
 - Cap each specialist response under 400 words
 
+### Bounding each specialist
+
+- MUST request structured output matching the finding format (Pi: `outputSchema`;
+  Claude Code inline `Agent`: require the format block verbatim)
+- MUST cap tool use so the child finalizes while it still can (Pi: `toolBudget` with `soft: 40`, `hard: 60`)
+- MUST cap turns with a grace window (Pi: `turnBudget` with `maxTurns: 25`, `graceTurns: 3`)
+- MUST give each specialist its own output file and require appending each finding
+  as it is confirmed, never batched (Pi: `output: 'review-<specialist>.md'`), so a
+  killed child still leaves findings on disk
+- MUST give each specialist ONE focused question, not a list of areas; fan out
+  wider and narrower instead
+- SHOULD drop reasoning effort to `medium` on a large diff
+- MUST NOT raise the host timeout as the fix; bound the work, not the clock
+
+A specialist that returns nothing is a failed source: report it as such, never
+silently drop it, never substitute the main thread's own reading for its verdict.
+
 </section>
 
 <section id="rereview-mode">
@@ -173,20 +205,20 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
 
 <section id="verification-stage">
 
-- Inline fallback — only when the Workflow tool is unavailable; the workflow computes identical tiers itself
+- Inline fallback — only when the Workflow tool is unavailable
 - Compute match key across all specialist findings: same file path AND overlapping line-range (within ±5 lines) AND identical category
 - Merge matched findings into one entry; preserve clearest suggestion wording; tally specialist count
 - Tiers (let `M` = roster size):
   - `Consensus` — flagged by strict majority (> M/2) AND ≥ 3 specialists; at M = 3 that means all three
   - `Corroborated` — flagged by ≥ 2 specialists, below the Consensus threshold
   - `Single-source` — flagged by exactly 1 specialist
-- Consensus findings skip verification — ≥ 3 independent agreements is sufficient signal; the ≥ 3 floor exists because at small M a bare majority (2 of 3) is too weak to bypass adjudication
+- Consensus findings skip verification
 - Dispatch verifiers in PARALLEL — one subagent per Corroborated/Single-source finding, all at once (Claude Code: one message with multiple `Agent` calls)
 - Each verifier adjudicates exactly ONE finding in isolation; never one verifier judging multiple findings, never a serial single-verifier pass
 - Prefer the bundled `finding-verifier` agent (fast model, tuned for single-finding adjudication); else a general-purpose subagent briefed with `references/personas/finding-verifier.md`, using a different source than the finding's roster specialist; else the general `code-reviewer` persona
 - Each verifier receives:
-  - The diff hunk(s) covering its finding's `file:line-range` ± ~15 lines, INLINED — goal: adjudicate in one turn with zero tool calls; tools stay available for blast-radius checks beyond the hunk
-  - Its one finding's `file:line-range`, `category`, and suggestion text ONLY — omit tier label and specialist count so severity isn't anchored to how many specialists agreed
+  - The diff hunk(s) covering its finding's `file:line-range` ± ~15 lines, INLINED
+  - Its one finding's `file:line-range`, `category`, and suggestion text ONLY — never the tier label or specialist count
   - The fixed severity rubric below
   - "Do NOT post to GitHub. Report findings in chat only."
 - Fixed severity rubric — each verifier MUST classify its finding as exactly one of:
@@ -199,8 +231,6 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
   ```
   <file:line-range> [`<category>`] — <valid: must-fix|valid: should-fix|valid: nit|invalid> — <one-sentence rationale>
   ```
-
-- Rationale: per-finding isolated adjudication of contested/singleton findings beats both majority vote and generic LLM-as-judge on accuracy while bounding cost to auditing non-consensus items only ("Auditing Multi-Agent LLM Reasoning Trees Outperforms Majority Vote and LLM-as-Judge", arxiv:2602.09341); one verifier per finding preserves that isolation while cutting wall-clock latency vs a single serial pass, and removes cross-finding anchoring; distinct from iterative peer debate, so this doesn't conflict with "Debate or Vote" (arxiv:2508.17536) — that finding is about repeated debate among the _generating_ agents, not a single downstream adjudication pass
 
 </section>
 
