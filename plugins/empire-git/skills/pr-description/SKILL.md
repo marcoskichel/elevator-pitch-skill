@@ -38,7 +38,7 @@ CRITICAL:
 
 | Diff size | Budget                                                                |
 | --------- | --------------------------------------------------------------------- |
-| ≤ 100 LOC | ≤ 80 words, drop Test plan unless non-trivial                         |
+| ≤ 100 LOC | ≤ 80 words                                                            |
 | ≤ 500 LOC | ≤ 200 words, include only non-empty sections                          |
 | > 500 LOC | ≤ 200 words, summarize at higher level, note the size in What changed |
 
@@ -61,17 +61,24 @@ Only when the rest of the description runs longer than a couple of lines; omit o
 3–5 bullets. Behavior changes only — what users or callers experience differently.
 Skip mechanical changes (renames, moves, test additions) unless they affect behavior.
 Pick the most important changes; don't enumerate everything.
-
-## Test plan
-Manual steps to verify the change locally.
-Omit for simple diffs or when the behavior is self-evident.
-Never list CI steps (lint, typecheck, unit tests, CI pipelines).
 <!-- pr-description:end -->
 ```
 
 ### Extra sections
 
-Default to Why / What changed / Test plan only. Add an extra `##` section **only when the change carries something a reviewer must not miss** and no existing section fits — e.g. a breaking change, a required migration, a new env var or dependency, a rollback step, or a security-relevant note. Never add one by default or to pad a thin PR. Prefix breaking changes with `BREAKING:`.
+Default to Why / What changed only. Add an extra `##` section **only when the change carries something a reviewer must not miss** and no existing section fits — e.g. a breaking change, a required migration, a new env var or dependency, a rollback step, or a security-relevant note. Never add one by default or to pad a thin PR. Prefix breaking changes with `BREAKING:`.
+
+## Quality gate
+
+After rendering, run the classifier ONCE before piping to `gh` (Claude Code: `${CLAUDE_PLUGIN_ROOT}/scripts/check-description.sh`; other agents: `scripts/check-description.sh` in this skill's dir):
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/check-description.sh" <body-file>
+```
+
+- Exit 0 (PASS) → use the body as is.
+- Exit 1 (REWRITE) → rewrite the body addressing the printed reasons, then use it. Do NOT re-run the check; one pass only.
+- Exit 2 (no classifier CLI) → skip the gate and use the body.
 
 ## Update mode
 
@@ -107,4 +114,4 @@ The rendered body is the only thing piped to `gh`. Labels and assignee are set w
 | "Fixes bug"                 | "Fix off-by-one in pagination cursor when total % limit == 0" |
 | "Updated tests"             | (omit — visible in diff)                                      |
 | "Renamed X to Y"            | (omit unless rollout-relevant)                                |
-| "Ran lint / CI / tests"     | (never include in test plan)                                  |
+| "Ran lint / CI / tests"     | (never include)                                               |
