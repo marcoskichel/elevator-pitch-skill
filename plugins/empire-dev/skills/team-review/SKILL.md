@@ -94,20 +94,23 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
 - After roster selection, dispatch one of two ways
 - Preferred — Workflow tool available:
 
-  - Invoke the bundled workflow; it fans out specialists with structured output, dispatches one verifier per finding EAGERLY as each specialist returns (no cross-wave barrier), and computes consensus tiers deterministically in JS:
+  - Invoke the bundled workflow; it fans out specialists with structured output, dispatches one verifier per non-nit finding EAGERLY as each specialist returns (no cross-wave barrier), and computes consensus tiers deterministically in JS:
 
     ```
     Workflow({
       scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/team-review.js",
       args: {
         diff, changedFiles, intent, vocabulary, adrs,
-        roster: [{ name, agentType, model?, effort? }],
+        roster: [{ name, persona?, agentType?, model? }],
         rereviewNote?,
       },
     })
     ```
 
-  - `diff` = the prepared diff text from `context-prep`; `vocabulary`/`adrs` = the prepared context blocks; `agentType` = each pick's actual `subagent_type` value
+  - `diff` = the prepared diff text from `context-prep`; `vocabulary`/`adrs` = the prepared context blocks
+  - `persona` = the full text of `references/personas/<name>.md`, read before dispatch — always pass it unless `agentType` is set
+  - `agentType` = a named agent definition, ONLY when verified to exist on this platform; an unknown name aborts that specialist and loses its whole review
+  - `model` defaults to a fast mid-tier model (`sonnet`); verifiers always run a cheap fast model. Pass `model` per specialist only when a pick genuinely needs a stronger one — reviewer latency is max-of-N, so one slow specialist stalls the whole barrier
   - Re-review: pass prior findings, user decisions, and the new diff as `rereviewNote`
   - Surface the workflow's `log()` lines as progress
   - Feed the returned tiers into `consolidated-report` — tier math is already done; render, don't recompute
@@ -215,6 +218,7 @@ silently drop it, never substitute the main thread's own reading for its verdict
   - `Consensus` — flagged by strict majority (> M/2) AND ≥ 3 specialists; at M = 3 that means all three
   - `Corroborated` — flagged by ≥ 2 specialists, below the Consensus threshold
   - `Single-source` — flagged by exactly 1 specialist
+- Nit-severity findings skip verification — adjudication costs more than the finding is worth; they carry specialist severity
 - Consensus findings skip verification
 - Dispatch verifiers in PARALLEL — one subagent per Corroborated/Single-source finding, all at once (Claude Code: one message with multiple `Agent` calls)
 - Each verifier adjudicates exactly ONE finding in isolation; never one verifier judging multiple findings, never a serial single-verifier pass

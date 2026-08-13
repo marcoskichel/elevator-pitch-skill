@@ -3,10 +3,10 @@ export const meta = {
   description:
     "Parallel specialist diff review for /empire-dev:team-review — schema-driven specialist fan-out, eager per-finding verification (verifiers dispatch as each specialist returns, no cross-wave barrier), deterministic consensus tiering in JS.",
   whenToUse:
-    "Invoked by /empire-dev:team-review when the Workflow tool is available. Requires args {diff, changedFiles, roster:[{name, agentType?, model?, effort?}]}; optional {intent, vocabulary, adrs, rereviewNote}. Recommendation-only: never edits files, never posts to GitHub.",
+    "Invoked by /empire-dev:team-review when the Workflow tool is available. Requires args {diff, changedFiles, roster:[{name, persona?, agentType?, model?}]}; optional {intent, vocabulary, adrs, rereviewNote}. Recommendation-only: never edits files, never posts to GitHub.",
   phases: [
     { title: "Review", detail: "one specialist per roster entry" },
-    { title: "Verify", detail: "one verifier per non-consensus finding, eager" },
+    { title: "Verify", detail: "one verifier per non-consensus non-nit finding, eager" },
   ],
 };
 
@@ -117,6 +117,7 @@ const SPEC_PROMPT = (s) =>
   "## Specialist reviewer: " +
   s.name +
   "\n\n" +
+  (s.persona ? s.persona + "\n\n" : "") +
   "You are one specialist in a parallel team review. The full diff is inlined below — do NOT re-fetch it; " +
   "use Read/Grep only when a finding depends on code beyond the diff (blast radius).\n\n" +
   "Scope: review what the diff DOES and how it is structured; flag defects AND structural regressions in " +
@@ -169,8 +170,7 @@ const dispatchVerifier = (entry) => {
     agent(VERIFY_PROMPT(entry.finding, hunkFor(entry.finding)), {
       label: "verify:" + findingLabel(entry.finding),
       phase: "Verify",
-      model: "sonnet",
-      effort: "low",
+      model: "haiku",
       schema: VERDICT_SCHEMA,
     }).then((v) => {
       entry.verdict = v || null;
@@ -184,10 +184,9 @@ const specialists = await parallel(
       label: "review:" + s.name,
       phase: "Review",
       schema: FINDINGS_SCHEMA,
-      effort: s.effort || "high",
+      model: s.model || "sonnet",
     };
     if (s.agentType) opts.agentType = s.agentType;
-    if (s.model) opts.model = s.model;
     return agent(SPEC_PROMPT(s), opts).then((r) => {
       if (!r) return null;
       const findings = (r.findings ?? []).filter(
@@ -202,6 +201,10 @@ const specialists = await parallel(
           if (f.suggestion.length > entry.finding.suggestion.length) {
             entry.finding.suggestion = f.suggestion;
           }
+          if (entry.skipVerify && f.severity !== "nit") {
+            entry.skipVerify = false;
+            dispatchVerifier(entry);
+          }
         } else {
           const e = {
             finding: { ...f },
@@ -209,9 +212,10 @@ const specialists = await parallel(
             specialists: [s.name],
             severities: [f.severity],
             verdict: null,
+            skipVerify: f.severity === "nit",
           };
           registry.push(e);
-          dispatchVerifier(e);
+          if (!e.skipVerify) dispatchVerifier(e);
         }
       }
       log(s.name + ": " + findings.length + " findings, verifiers dispatched");
@@ -259,7 +263,7 @@ for (const e of registry) {
   }
   const severity = e.verdict ? e.verdict.verdict : mostSevere(e.severities);
   const row = entryRow(e, severity);
-  if (!e.verdict) {
+  if (!e.verdict && !e.skipVerify) {
     unverified.push(row);
   } else if (e.count >= 2) {
     corroborated.push(row);
