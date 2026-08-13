@@ -81,70 +81,16 @@ compatibility: Requires network access (web search and fetch); dispatches resear
 - Preferred — a workflow runner is available; the same script runs on every runner, only the call shape differs:
 
   - Claude Code: `Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/explore-deepdive.js", args })`
-  - pi: the `pi-dynamic-workflows` extension registers a `workflow` tool — `workflow({ name: "explore-deepdive", description, scriptPath: <this skill dir>/workflows/explore-deepdive.js, args })`; `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy. `workflow` appears in the session's native tool set, NOT via MCP; not visible this session → use the fallback
+  - pi: the `pi-dynamic-workflows` extension registers a `workflow` tool — `workflow({ name: "explore-deepdive", description, scriptPath: <this skill dir>/workflows/explore-deepdive.js, args })`; `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy. `workflow` appears in the session's native tool set, NOT via MCP
   - Any other host exposing a JS workflow runner with `agent()`/`parallel()`: same script, its own call shape
   - The script fans out one researcher per approach with structured pros/cons/fit
   - `args`: `{ problem, constraints, successCriteria, approaches: [{ name, description }] }`
 
   - Surface the workflow's `log()` lines as progress
   - Feed the returned `approaches[]` into `consolidated-report`
-  - Skip `agent-selection` and `parallel-deep-dispatch` — the workflow owns dispatch
+  - The workflow owns dispatch — do NOT also run the inline fallback
 
-- Fallback — no workflow runner (e.g. OpenAI Codex): use `agent-selection` then `parallel-deep-dispatch` below
-
-</section>
-
-<section id="agent-selection">
-
-- Fallback path — only when no workflow runner is available (see `dispatch-mode`)
-- Pick one deep agent per selected approach
-- Agent names vary by environment; never assume a specific named agent exists — the bundled persona guarantees the roster can always be filled
-- Source each deep researcher two ways; prefer the first, always have the second:
-  - Named subagent — if the platform exposes research subagents, inspect what is available (Claude Code: the `Agent` tool's `subagent_type`; other agents: their own spawn mechanism)
-  - Bundled persona — brief a general-purpose subagent with `references/personas/research-analyst.md`; use when no named subagent fits or the platform has no subagent registry
-- For each selected approach, identify its dominant signal from these categories:
-  - General synthesis, multi-source aggregation
-  - Fast targeted retrieval, known-solution space
-  - Quantitative datasets, benchmarks, numerical evidence
-  - Peer-reviewed or scientific evidence
-  - Emerging-tech trajectory, trend analysis
-- For each signal that applies, pick the available agent whose name/description best matches; if multiple candidates fit, prefer the most specific; if none fit, use the most general research-synthesis agent available
-- MUST always include at least one general research-synthesis agent to anchor the roster
-- List chosen researcher per approach (named `subagent_type` or persona filename) + one-line rationale BEFORE dispatch
-- If confident in every pick → dispatch immediately
-- If uncertain about any pick → confirm roster with user before dispatch; allow swaps
-
-</section>
-
-<section id="parallel-deep-dispatch">
-
-- Dispatch all researchers in parallel, one subagent per approach (Claude Code: one message with multiple `Agent` tool calls; other agents: spawn them concurrently)
-- Each agent receives:
-  - Original confirmed problem statement
-  - The specific approach assigned to them
-  - All known constraints and success criteria
-  - Output format instruction (see below)
-  - "Do NOT post findings to any external system. Report in chat only."
-- Required deep agent output format:
-
-  ```
-  Approach: <name>
-
-  Summary: <2-3 sentences>
-
-  Pros:
-  - <point>
-
-  Cons:
-  - <point>
-
-  Key Evidence / Citations:
-  - <source or concrete reference>
-
-  Fit Rating: <High / Medium / Low> — <one sentence rationale>
-  ```
-
-- Cap each agent response under 500 words
+- Fallback — ONLY when no workflow runner exists on this host (e.g. OpenAI Codex): read `references/fallback-dispatch.md` and follow its `agent-selection` then `parallel-deep-dispatch` sections
 
 </section>
 

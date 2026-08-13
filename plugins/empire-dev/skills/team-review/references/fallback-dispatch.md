@@ -4,7 +4,6 @@ Use ONLY when no JS workflow runner is available (see `dispatch-mode` in SKILL.m
 
 <section id="parallel-dispatch">
 
-- Inline fallback — only when no workflow runner is available (see `dispatch-mode`)
 - Dispatch all specialists in parallel, one subagent per specialist (Claude Code: one message with multiple `Agent` tool calls; other agents: spawn them concurrently)
 - Each specialist receives:
   - Diff text INLINED in the brief — never a bare PR number
@@ -46,6 +45,7 @@ Use ONLY when no JS workflow runner is available (see `dispatch-mode` in SKILL.m
 
 - MUST request structured output matching the finding format (Pi: `outputSchema`;
   Claude Code inline `Agent`: require the format block verbatim)
+- MUST instruct the specialist to return the RAW schema object as its final output — never wrapped in evidence blocks, notes, or prose; a wrapped response fails parsing and the whole review is lost
 - MUST cap tool use so the child finalizes while it still can (Pi: `toolBudget` with `soft: 40`, `hard: 60`)
 - MUST cap turns with a grace window (Pi: `turnBudget` with `maxTurns: 25`, `graceTurns: 3`)
 - MUST give each specialist its own output file and require appending each finding
@@ -63,7 +63,6 @@ silently drop it, never substitute the main thread's own reading for its verdict
 
 <section id="verification-stage">
 
-- Inline fallback — only when no workflow runner is available
 - Compute match key across all specialist findings: same file path AND overlapping line-range (within ±5 lines) AND identical category
 - Merge matched findings into one entry; preserve clearest suggestion wording; tally specialist count
 - Tiers (let `M` = roster size):

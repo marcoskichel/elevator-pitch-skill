@@ -72,7 +72,7 @@ Everything before the gate is local. The ONE confirmation covers commits, push, 
 - Preferred — a workflow runner is available; the same script runs on every runner, only the call shape differs:
 
   - Claude Code: `Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/address-review.js", args })`
-  - pi: the `pi-dynamic-workflows` extension registers a `workflow` tool — `workflow({ name: "address-review", description, scriptPath: <this skill dir>/workflows/address-review.js, args })`; `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy. `workflow` appears in the session's native tool set, NOT via MCP; not visible this session → use the fallback
+  - pi: the `pi-dynamic-workflows` extension registers a `workflow` tool — `workflow({ name: "address-review", description, scriptPath: <this skill dir>/workflows/address-review.js, args })`; `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy. `workflow` appears in the session's native tool set, NOT via MCP
   - Any other host exposing a JS workflow runner with `agent()`/`parallel()`: same script, its own call shape
   - `args`: `{ pr, owner, repo, comments: [{ id, path, line, body, author, diffHunk, isOutdated, discussion }] }`
 

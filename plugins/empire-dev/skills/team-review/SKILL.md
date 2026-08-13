@@ -95,7 +95,7 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
 - Preferred — a workflow runner is available; the same script runs on every runner, only the call shape differs:
 
   - Claude Code: `Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/team-review.js", args })`
-  - pi: the `pi-dynamic-workflows` extension registers a `workflow` tool — `workflow({ name: "team-review", description, scriptPath: <this skill dir>/workflows/team-review.js, args })`; `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy. `workflow` appears in the session's native tool set, NOT via MCP; not visible this session → use the fallback
+  - pi: the `pi-dynamic-workflows` extension registers a `workflow` tool — `workflow({ name: "team-review", description, scriptPath: <this skill dir>/workflows/team-review.js, args })`; `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy. `workflow` appears in the session's native tool set, NOT via MCP
   - Any other host exposing a JS workflow runner with `agent()`/`parallel()`: same script, its own call shape
   - The script fans out specialists with structured output, dispatches one verifier per non-nit finding EAGERLY as each specialist returns (no cross-wave barrier), and computes consensus tiers deterministically in JS
   - `args` in every case:
@@ -117,9 +117,8 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
   - Feed the returned tiers into `consolidated-report` — tier math is already done; render, don't recompute
   - The workflow owns dispatch and tiering — do NOT also run the inline fallback
 
-- Fallback — no workflow runner (e.g. OpenAI Codex): read `references/fallback-dispatch.md` and follow its `parallel-dispatch` then `verification-stage` sections; it is the slower path (specialists and verifiers run as two hard barriers), so prefer a runner whenever one exists
+- Fallback — ONLY when no workflow runner exists on this host (e.g. OpenAI Codex): read `references/fallback-dispatch.md` and follow its `parallel-dispatch` then `verification-stage` sections; slower path (specialists and verifiers run as two hard barriers)
 - A runner that only accepts an inline script (no `scriptPath`): author the fan-out inline, mirroring the bundled script — one `agent()` per roster entry inside `parallel()` with the finding `schema`, one verifier `agent()` per non-consensus non-nit finding on a fast `model` with the verdict `schema`, tiers computed in the script
-- MUST check for a workflow runner before falling back; the fallback exists because some hosts lack one, not as a default
 
 </section>
 
