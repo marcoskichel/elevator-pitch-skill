@@ -29,7 +29,7 @@ This file provides guidance for AI agents working with code in this repository.
 - Frontmatter required: `name`, `description`. Optional: `model`, `allowed-tools`, `argument-hint`, `disable-model-invocation`.
 - `description` MUST list trigger phrases verbatim — Claude auto-route uses them.
 - Reference bundled scripts via `${CLAUDE_PLUGIN_ROOT}/scripts/<file>.sh`. Never hardcode repo paths.
-- Reference bundled workflows via `${CLAUDE_PLUGIN_ROOT}/workflows/<file>.js` with the `Workflow` tool. A skill that drives a workflow MUST document an inline-Agent fallback for when the Workflow tool is unavailable.
+- Reference bundled workflows via `${CLAUDE_PLUGIN_ROOT}/workflows/<file>.js` for Claude Code's `Workflow` tool, and via the skill-dir copy for other hosts' runners (pi's `workflow`). A skill that drives a workflow MUST document an inline-Agent fallback for hosts with no runner.
 - Users invoke skills as `/<plugin>:<skill-name>` once installed. Plugin namespaces: `empire-git`, `empire-dev`, `empire-research`, `empire-product`, `empire-visual`. The meta `empire` plugin contributes no skills.
 - After editing a SKILL.md, also update the matching section in the plugin's `README.md` (`plugins/<plugin>/README.md`) if triggers, args, or behavior changed. Update root `README.md` only if the one-line plugin description in the plugins table needs to change.
 

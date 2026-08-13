@@ -125,7 +125,7 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
 
 <section id="parallel-dispatch">
 
-- Inline fallback — only when the Workflow tool is unavailable (see `dispatch-mode`)
+- Inline fallback — only when no workflow runner is available (see `dispatch-mode`)
 - Dispatch all specialists in parallel, one subagent per specialist (Claude Code: one message with multiple `Agent` tool calls; other agents: spawn them concurrently)
 - Each specialist receives:
   - Diff text INLINED in the brief — never a bare PR number
@@ -198,7 +198,7 @@ silently drop it, never substitute the main thread's own reading for its verdict
 
 <section id="verification-stage">
 
-- Inline fallback — only when the Workflow tool is unavailable
+- Inline fallback — only when no workflow runner is available
 - Compute match key across all specialist findings: same file path AND overlapping line-range (within ±5 lines) AND identical category
 - Merge matched findings into one entry; preserve clearest suggestion wording; tally specialist count
 - Tiers (let `M` = roster size):

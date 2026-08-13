@@ -69,26 +69,24 @@ Everything before the gate is local. The ONE confirmation covers commits, push, 
 
 <section id="dispatch-mode">
 
-- Preferred — Workflow tool available:
+- Preferred — a workflow runner is available; the same script runs on every runner, only the call shape differs:
 
-  ```
-  Workflow({
-    scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/address-review.js",
-    args: { pr, owner, repo, comments: [{ id, path, line, body, author, diffHunk, isOutdated, discussion }] },
-  })
-  ```
+  - Claude Code: `Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/address-review.js", args })`
+  - pi (`pi-dynamic-workflow`): `workflow({ name: "address-review", description, scriptPath: <this skill dir>/workflows/address-review.js, args })` — `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy
+  - Any other host exposing a JS workflow runner with `agent()`/`parallel()`: same script, its own call shape
+  - `args`: `{ pr, owner, repo, comments: [{ id, path, line, body, author, diffHunk, isOutdated, discussion }] }`
 
   - Surface the workflow's `log()` lines as progress
   - Feed the returned `results[]` into `tldr-gate`
   - Skip `inline-fallback` — the workflow owns dispatch
 
-- Fallback — Workflow tool unavailable: run `inline-fallback` below
+- Fallback — no workflow runner (e.g. OpenAI Codex): run `inline-fallback` below
 
 </section>
 
 <section id="inline-fallback">
 
-- Only when the Workflow tool is unavailable. Mirror the workflow stages with `Agent` calls; findings stay local.
+- Only when no workflow runner is available. Mirror the workflow stages with `Agent` calls; findings stay local.
 - Stage 1 — verify (parallel, one agent per comment, single message): adversarially try to REFUTE the comment against the current code. Invalid if the issue doesn't exist, is already handled, rests on a wrong assumption, or is out of the PR's scope. Invalid → draft a pushback reply per `reply-tone`.
 - Stage 2 — evaluate (parallel, valid comments only): decide best fix — reviewer's proposal as written, or a better alternative. Prefer the proposal unless the alternative clearly wins on correctness, simplicity, or consistency. Output plan + files touched as repo-relative paths, never absolute.
 - Stage 3 — recheck (parallel, alternatives only): adversarially try to refute each alternative plan. Refuted → revert to the reviewer's proposal.
