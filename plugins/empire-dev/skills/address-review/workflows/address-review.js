@@ -1,4 +1,4 @@
-export const meta = {
+const meta = {
   name: "address-review",
   description:
     "Address PR review comments for /empire-dev:address-review — adversarial verification per comment, fix-approach evaluation, recheck of alternatives, parallel implementation grouped by file, direct-tone reply drafts.",

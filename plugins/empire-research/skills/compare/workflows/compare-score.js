@@ -1,4 +1,4 @@
-export const meta = {
+const meta = {
   name: "compare-score",
   description:
     "Parallel blind per-option scoring for /empire-research:compare — each option scored against the agreed dimensions in isolation, no cross-option anchoring; the skill builds the weighted matrix.",
