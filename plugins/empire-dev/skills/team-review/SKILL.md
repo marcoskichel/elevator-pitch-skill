@@ -95,7 +95,7 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
 - Preferred — a workflow runner is available; the same script runs on every runner, only the call shape differs:
 
   - Claude Code: `Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/team-review.js", args })`
-  - pi: the `pi-dynamic-workflows` extension registers a `workflow` tool — `workflow({ name: "team-review", description, scriptPath: <this skill dir>/workflows/team-review.js, args })`; `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy. `workflow` appears in the session's native tool set, NOT via MCP
+  - pi: the `pi-dynamic-workflows` extension registers a `workflow` tool — `workflow({ name: "team-review", description, scriptPath: <this skill dir>/workflows/team-review.js, args })`; `scriptPath` resolves against the session cwd, so pass the absolute path to the bundled copy. `workflow` appears in the session's native tool set, NOT via MCP. The `workflow` tool is registered lazily: it exists only after `/workflow` has been used in the session (or an eager-registration extension is installed). If `workflow` is absent from the tool set, do NOT search MCP or improvise — ask the user to run `/workflow` once, or use the fallback
   - Any other host exposing a JS workflow runner with `agent()`/`parallel()`: same script, its own call shape
   - The script fans out specialists with structured output, dispatches one verifier per non-nit finding EAGERLY as each specialist returns (no cross-wave barrier), and computes consensus tiers deterministically in JS
   - `args` in every case:
