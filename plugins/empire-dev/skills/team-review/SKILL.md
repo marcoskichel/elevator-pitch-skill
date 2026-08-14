@@ -104,7 +104,7 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
     {
       diff, changedFiles, intent, vocabulary, adrs,
       roster: [{ name, persona?, agentType?, model? }],
-      rereviewNote?,
+      rereviewNote?, specialistModel?, verifierModel?,
     }
     ```
 
@@ -112,6 +112,9 @@ compatibility: Dispatches parallel review subagents. Runs in Claude Code and Ope
   - `persona` = the full text of `references/personas/<name>.md`, read before dispatch — always pass it unless `agentType` is set
   - `agentType` = a named agent definition, ONLY when verified to exist on this platform; an unknown name aborts that specialist and loses its whole review
   - `model` defaults to a fast mid-tier model (`sonnet`); verifiers always run a cheap fast model. Pass `model` per specialist only when a pick genuinely needs a stronger one — reviewer latency is max-of-N, so one slow specialist stalls the whole barrier
+  - Hosts that reject bare aliases like `sonnet`/`haiku` (pi expects `provider/model-id`, e.g. `anthropic/claude-haiku-4-5`): pass resolvable ids via `specialistModel`/`verifierModel` — an unresolvable model silently kills every agent and the run returns `0/N agents succeeded`
+  - The script gives every specialist and verifier a generous per-agent timeout with a built-in grace period, and each brief states its own budget (work minutes + grace window) so the agent paces itself and returns partial findings instead of timing out empty
+  - Set generous run-level caps on the workflow tool call — the review is worth the spend: `maxCost: 15` (or `maxTokens` where cost is unavailable); on pi also pass a run `timeout` well above the per-agent ceilings so the run never dies before its slowest agent
   - Re-review: pass prior findings, user decisions, and the new diff as `rereviewNote`
   - Surface the workflow's `log()` lines as progress
   - Feed the returned tiers into `consolidated-report` — tier math is already done; render, don't recompute
