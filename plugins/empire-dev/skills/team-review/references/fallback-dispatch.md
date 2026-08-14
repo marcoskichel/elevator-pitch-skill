@@ -39,15 +39,19 @@ Use ONLY when no JS workflow runner is available (see `dispatch-mode` in SKILL.m
 - `<file:line-range>` = exact line or hyphen range (e.g. `src/auth.ts:42` or `src/auth.ts:42-58`)
 - `<category>` MUST be exactly one of: `correctness`, `security`, `performance`, `architecture`, `tests`, `style`, `docs`
 - One finding per line; no prose paragraphs between findings
-- Cap each specialist response under 400 words
+- Cap each specialist response under 800 words
 
 ### Bounding each specialist
 
 - MUST request structured output matching the finding format (Pi: `outputSchema`;
   Claude Code inline `Agent`: require the format block verbatim)
 - MUST instruct the specialist to return the RAW schema object as its final output — never wrapped in evidence blocks, notes, or prose; a wrapped response fails parsing and the whole review is lost
-- MUST cap tool use so the child finalizes while it still can (Pi: `toolBudget` with `soft: 40`, `hard: 60`)
-- MUST cap turns with a grace window (Pi: `turnBudget` with `maxTurns: 25`, `graceTurns: 3`)
+- MUST cap tool use so the child finalizes while it still can (Pi: `toolBudget` with `soft: 80`, `hard: 120`)
+- MUST cap turns with a grace window (Pi: `turnBudget` with `maxTurns: 50`, `graceTurns: 6`)
+- MUST state the caps in the brief so the specialist can pace itself: how many
+  tool calls and turns it has, and that a grace window follows the turn cap for
+  emitting final output — the host's soft nudge arrives late; the brief makes the
+  numbers known up front
 - MUST give each specialist its own output file and require appending each finding
   as it is confirmed, never batched (Pi: `output: 'review-<specialist>.md'`), so a
   killed child still leaves findings on disk

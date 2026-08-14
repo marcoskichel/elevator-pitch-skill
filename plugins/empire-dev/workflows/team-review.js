@@ -10,6 +10,22 @@ const meta = {
   ],
 };
 
+const SPECIALIST_WORK_MINUTES = 10;
+const VERIFIER_WORK_MINUTES = 4;
+const GRACE_MINUTES = 3;
+const MS = 60 * 1000;
+const SPECIALIST_TIMEOUT_MS = (SPECIALIST_WORK_MINUTES + GRACE_MINUTES) * MS;
+const VERIFIER_TIMEOUT_MS = (VERIFIER_WORK_MINUTES + GRACE_MINUTES) * MS;
+
+const BUDGET_NOTE = (workMinutes) =>
+  "## Budget\nYou have ~" +
+  workMinutes +
+  " minutes of work time plus a " +
+  GRACE_MINUTES +
+  "-minute grace period reserved for emitting your final structured output. " +
+  "When your work window closes, stop investigating and return what you have — " +
+  "a partial result beats a timeout, which loses everything.\n\n";
+
 const CATEGORIES = [
   "correctness",
   "security",
@@ -129,6 +145,7 @@ const SPEC_PROMPT = (s) =>
   "defect in the diff it resolves; no defect cited → drop the finding.\n" +
   "Do not rubber-stamp working code that leaves the codebase messier. Do not flood with nits — omit nit-severity " +
   "findings entirely when you have must-fix findings.\n\n" +
+  BUDGET_NOTE(SPECIALIST_WORK_MINUTES) +
   CONTEXT_BLOCK +
   "## Changed files\n" +
   changedFiles.join("\n") +
@@ -143,6 +160,7 @@ const VERIFY_PROMPT = (f, hunk) =>
   "## Finding verifier\n\n" +
   "Adjudicate exactly ONE code-review finding. Judge ONLY this finding — never report other issues. " +
   "Judge from the inlined hunk first; use Read/Grep only when the claim depends on code beyond the hunk.\n\n" +
+  BUDGET_NOTE(VERIFIER_WORK_MINUTES) +
   "## Finding\n`" +
   findingLabel(f) +
   "` [`" +
@@ -172,6 +190,7 @@ const dispatchVerifier = (entry) => {
       phase: "Verify",
       model: "haiku",
       schema: VERDICT_SCHEMA,
+      timeout: VERIFIER_TIMEOUT_MS,
     }).then((v) => {
       entry.verdict = v || null;
     }),
@@ -185,6 +204,7 @@ const specialists = await parallel(
       phase: "Review",
       schema: FINDINGS_SCHEMA,
       model: s.model || "sonnet",
+      timeout: SPECIALIST_TIMEOUT_MS,
     };
     if (s.agentType) opts.agentType = s.agentType;
     return agent(SPEC_PROMPT(s), opts).then((r) => {
