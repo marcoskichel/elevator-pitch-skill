@@ -214,6 +214,7 @@ const specialists = await parallel(
       const findings = (r.findings ?? []).filter(
         (f) => f && f.file && CATEGORIES.includes(f.category) && SEVERITIES.includes(f.severity),
       );
+      let dispatched = 0;
       for (const f of findings) {
         const entry = registry.find((e) => sameFinding(e.finding, f));
         if (entry) {
@@ -226,6 +227,7 @@ const specialists = await parallel(
           if (entry.skipVerify && f.severity !== "nit") {
             entry.skipVerify = false;
             dispatchVerifier(entry);
+            dispatched++;
           }
         } else {
           const e = {
@@ -237,10 +239,20 @@ const specialists = await parallel(
             skipVerify: f.severity === "nit",
           };
           registry.push(e);
-          if (!e.skipVerify) dispatchVerifier(e);
+          if (!e.skipVerify) {
+            dispatchVerifier(e);
+            dispatched++;
+          }
         }
       }
-      log(s.name + ": " + findings.length + " findings, verifiers dispatched");
+      log(
+        s.name +
+          ": " +
+          findings.length +
+          " findings, " +
+          dispatched +
+          " verifiers dispatched (nits and already-verified duplicates skip verification)",
+      );
       return {
         name: s.name,
         findingCount: findings.length,
