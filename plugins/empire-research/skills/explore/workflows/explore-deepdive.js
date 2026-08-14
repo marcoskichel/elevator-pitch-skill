@@ -1,4 +1,4 @@
-export const meta = {
+const meta = {
   name: "explore-deepdive",
   description:
     "Parallel per-approach deep research for /empire-research:explore — one researcher per selected approach returns structured pros/cons/fit for the skill to consolidate.",

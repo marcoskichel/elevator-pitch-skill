@@ -1,4 +1,4 @@
-export const meta = {
+const meta = {
   name: "team-review",
   description:
     "Parallel specialist diff review for /empire-dev:team-review — schema-driven specialist fan-out, eager per-finding verification (verifiers dispatch as each specialist returns, no cross-wave barrier), deterministic consensus tiering in JS.",
