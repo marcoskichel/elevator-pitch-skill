@@ -80,6 +80,8 @@ const intent = input?.intent ?? "";
 const vocabulary = input?.vocabulary ?? "";
 const adrs = input?.adrs ?? "";
 const rereviewNote = input?.rereviewNote ?? "";
+const specialistModel = input?.specialistModel ?? "sonnet";
+const verifierModel = input?.verifierModel ?? "haiku";
 
 if (!diff || roster.length < 2) {
   return {
@@ -188,7 +190,7 @@ const dispatchVerifier = (entry) => {
     agent(VERIFY_PROMPT(entry.finding, hunkFor(entry.finding)), {
       label: "verify:" + findingLabel(entry.finding),
       phase: "Verify",
-      model: "haiku",
+      model: verifierModel,
       schema: VERDICT_SCHEMA,
       timeout: VERIFIER_TIMEOUT_MS,
     }).then((v) => {
@@ -203,7 +205,7 @@ const specialists = await parallel(
       label: "review:" + s.name,
       phase: "Review",
       schema: FINDINGS_SCHEMA,
-      model: s.model || "sonnet",
+      model: s.model || specialistModel,
       timeout: SPECIALIST_TIMEOUT_MS,
     };
     if (s.agentType) opts.agentType = s.agentType;
