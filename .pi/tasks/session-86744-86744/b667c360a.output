@@ -1,0 +1,3 @@
+marketplace + plugin manifests	pass	5s	https://github.com/marcoskichel/empire/actions/runs/31818632203/job/94826269492	
+pre-commit	pass	15s	https://github.com/marcoskichel/empire/actions/runs/31818632203/job/94826269465	
+{"mergeStateStatus":"CLEAN","mergeable":"MERGEABLE"}

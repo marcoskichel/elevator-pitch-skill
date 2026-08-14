@@ -193,9 +193,13 @@ const dispatchVerifier = (entry) => {
       model: verifierModel,
       schema: VERDICT_SCHEMA,
       timeout: VERIFIER_TIMEOUT_MS,
-    }).then((v) => {
-      entry.verdict = v || null;
-    }),
+    })
+      .then((v) => {
+        entry.verdict = v || null;
+      })
+      // ponytail: abort/budget rejections resolve to an unverified finding
+      // instead of an unhandled rejection that kills the host pi process
+      .catch(() => {}),
   );
 };
 
