@@ -61,7 +61,7 @@ PERSONA_BUNDLES=(
 
 # Project-local Codex skill mirror: "PLUGIN::skill1 skill2 ...".
 MIRROR_BUNDLES=(
-  "empire-dev::team-review socratic-pr-review handoff shape weigh slice"
+  "empire-dev::team-review socratic-pr-review handoff shape weigh slice plan-reviewer"
   "empire-product::pitch vet recon mint distill probe"
   "empire-research::explore compare dissect"
   "empire-visual::visualize"
@@ -73,6 +73,7 @@ MIRROR_BUNDLES=(
 SCRIPT_BUNDLES=(
   "plugins/empire-dev/workflows/team-review.js::plugins/empire-dev/skills/team-review/workflows"
   "plugins/empire-dev/workflows/address-review.js::plugins/empire-dev/skills/address-review/workflows"
+  "plugins/empire-dev/workflows/plan-reviewer.js::plugins/empire-dev/skills/plan-reviewer/workflows"
   "plugins/empire-research/workflows/explore-deepdive.js::plugins/empire-research/skills/explore/workflows"
   "plugins/empire-research/workflows/compare-score.js::plugins/empire-research/skills/compare/workflows"
   "plugins/empire-git/scripts/worktree-setup.sh::plugins/empire-git/skills/worktree-open/scripts"

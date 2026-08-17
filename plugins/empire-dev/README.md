@@ -104,6 +104,21 @@ flowchart LR
 
 **Source:** [`skills/handoff/SKILL.md`](skills/handoff/SKILL.md)
 
+### `plan-reviewer`
+
+Dispatch an adversarial review of an implementation plan against its spec. Three fixed-angle reviewers run in parallel — a contradiction-hunter (plan steps that are wrong: contradict, misread, or violate the spec), a coverage-auditor (spec requirements no plan step covers, plus plan scope the spec never asked for), and an ambiguity-prober (plan parts two implementers would build differently, undefined terms, deferred decisions). Every finding must quote the plan text and, where applicable, the spec text; every non-nit finding gets an independent verifier that can rule it invalid, so the report contains only quote-grounded, adjudicated issues. Output groups confirmed findings into Wrong / Unspecified / Ambiguous with a one-line verdict, and the plan is only edited after the user picks fixes. Runs via the bundled `plan-reviewer.js` workflow on any host with a JS workflow runner (Claude Code's `Workflow`, pi's `workflow` tool from the `pi-dynamic-workflows` extension), with a documented inline-Agent fallback. Findings stay local — never posted externally.
+
+**Triggers:** "plan review", "review the plan", "review this plan", "plan reviewer", "check the plan against the spec", "does the plan match the spec", "adversarial plan review", "audit the plan", "validate the plan", "/empire-dev:plan-reviewer".
+
+```mermaid
+flowchart LR
+  docs[Plan + Spec] --> angles[3 adversarial angles]
+  angles --> verify[Verify each finding]
+  verify --> report[Wrong / Unspecified / Ambiguous]
+```
+
+**Source:** [`skills/plan-reviewer/SKILL.md`](skills/plan-reviewer/SKILL.md)
+
 ### `weigh`
 
 Systematically evaluate architecture decisions, document trade-offs, and select appropriate patterns for context. Generates weighted decision matrices and writes ADRs to `docs/adr/NNNN-<slug>.md` with LLM-queryable frontmatter (`adr`, `title`, `date`, `status`, `supersedes`, `tags`, `modules`). Applies refactoring patterns (Branch by Abstraction, Strangler Fig, Parallel Run). Reads `CONTEXT.md` and existing ADRs before analysis. Findings stay local.
