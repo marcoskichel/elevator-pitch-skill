@@ -201,6 +201,14 @@ To make it impossible for the agent to bypass, add this one-line rule to your pr
 
 **Source:** [`skills/pr-description/SKILL.md`](skills/pr-description/SKILL.md)
 
+### `pr-comment-reply`
+
+Canonical reply template for PR review comments. Human teammate voice: 1–2 short sentences, outcome only (what changed, why nothing changed, or the answer). No trivia, no thanks, no filler, no dashes as connectors, no semicolons, no jargon beyond what the comment uses. Covers five reply shapes (fixed, not changing, answering, deferring, comment is wrong/stale) with examples and anti-patterns. Output is plain text the caller posts to GitHub unchanged.
+
+**Triggers:** "PR comment reply", "review comment reply", "reply to this comment", "respond to this review comment", "answer the reviewer", "reply on the PR thread", "draft a reply", "post a reply on the PR".
+
+**Source:** [`skills/pr-comment-reply/SKILL.md`](skills/pr-comment-reply/SKILL.md)
+
 ### `pr-merge`
 
 Gates then merges a single PR. Verifies CI is green (investigates and attempts a fix when red), rebases and resolves conflicts when the branch is behind, triages unresolved review threads intelligently (resolve, fix, or ask — never blind-blocks), then merges and deletes the head branch. Fast-forwards the local base checkout (e.g. updates `master`) when it's checked out in a worktree.
