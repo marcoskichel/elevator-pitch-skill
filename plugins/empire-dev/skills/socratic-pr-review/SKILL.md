@@ -154,47 +154,9 @@ Right after "what it does", give a quick read on the approach — still plain wo
 
 <section id="post-review">
 
-- Post the ENTIRE review in ONE GitHub API call. Never post comments individually; never create a pending review then submit separately.
-- Right before posting, re-fetch `SHA=$(gh pr view "$PR" --json headRefOid -q .headRefOid)`. If it changed since [target-detection](#target-detection), warn the user (anchors may have drifted) and re-confirm; otherwise the [verdict](#verdict) OK stands.
-- Build the payload with `jq` into a temp file; pass every comment `body` and the summary as `--arg` values, NEVER via string interpolation (bodies hold quotes, backticks, `$()`). Then a single POST, deleting the temp file after:
-
-  ```bash
-  payload=$(mktemp)
-  # Append each comment as data, never interpolated into the JSON:
-  comments='[]'
-  comments=$(jq -c --arg path "$P" --argjson line "$N" --arg side RIGHT --arg body "$Q" \
-    '. + [{path: $path, line: $line, side: $side, body: $body}]' <<<"$comments")
-  # repeat per comment; for a span add --argjson start_line and --arg start_side
-  jq -n --arg commit "$SHA" --arg event "$EVENT" --arg body "$SUMMARY" --argjson comments "$comments" \
-    '{commit_id: $commit, event: $event, body: $body, comments: $comments}' >"$payload"
-  gh api --method POST "repos/$OWNER/$REPO/pulls/$PR/reviews" --input "$payload"
-  rm -f "$payload"
-  ```
-
-- `payload.json` shape:
-
-  ```json
-  {
-    "commit_id": "<SHA>",
-    "event": "COMMENT|APPROVE|REQUEST_CHANGES",
-    "body": "<summary or empty>",
-    "comments": [
-      { "path": "src/x.ts", "line": 42, "side": "RIGHT", "body": "..." },
-      {
-        "path": "src/x.ts",
-        "start_line": 40,
-        "start_side": "RIGHT",
-        "line": 44,
-        "side": "RIGHT",
-        "body": "..."
-      }
-    ]
-  }
-  ```
-
-- With `comments` present, any event MAY omit `body`; with no `comments`, `COMMENT` and `REQUEST_CHANGES` require a non-empty `body` (`APPROVE` MAY always be empty).
-- After posting, report the review URL from the API response.
-- On API error (line not in diff, stale `SHA`): re-resolve the anchor or `SHA` and retry the single call, max 2 retries. If a retry changes an anchor the user validated, re-confirm that comment first. Never split into multiple posts; surface to the user after repeated failure.
+- Post via the `pr-review-post` skill (empire-git). Pass it the PR, the confirmed event, the summary, and the kept comments with their anchors.
+- That skill owns the mechanics: single atomic POST, `jq` payload building, SHA re-fetch (warn + re-confirm if it drifted since [target-detection](#target-detection)), anchor rules, and retry on API error (max 2, re-confirming any anchor the user validated that a retry changes).
+- After posting, report the review URL.
 
 </section>
 

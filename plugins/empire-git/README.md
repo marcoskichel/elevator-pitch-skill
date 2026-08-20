@@ -209,6 +209,21 @@ Canonical reply template for PR review comments. Human teammate voice: 1–2 sho
 
 **Source:** [`skills/pr-comment-reply/SKILL.md`](skills/pr-comment-reply/SKILL.md)
 
+### `pr-review-post`
+
+Posts a GitHub PR review (verdict + summary + inline comments) in one atomic API call. The caller supplies the confirmed event and comment list; this skill owns the mechanics: resolving `OWNER/REPO` from the PR's own base repo, re-fetching the head SHA right before posting (warning on drift), anchoring comments to diff lines (`side`, spans, folding out-of-diff findings into the summary), building the payload safely with `jq --arg` (never string interpolation), and retrying once anchors or SHA go stale (max 2, never splitting into multiple posts). Used by `socratic-pr-review` and any agent that needs to submit a review.
+
+**Triggers:** "post the review", "submit the review", "publish the review comments", "approve this PR", "request changes on the PR", "leave a review".
+
+```mermaid
+flowchart LR
+  input[Verdict + comments] --> anchor[Anchor to diff]
+  anchor --> payload[jq payload]
+  payload --> post[Single POST]
+```
+
+**Source:** [`skills/pr-review-post/SKILL.md`](skills/pr-review-post/SKILL.md)
+
 ### `pr-merge`
 
 Gates then merges a single PR. Verifies CI is green (investigates and attempts a fix when red), rebases and resolves conflicts when the branch is behind, triages unresolved review threads intelligently (resolve, fix, or ask — never blind-blocks), then merges and deletes the head branch. Fast-forwards the local base checkout (e.g. updates `master`) when it's checked out in a worktree.
